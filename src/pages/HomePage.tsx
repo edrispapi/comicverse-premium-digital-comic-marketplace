@@ -2,12 +2,13 @@ import React, { useMemo, useEffect, useState, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion';
 import { ArrowRight, Star } from 'lucide-react';
 import { ComicCard } from '@/components/ui/comic-card';
+import { AudiobookCard } from '@/components/ui/audiobook-card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useAppStore } from '@/store/use-store';
-import { useComics } from '@/lib/queries';
+import { useComics, useAudiobooks } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Toaster } from '@/components/ui/sonner';
 import {
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import useEmblaCarousel from 'embla-carousel-react';
 function HeroSlider() {
   const { data: allComics, isLoading } = useComics();
   const [api, setApi] = useState<CarouselApi>();
@@ -85,7 +87,7 @@ function HeroSlider() {
     return <Skeleton className="w-full h-[60vh] md:h-[80vh]" />;
   }
   return (
-    <div 
+    <div
       className="relative w-full h-[60vh] md:h-[80vh] group"
       onMouseEnter={() => isHovering.current = true}
       onMouseLeave={() => isHovering.current = false}
@@ -178,35 +180,70 @@ function HeroSlider() {
     </div>
   );
 }
+function AudiobookCarousel() {
+  const { data: audiobooks, isLoading } = useAudiobooks();
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
+  const [scaleValues, setScaleValues] = useState<number[]>([]);
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    const engine = emblaApi.internalEngine();
+    const scrollProgress = emblaApi.scrollProgress();
+    const styles = emblaApi.scrollSnapList().map((scrollSnap, index) => {
+      let diffToTarget = scrollSnap - scrollProgress;
+      if (engine.options.loop) {
+        engine.slideLooper.loopPoints.forEach((loopPoint) => {
+          const target = loopPoint.target();
+          if (index === loopPoint.index && target !== 0) {
+            const sign = Math.sign(target);
+            if (sign === -1) diffToTarget = scrollSnap - (1 + scrollProgress);
+            if (sign === 1) diffToTarget = scrollSnap + (1 - scrollProgress);
+          }
+        });
+      }
+      const scale = 1 - Math.abs(diffToTarget) * 0.3;
+      return scale < 0 ? 0 : scale;
+    });
+    setScaleValues(styles);
+  }, [emblaApi]);
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect).on('reInit', onSelect).on('scroll', onSelect);
+    const interval = setInterval(() => emblaApi.scrollNext(), 4000);
+    return () => clearInterval(interval);
+  }, [emblaApi, onSelect]);
+  if (isLoading) {
+    return <Skeleton className="w-full h-96" />;
+  }
+  return (
+    <div className="relative group">
+      <div className="overflow-hidden" ref={emblaRef} style={{ perspective: '1000px' }}>
+        <div className="flex">
+          {audiobooks?.map((comic, index) => (
+            <div key={comic.id} className="flex-shrink-0 flex-grow-0 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 min-w-0 pl-4">
+              <motion.div
+                style={{
+                  scale: scaleValues[index],
+                  transform: `rotateY(${scaleValues[index] ? (1 - scaleValues[index]) * 30 * (index < (emblaApi?.selectedScrollSnap() || 0) ? -1 : 1) : 0}deg)`,
+                }}
+                transition={{ type: 'spring', stiffness: 200, damping: 30 }}
+              >
+                <AudiobookCard comic={comic} />
+              </motion.div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <Button variant="outline" size="icon" className="absolute left-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => emblaApi?.scrollPrev()}><ArrowRight className="rotate-180" /></Button>
+      <Button variant="outline" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => emblaApi?.scrollNext()}><ArrowRight /></Button>
+    </div>
+  );
+}
 const testimonials = [
-  {
-    name: 'Alex R.',
-    avatar: 'https://i.pravatar.cc/150?u=test-1',
-    rating: 5,
-    quote:
-      "Mind-blowing art and a storyline that kept me hooked from start to finish. ComicVerse is my new go-to!",
-  },
-  {
-    name: 'Samantha B.',
-    avatar: 'https://i.pravatar.cc/150?u=test-2',
-    rating: 5,
-    quote:
-      "The selection is incredible, and the reading experience is seamless. Found so many hidden gems here.",
-  },
-  {
-    name: 'David L.',
-    avatar: 'https://i.pravatar.cc/150?u=test-3',
-    rating: 5,
-    quote:
-      "As a lifelong comic fan, I'm impressed. The quality of the digital comics is top-notch. Highly recommended!",
-  },
-  {
-    name: 'Jessica M.',
-    avatar: 'https://i.pravatar.cc/150?u=test-4',
-    rating: 5,
-    quote:
-      "A beautifully designed app that truly respects the art form. The 'cinematic' feel is real. A must-have for any fan.",
-  },
+  { name: 'Alex R.', avatar: 'https://i.pravatar.cc/150?u=test-1', rating: 5, quote: "Mind-blowing art and a storyline that kept me hooked from start to finish. ComicVerse is my new go-to!" },
+  { name: 'Samantha B.', avatar: 'https://i.pravatar.cc/150?u=test-2', rating: 5, quote: "The selection is incredible, and the reading experience is seamless. Found so many hidden gems here." },
+  { name: 'David L.', avatar: 'https://i.pravatar.cc/150?u=test-3', rating: 5, quote: "As a lifelong comic fan, I'm impressed. The quality of the digital comics is top-notch. Highly recommended!" },
+  { name: 'Jessica M.', avatar: 'https://i.pravatar.cc/150?u=test-4', rating: 5, quote: "A beautifully designed app that truly respects the art form. The 'cinematic' feel is real. A must-have for any fan." },
 ];
 export function HomePage() {
   const searchTerm = useAppStore((s) => s.searchTerm);
@@ -226,52 +263,40 @@ export function HomePage() {
       <Navbar />
       <main>
         <HeroSlider />
+        <section className="py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold tracking-tight mb-8">Audiobooks Spotlight</h2>
+          </div>
+          <AudiobookCarousel />
+        </section>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Trending Now Section */}
           <section className="py-16 md:py-24">
             <h2 className="text-3xl font-bold tracking-tight mb-8">Trending Now</h2>
             {isLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />
-                ))}
+                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
               </div>
             ) : trendingComics.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {trendingComics.map((comic, index) => (
-                  <motion.div
-                    key={comic.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                  >
+                  <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }}>
                     <ComicCard comic={comic} />
                   </motion.div>
                 ))}
               </div>
             ) : null}
           </section>
-          {/* New Releases Section */}
           <section className="py-16 md:py-24 bg-comic-card -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
               <h2 className="text-3xl font-bold tracking-tight mb-8">New Releases</h2>
               {isLoading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />
-                  ))}
+                  {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
                 </div>
               ) : newReleases.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                   {newReleases.map((comic, index) => (
-                    <motion.div
-                      key={comic.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                    >
+                    <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }}>
                       <ComicCard comic={comic} />
                     </motion.div>
                   ))}
@@ -279,34 +304,18 @@ export function HomePage() {
               ) : null}
             </div>
           </section>
-          {/* Testimonials Section */}
           <section className="py-16 md:py-24">
-            <h2 className="text-3xl font-bold tracking-tight mb-8 text-center">
-              What Our Readers Say
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight mb-8 text-center">What Our Readers Say</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
+                <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }}>
                   <Card className="bg-comic-card border border-white/10 h-full flex flex-col p-6 hover:border-comic-accent/50 hover:shadow-accent-glow transition-all duration-300">
                     <CardContent className="flex flex-col flex-1 p-0">
                       <div className="flex items-center mb-4">
-                        <Avatar className="h-12 w-12 mr-4">
-                          <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                          <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
+                        <Avatar className="h-12 w-12 mr-4"><AvatarImage src={testimonial.avatar} alt={testimonial.name} /><AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback></Avatar>
                         <div>
                           <p className="font-semibold text-white">{testimonial.name}</p>
-                          <div className="flex text-amber-400">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="w-4 h-4 fill-current" />
-                            ))}
-                          </div>
+                          <div className="flex text-amber-400">{[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}</div>
                         </div>
                       </div>
                       <p className="text-neutral-300 text-sm flex-1">"{testimonial.quote}"</p>

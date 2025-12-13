@@ -47,6 +47,7 @@ export function Navbar() {
                 <NavLink to="/catalog" className={navLinkClass}>Catalog</NavLink>
                 <NavLink to="/genres" className={navLinkClass}>Genres</NavLink>
                 <NavLink to="/authors" className={navLinkClass}>Authors</NavLink>
+                <NavLink to="/audiobooks" className={navLinkClass}>Audiobooks</NavLink>
               </nav>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
@@ -120,6 +121,7 @@ export function Navbar() {
                       <NavLink to="/catalog" className={navLinkClass}>Catalog</NavLink>
                       <NavLink to="/genres" className={navLinkClass}>Genres</NavLink>
                       <NavLink to="/authors" className={navLinkClass}>Authors</NavLink>
+                      <NavLink to="/audiobooks" className={navLinkClass}>Audiobooks</NavLink>
                       {!userId && <Button onClick={() => toggleAuth(true)} className="w-full mt-4">Login</Button>}
                     </nav>
                   </SheetContent>

@@ -47,6 +47,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1573149760704-2ca0e3e26a5c?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-1'),
+    audioUrl: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3',
   },
   {
     id: 'comic-2',
@@ -64,6 +65,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1602080859398-9feefe2603e2?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-2'),
+    audioUrl: 'https://www.soundjay.com/misc/sounds/dream-harp-01.mp3',
   },
   {
     id: 'comic-3',
@@ -98,6 +100,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1570525054547-96792e75bfe9?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-4'),
+    audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-1.mp3',
   },
   {
     id: 'comic-5',
@@ -114,6 +117,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1518709268805-4e9042af2176?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-5'),
+    audioUrl: 'https://www.soundjay.com/misc/sounds/magic-chime-01.mp3',
   },
   {
     id: 'comic-6',
@@ -148,6 +152,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1602080859398-9feefe2603e2?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-7'),
+    audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-2.mp3',
   },
   {
     id: 'comic-8',
@@ -181,8 +186,10 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1583305911787-57d1699511d0?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-9'),
+    audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-3.mp3',
   },
 ];
 export const genres = GENRES;
 export const authors = AUTHORS;
 export const comics = COMICS;
+export const audiobooks = COMICS.filter(c => c.audioUrl);

@@ -18,6 +18,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!await comic.exists()) return notFound(c, 'comic not found');
     return ok(c, await comic.getState());
   });
+  // AUDIOBOOKS
+  app.get('/api/audiobooks', async (c) => {
+    await ComicEntity.ensureSeed(c.env);
+    const { items } = await ComicEntity.list(c.env, null, 100);
+    return ok(c, items.filter(comic => comic.audioUrl));
+  });
   // AUTHORS
   app.get('/api/authors', async (c) => {
     await AuthorEntity.ensureSeed(c.env);

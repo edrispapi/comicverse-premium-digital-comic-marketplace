@@ -42,4 +42,5 @@ export interface Comic {
   releaseDate: string;
   previewImageUrls: string[];
   chapters: Chapter[];
+  audioUrl?: string;
 }

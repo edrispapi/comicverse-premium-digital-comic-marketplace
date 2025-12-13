@@ -19,6 +19,7 @@ import { GenresPage } from '@/pages/GenresPage';
 import { CheckoutPage } from '@/pages/CheckoutPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { AuthorDetailPage } from '@/pages/AuthorDetailPage';
+import { AudiobooksPage } from '@/pages/AudiobooksPage';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -49,6 +50,11 @@ const router = createBrowserRouter([
   {
     path: "/genres",
     element: <GenresPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/audiobooks",
+    element: <AudiobooksPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {

@@ -16,6 +16,13 @@ export const useComic = (id: string | undefined) => {
     enabled: !!id, // Only run the query if the id is not undefined
   });
 };
+// Fetch all audiobooks
+export const useAudiobooks = () => {
+  return useQuery<Comic[]>({
+    queryKey: ['audiobooks'],
+    queryFn: () => api<Comic[]>('/api/audiobooks'),
+  });
+};
 // Fetch all authors
 export const useAuthors = () => {
   return useQuery<Author[]>({
