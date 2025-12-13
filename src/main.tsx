@@ -25,6 +25,7 @@ const AuthorDetailPage = React.lazy(() => import('@/pages/AuthorDetailPage').the
 const AudiobooksPage = React.lazy(() => import('@/pages/AudiobooksPage').then(module => ({ default: module.AudiobooksPage })));
 const AudiobooksDetailPage = React.lazy(() => import('@/pages/AudiobooksDetailPage').then(module => ({ default: module.AudiobooksDetailPage })));
 const DashboardPage = React.lazy(() => import('@/pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
+const SearchPage = React.lazy(() => import('@/pages/SearchPage').then(module => ({ default: module.SearchPage })));
 const LibraryPage = React.lazy(() => import('@/pages/LibraryPage').then(module => ({ default: module.LibraryPage })));
 const queryClient = new QueryClient();
 const rootLoader = async () => {
@@ -90,6 +91,11 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <DashboardPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/search",
+    element: <SearchPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {

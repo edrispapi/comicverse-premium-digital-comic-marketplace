@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { Env } from './core-utils';
+import type { Env } from "./core-utils";
 import { UserEntity, ComicEntity, AuthorEntity, GenreEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
 import type { User, Notification, Comic, Comment, Post } from '@shared/types';
@@ -12,6 +12,40 @@ const parseDuration = (durationStr: string | undefined): number => {
   const minutes = parts[1] ? parseInt(parts[1].replace('m', '')) : 0;
   return hours + minutes / 60;
 };
+
+async function getFilteredComics(c: any) {
+  await ComicEntity.ensureSeed(c.env);
+  const { items: allComics } = await ComicEntity.list(c.env, null, 500);
+
+  const search = c.req.query('q');
+  const genres = c.req.query('genres');
+  const authorIdsParam = c.req.query('authorIds');
+  const priceMax = c.req.query('priceMax');
+  const sort = c.req.query('sort') || 'newest';
+
+  let filteredComics = allComics;
+
+  if (search) {
+    filteredComics = filteredComics.filter(comic => comic.title.toLowerCase().includes(search.toLowerCase()));
+  }
+  if (genres) {
+    const genreIds = genres.split(',').filter(Boolean);
+    if (genreIds.length > 0) filteredComics = filteredComics.filter(comic => comic.genreIds.some(gid => genreIds.includes(gid)));
+  }
+  if (authorIdsParam) {
+    const authorIds = authorIdsParam.split(',').filter(Boolean);
+    if (authorIds.length > 0) filteredComics = filteredComics.filter(comic => comic.authorIds.some(aid => authorIds.includes(aid)));
+  }
+  if (priceMax) {
+    filteredComics = filteredComics.filter(comic => comic.price <= parseFloat(priceMax));
+  }
+
+  if (sort === 'newest') filteredComics.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+  else if (sort === 'popular' || sort === 'rating') filteredComics.sort((a, b) => (b.ratings?.avg ?? 0) - (a.ratings?.avg ?? 0));
+
+  return filteredComics;
+}
+
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // COMICS
   app.get('/api/comics', async (c) => {
@@ -47,6 +81,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       filteredComics.sort((a, b) => (b.ratings?.avg ?? 0) - (a.ratings?.avg ?? 0));
 }
     return ok(c, filteredComics);
+  });
+
+  app.get('/api/search', async (c) => {
+    const comics = await getFilteredComics(c);
+    return ok(c, comics);
   });
   app.get('/api/comics/:id', async (c) => {
     const id = c.req.param('id');

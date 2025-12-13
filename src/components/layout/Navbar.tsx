@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { BookOpen, Search, ShoppingCart, Heart, Menu, User, LogOut, BookOpenCheck, Bell, BellRing } from 'lucide-react';
+import { BookOpen, Search, ShoppingCart, Heart, Menu, User, LogOut, BookOpenCheck, Bell, BellRing, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAppStore, useCart, useWishlist, useNotifications } from '@/store/use-store';
@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AuthDialog } from '@/components/auth/AuthDialog';
+import { AdvancedSearchWizard } from '@/components/search/AdvancedSearchWizard';
 import { useNewAudiobooks, useComics, useUserNotifications } from '@/lib/queries';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { toast } from 'sonner';
@@ -35,6 +36,7 @@ export function Navbar() {
   const { notifications, unreadCount, setNotifications, markAsRead } = useNotifications();
   const [openSearch, setOpenSearch] = useState(false);
   const navigate = useNavigate();
+  const [isAdvancedSearchOpen, setAdvancedSearchOpen] = useState(false);
   useEffect(() => {
     if (notificationsData) {
       setNotifications(notificationsData);
@@ -85,6 +87,9 @@ export function Navbar() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <Button variant="outline" onClick={() => setOpenSearch(true)} className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-white bg-neutral-800/50 border-neutral-700">
                 <Search className="h-4 w-4" /> Search...
+              </Button>
+              <Button variant="outline" onClick={() => setAdvancedSearchOpen(true)} className="hidden sm:flex items-center gap-2 text-red-400 border-red-500/50 hover:text-white hover:bg-red-500/20 bg-red-500/10">
+                <Sparkles className="h-4 w-4" /> Advanced
               </Button>
               <Button variant="ghost" size="icon" onClick={() => setOpenSearch(true)} className="sm:hidden"><Search /></Button>
               <DropdownMenu>
@@ -139,6 +144,9 @@ export function Navbar() {
                   <SheetTrigger asChild><Button variant="ghost" size="icon"><Menu /></Button></SheetTrigger>
                   <SheetContent className="bg-comic-card border-l-red-500/20 text-white">
                     <nav className="flex flex-col space-y-4 pt-8 text-lg">{navLinks}
+                      <Button variant="ghost" onClick={() => setAdvancedSearchOpen(true)} className="justify-start text-lg p-0 h-auto">
+                        Advanced Search
+                      </Button>
                       {!userId && <Button onClick={() => toggleAuth(true)} className="w-full mt-4">Login</Button>}
                     </nav>
                   </SheetContent>
@@ -151,6 +159,11 @@ export function Navbar() {
       <CartSheet />
       <WishlistSheet />
       <AuthDialog />
+      <Sheet open={isAdvancedSearchOpen} onOpenChange={setAdvancedSearchOpen}>
+        <SheetContent className="bg-comic-card border-l-red-500/20 text-white w-full sm:max-w-2xl p-0">
+          <AdvancedSearchWizard onOpenChange={setAdvancedSearchOpen} />
+        </SheetContent>
+      </Sheet>
       <CommandDialog open={openSearch} onOpenChange={setOpenSearch}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>

@@ -1,11 +1,29 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
+import { api } from "@/lib/api-client";
 import { Comic, Author, User, Genre, AuthResponse, UserStats, Notification, Comment, Post } from '@shared/types';
 // Fetch all comics
 export const useComics = () => {
   return useQuery<Comic[]>({
     queryKey: ['comics'],
     queryFn: () => api<Comic[]>('/api/comics'),
+  });
+};
+
+// Search comics
+export const useSearchResults = (params: { q?: string; genres?: string[]; authorIds?: string[]; priceMax?: number; sort?: string }, enabled: boolean) => {
+  const queryKey = ['searchResults', params];
+  return useQuery<Comic[]>({
+    queryKey,
+    queryFn: () => {
+      const searchParams = new URLSearchParams();
+      if (params.q) searchParams.set('q', params.q);
+      if (params.genres && params.genres.length > 0) searchParams.set('genres', params.genres.join(','));
+      if (params.authorIds && params.authorIds.length > 0) searchParams.set('authorIds', params.authorIds.join(','));
+      if (params.priceMax) searchParams.set('priceMax', params.priceMax.toString());
+      if (params.sort) searchParams.set('sort', params.sort);
+      return api<Comic[]>(`/api/search?${searchParams.toString()}`);
+    },
+    enabled,
   });
 };
 // Fetch a single comic by ID
