@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, ComicEntity, AuthorEntity, GenreEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import type { User } from '@shared/types';
+import type { User, Notification } from '@shared/types';
 const mockHash = (password: string) => btoa(password);
 const mockGenerateToken = (user: User) => JSON.stringify({ sub: user.id, name: user.name, iat: Date.now() });
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
@@ -58,6 +58,24 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await GenreEntity.ensureSeed(c.env);
     const { items } = await GenreEntity.list(c.env, null, 50);
     return ok(c, items);
+  });
+  // USER STATS & NOTIFICATIONS (NEW)
+  app.get('/api/user/stats', async (c) => {
+    const stats = {
+      reads: Math.floor(20 + Math.random() * 30),
+      hours: Math.floor(40 + Math.random() * 60),
+      spent: parseFloat((120 + Math.random() * 400).toFixed(2)),
+    };
+    return ok(c, stats);
+  });
+  app.get('/api/notifications', async (c) => {
+    const notifications: Notification[] = [
+      { id: crypto.randomUUID(), type: 'release', title: 'New Release: Cosmic Odyssey Vol. 2!', date: new Date(Date.now() - 86400000).toISOString(), read: false },
+      { id: crypto.randomUUID(), type: 'promo', title: 'Weekend Sale: 20% off all Superhero comics!', date: new Date(Date.now() - 2 * 86400000).toISOString(), read: false },
+      { id: crypto.randomUUID(), type: 'system', title: 'Welcome to the new dashboard!', date: new Date(Date.now() - 3 * 86400000).toISOString(), read: true },
+      { id: crypto.randomUUID(), type: 'release', title: 'The Sandman: Act III is now available as an audiobook.', date: new Date(Date.now() - 5 * 86400000).toISOString(), read: true },
+    ];
+    return ok(c, notifications);
   });
   // AUTH
   app.post('/api/auth/login', async (c) => {

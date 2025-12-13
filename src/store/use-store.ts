@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Comic, User } from '@shared/types';
+import { Comic, User, Notification, UserStats } from '@shared/types';
 import { useShallow } from 'zustand/react/shallow';
 interface CartItem extends Comic {
   quantity: number;
@@ -47,6 +47,17 @@ interface AppState {
   playNext: () => void;
   playPrev: () => void;
   clearAudioQueue: () => void;
+  // Notifications
+  notifications: Notification[];
+  unreadCount: number;
+  setNotifications: (notifications: Notification[]) => void;
+  markAsRead: (id: string) => void;
+  // User Stats & Library
+  stats: UserStats;
+  reading: Comic[];
+  completed: Comic[];
+  setStats: (stats: UserStats) => void;
+  updateLibrary: (allComics: Comic[]) => void;
 }
 const PROMO_CODES: { [key: string]: number } = {
   COMICVERSE10: 0.10, // 10% off
@@ -154,6 +165,25 @@ export const useAppStore = create<AppState>()(
         return { currentAudioId: audioQueue[prevIndex].id };
       }),
       clearAudioQueue: () => set({ audioQueue: [], currentAudioId: null }),
+      // Notifications
+      notifications: [],
+      unreadCount: 0,
+      setNotifications: (notifications) => set({ notifications, unreadCount: notifications.filter(n => !n.read).length }),
+      markAsRead: (id) => set(state => {
+        const newNotifications = state.notifications.map(n => n.id === id ? { ...n, read: true } : n);
+        return { notifications: newNotifications, unreadCount: newNotifications.filter(n => !n.read).length };
+      }),
+      // User Stats & Library
+      stats: { reads: 0, hours: 0, spent: 0 },
+      reading: [],
+      completed: [],
+      setStats: (stats) => set({ stats }),
+      updateLibrary: (allComics) => set(state => {
+        // This is a mock implementation. In a real app, this would be based on user data.
+        const reading = allComics.filter(c => c.chapters.some(ch => ch.progress > 0 && ch.progress < 100)).slice(0, 5);
+        const completed = allComics.filter(c => c.chapters.every(ch => ch.progress === 100)).slice(0, 5);
+        return { reading, completed };
+      }),
     }),
     {
       name: 'comicverse-storage',
@@ -170,11 +200,14 @@ export const useAppStore = create<AppState>()(
         shippingCost: state.shippingCost,
         audioQueue: state.audioQueue,
         currentAudioId: state.currentAudioId,
+        notifications: state.notifications,
+        unreadCount: state.unreadCount,
+        stats: state.stats,
       }),
     }
   )
 );
-// Selectors for derived state to prevent unnecessary re-renders
+// Selectors
 export const useCartTotals = () => {
   const cart = useAppStore(state => state.cart);
   const shippingCost = useAppStore(state => state.shippingCost);
@@ -194,4 +227,18 @@ export const useAudioQueue = () => {
   const playNext = useAppStore(state => state.playNext);
   const playPrev = useAppStore(state => state.playPrev);
   return { queue, currentId, playAudio, playNext, playPrev };
+};
+export const useNotifications = () => {
+  const notifications = useAppStore(state => state.notifications);
+  const unreadCount = useAppStore(state => state.unreadCount);
+  const setNotifications = useAppStore(state => state.setNotifications);
+  const markAsRead = useAppStore(state => state.markAsRead);
+  return { notifications, unreadCount, setNotifications, markAsRead };
+};
+export const useLibraryShelves = () => {
+  const reading = useAppStore(state => state.reading);
+  const completed = useAppStore(state => state.completed);
+  const wishlist = useAppStore(state => state.wishlist);
+  const updateLibrary = useAppStore(state => state.updateLibrary);
+  return { reading, completed, wishlist, updateLibrary };
 };

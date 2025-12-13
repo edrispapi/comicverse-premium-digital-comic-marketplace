@@ -45,3 +45,15 @@ export interface Comic {
   audioUrl?: string;
   duration?: string; // e.g., '2h 15m'
 }
+export interface Notification {
+    id: string;
+    type: 'release' | 'promo' | 'system';
+    title: string;
+    date: string;
+    read: boolean;
+}
+export interface UserStats {
+    reads: number;
+    hours: number;
+    spent: number;
+}

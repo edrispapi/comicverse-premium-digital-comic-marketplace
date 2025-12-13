@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Comic, Author, User, Genre, AuthResponse } from '@shared/types';
+import { Comic, Author, User, Genre, AuthResponse, UserStats, Notification } from '@shared/types';
 // Fetch all comics
 export const useComics = () => {
   return useQuery<Comic[]>({
@@ -82,5 +82,19 @@ export const useAuthSignup = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['user'] });
         }
+    });
+};
+// User Stats & Notifications
+export const useUserStats = () => {
+    return useQuery<UserStats>({
+        queryKey: ['userStats'],
+        queryFn: () => api<UserStats>('/api/user/stats'),
+        staleTime: 5 * 60 * 1000, // 5 minutes
+    });
+};
+export const useUserNotifications = () => {
+    return useQuery<Notification[]>({
+        queryKey: ['notifications'],
+        queryFn: () => api<Notification[]>('/api/notifications'),
     });
 };

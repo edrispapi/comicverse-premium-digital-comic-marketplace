@@ -21,6 +21,8 @@ import { ProfilePage } from '@/pages/ProfilePage';
 import { AuthorDetailPage } from '@/pages/AuthorDetailPage';
 import { AudiobooksPage } from '@/pages/AudiobooksPage';
 import { AudiobooksDetailPage } from '@/pages/AudiobooksDetailPage';
+import { DashboardPage } from '@/pages/DashboardPage';
+import { LibraryPage } from '@/pages/LibraryPage';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -71,6 +73,16 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: <ProfilePage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/dashboard",
+    element: <DashboardPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/library",
+    element: <LibraryPage />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);
