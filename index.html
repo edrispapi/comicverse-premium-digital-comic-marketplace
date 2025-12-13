@@ -4,27 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <title>ComicVerse - Premium Digital Comics</title>
+    <meta name="description" content="A visually stunning, dark-themed digital comic book store featuring immersive discovery flows, interactive previews, and a seamless edge-hosted shopping experience.">
+    <meta name="theme-color" content="#0B0B0B">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNFRjQ0NDQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1ib29rLW9wZW4iPjxwYXRoIGQ9Ik0yIDNhNiA2IDAgMCAxIDYtNmgyYTggOCAwIDAgMSA4IDh2MTJBNCA0IDAgMCAxIDEgMjBWMjBoMGExIDIgMCAwIDEgMi0yVjZhMiAyIDAgMCAxIDItMnoiLz48cGF0aCBkPSJtMjIgMTgtNi02LTItMi02IDYiLz48cGF0aCBkPSJtMTYgMTItMiAyIi8+PC9zdmc+">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="root"></div>
-    <script>
-        window.addEventListener('error', (event) => {
-          const isOurAppError = event.filename && event.filename.startsWith(window.location.origin);
-          if (isOurAppError) {
-            navigator.sendBeacon('/api/client-errors', JSON.stringify({
-              message: event.message,
-              url: window.location.href,
-              userAgent: navigator.userAgent,
-              source: event.filename,
-              lineno: event.lineno,
-              colno: event.colno,
-              stack: event.error ? event.error.stack : null,
-              timestamp: new Date().toISOString()
-            }));
-          }
-        }, true);
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
