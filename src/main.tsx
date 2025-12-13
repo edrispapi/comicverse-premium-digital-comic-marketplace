@@ -18,6 +18,7 @@ import { AuthorsPage } from '@/pages/AuthorsPage';
 import { GenresPage } from '@/pages/GenresPage';
 import { CheckoutPage } from '@/pages/CheckoutPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { AuthorDetailPage } from '@/pages/AuthorDetailPage';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -38,6 +39,11 @@ const router = createBrowserRouter([
   {
     path: "/authors",
     element: <AuthorsPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/authors/:id",
+    element: <AuthorDetailPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {

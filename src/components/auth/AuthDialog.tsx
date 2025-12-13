@@ -122,7 +122,7 @@ function AuthForm() {
                 </FormItem>
               )} />
               <div className="flex items-center justify-between text-sm">
-                <FormField control={loginForm.control} name="rememberMe" render={({ field }) => <FormItem className="flex items-center space-x-2"><FormControl><Checkbox id="rememberMe" checked={field.value} onCheckedChange={field.onChange} /></FormControl><Label htmlFor="rememberMe" className="font-normal">Remember me</Label></FormItem>} />
+                <FormField control={loginForm.control} name="rememberMe" render={({ field }) => <FormItem className="flex items-center space-x-2"><FormControl><Checkbox id="rememberMe" checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl><Label htmlFor="rememberMe" className="font-normal">Remember me</Label></FormItem>} />
                 <a href="#" className="hover:text-comic-accent transition-colors">Forgot password?</a>
               </div>
               <Button type="submit" className="w-full btn-accent" disabled={isLoginPending}>{isLoginPending ? 'Logging in...' : 'Login'}</Button>

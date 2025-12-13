@@ -23,6 +23,14 @@ export const useAuthors = () => {
     queryFn: () => api<Author[]>('/api/authors'),
   });
 };
+// Fetch a single author by ID
+export const useAuthor = (id: string | undefined) => {
+  return useQuery<Author>({
+    queryKey: ['author', id],
+    queryFn: () => api<Author>(`/api/authors/${id}`),
+    enabled: !!id,
+  });
+};
 export const useGenres = () => {
   return useQuery<Genre[]>({
     queryKey: ['genres'],

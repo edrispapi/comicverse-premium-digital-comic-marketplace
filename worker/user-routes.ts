@@ -24,6 +24,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const { items } = await AuthorEntity.list(c.env, null, 50);
     return ok(c, items);
   });
+  app.get('/api/authors/:id', async (c) => {
+    const id = c.req.param('id');
+    const author = new AuthorEntity(c.env, id);
+    if (!await author.exists()) return notFound(c, 'author not found');
+    return ok(c, await author.getState());
+  });
   // GENRES
   app.get('/api/genres', async (c) => {
     await GenreEntity.ensureSeed(c.env);

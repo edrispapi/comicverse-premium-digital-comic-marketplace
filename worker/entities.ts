@@ -31,6 +31,7 @@ export class ComicEntity extends IndexedEntity<Comic> {
     pages: 0,
     releaseDate: '',
     previewImageUrls: [],
+    chapters: [],
   };
   static seedData = COMICS;
 }

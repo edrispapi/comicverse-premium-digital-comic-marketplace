@@ -24,6 +24,11 @@ export interface Genre {
   id: string;
   name: string;
 }
+export interface Chapter {
+  id: string;
+  title: string;
+  progress: number; // 0-100
+}
 export interface Comic {
   id: string;
   title: string;
@@ -36,4 +41,5 @@ export interface Comic {
   pages: number;
   releaseDate: string;
   previewImageUrls: string[];
+  chapters: Chapter[];
 }
