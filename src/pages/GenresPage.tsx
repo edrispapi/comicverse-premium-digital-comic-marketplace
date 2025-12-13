@@ -4,11 +4,11 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Separator } from '@/components/ui/separator';
-import { useComicsItems, useGenres, useComics } from '@/lib/queries';
+import { useComics, useGenres } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 export function GenresPage() {
-  const { isLoading: comicsLoading } = useComics();
-  const comicsItems = useComicsItems();
+  const { data: comicsData = [], isLoading: comicsLoading } = useComics();
+  const comicsItems = comicsData;
   const { data: genresData, isLoading: genresLoading } = useGenres();
   return (
     <div className="bg-comic-black min-h-screen text-white">
@@ -34,7 +34,7 @@ export function GenresPage() {
                 ))
               ) : (
                 genresData?.map((genre, genreIndex) => {
-                  const genreComics = comicsItems?.filter(comic => comic.genreIds.includes(genre.id)).slice(0, 5) || [];
+                  const genreComics = comicsItems.filter(comic => comic.genreIds.includes(genre.id)).slice(0, 5) || [];
                   if (comicsLoading && genreComics.length === 0) {
                     return (
                       <section key={genre.id}>

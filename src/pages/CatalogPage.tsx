@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Filter } from 'lucide-react';
-import { useAuthors, useGenres, useComics, useComicsItems } from '@/lib/queries';
+import { useAuthors, useGenres, useComics } from '@/lib/queries';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -75,8 +75,8 @@ function FilterSidebar({
 }
 export function CatalogPage() {
   const searchTerm = useAppStore(s => s.searchTerm);
-  const { isLoading, error } = useComics();
-  const comics = useComicsItems();
+  const { data: comicsData = [], isLoading, error } = useComics();
+  const comics = comicsData;
   const { data: authorsData = [] } = useAuthors();
   const { data: genresData = [] } = useGenres();
   const [filters, setFilters] = useState<{ genres: string[], authors: string[] }>({ genres: [], authors: [] });

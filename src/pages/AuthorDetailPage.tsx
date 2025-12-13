@@ -12,11 +12,11 @@ import { ArrowLeft } from 'lucide-react';
 export function AuthorDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: author, isLoading: authorLoading, error: authorError } = useAuthor(id);
-  const { data: allComics, isLoading: comicsLoading } = useComics();
+  const { data: allComicsData = [], isLoading: comicsLoading } = useComics();
   const authorComics = React.useMemo(() => {
-    if (!allComics || !id) return [];
-    return allComics.filter(comic => comic.authorIds.includes(id));
-  }, [allComics, id]);
+    if (!allComicsData || !id) return [];
+    return allComicsData.filter(comic => comic.authorIds.includes(id));
+  }, [allComicsData, id]);
   if (authorLoading) {
     return (
       <div className="bg-comic-black min-h-screen text-white">

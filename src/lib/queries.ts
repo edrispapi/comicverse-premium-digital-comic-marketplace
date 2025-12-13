@@ -1,22 +1,12 @@
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { Comic, Author, User, Genre, AuthResponse, UserStats, Notification } from '@shared/types';
-import { useMemo } from 'react';
-export interface PaginatedResponse<T> {
-  items: T[];
-  nextPage: number | null;
-}
-// Fetch all comics (paginated)
+// Fetch all comics
 export const useComics = () => {
-  return useQuery<PaginatedResponse<Comic>>({
+  return useQuery<Comic[]>({
     queryKey: ['comics'],
-    queryFn: () => api<PaginatedResponse<Comic>>('/api/comics'),
+    queryFn: () => api<Comic[]>('/api/comics'),
   });
-};
-// Helper hook to get just the comic items array
-export const useComicsItems = () => {
-    const { data } = useComics();
-    return useMemo(() => data?.items ?? [], [data]);
 };
 // Fetch a single comic by ID
 export const useComic = (id: string | undefined) => {
@@ -26,17 +16,12 @@ export const useComic = (id: string | undefined) => {
     enabled: !!id, // Only run the query if the id is not undefined
   });
 };
-// Fetch all audiobooks (paginated)
+// Fetch all audiobooks
 export const useAudiobooks = () => {
-  return useQuery<PaginatedResponse<Comic>>({
+  return useQuery<Comic[]>({
     queryKey: ['audiobooks'],
-    queryFn: () => api<PaginatedResponse<Comic>>('/api/audiobooks'),
+    queryFn: () => api<Comic[]>('/api/audiobooks'),
   });
-};
-// Helper hook to get just the audiobook items array
-export const useAudiobooksItems = () => {
-    const { data } = useAudiobooks();
-    return useMemo(() => data?.items ?? [], [data]);
 };
 // Fetch a single audiobook by ID
 export const useAudiobook = (id: string | undefined) => {
@@ -52,11 +37,6 @@ export const useNewAudiobooks = () => {
     queryKey: ['newAudiobooks'],
     queryFn: () => api<Comic[]>('/api/audiobooks/new'),
   });
-};
-// Helper hook for consistency
-export const useNewAudiobooksItems = () => {
-    const { data } = useNewAudiobooks();
-    return useMemo(() => data ?? [], [data]);
 };
 // Fetch all authors
 export const useAuthors = () => {

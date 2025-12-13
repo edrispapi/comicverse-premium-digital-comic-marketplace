@@ -12,8 +12,7 @@ import { cn } from '@/lib/utils';
 import { useAudiobook, useAudiobooks, useAuthors, useGenres } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
 import { GlobalAudioPlayer } from '@/components/audio/GlobalAudioPlayer';
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -27,7 +26,7 @@ export function AudiobooksDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: comic, isLoading, error } = useAudiobook(id);
   const { data: allAudiobooksData } = useAudiobooks();
-  const allAudiobooks = allAudiobooksData?.items;
+  const allAudiobooks = allAudiobooksData || [];
   const { data: allAuthors } = useAuthors();
   const { data: allGenres = [] } = useGenres();
   const addToCart = useAppStore(s => s.addToCart);

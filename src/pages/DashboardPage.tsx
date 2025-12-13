@@ -5,7 +5,7 @@ import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUserStats, useComicsItems, useGenres, useAuthors } from '@/lib/queries';
+import { useUserStats, useComics, useGenres, useAuthors } from '@/lib/queries';
 import { Book, Clock, DollarSign, Download, Activity, TrendingUp } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Pie, Cell, BarChart, Bar, PieChart as RechartsPieChart } from 'recharts';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -46,7 +46,8 @@ const handleExport = () => {
 };
 export function DashboardPage() {
   const { data: stats, isLoading: statsLoading } = useUserStats();
-  const comicsItems = useComicsItems();
+  const { data: comicsData = [] } = useComics();
+  const comicsItems = comicsData;
   const { data: genres } = useGenres();
   const { data: authors } = useAuthors();
   const genreData = React.useMemo(() => {

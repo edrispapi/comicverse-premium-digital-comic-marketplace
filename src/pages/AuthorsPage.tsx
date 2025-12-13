@@ -5,12 +5,12 @@ import { Footer } from '@/components/layout/Footer';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { useAuthors, useComicsItems, useComics } from '@/lib/queries';
+import { useAuthors, useComics } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 export function AuthorsPage() {
   const { data: authors, isLoading: authorsLoading } = useAuthors();
-  const { isLoading: comicsLoading } = useComics();
-  const comicsItems = useComicsItems();
+  const { data: comicsData = [], isLoading: comicsLoading } = useComics();
+  const comicsItems = comicsData;
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />

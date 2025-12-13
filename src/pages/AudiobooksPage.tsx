@@ -1,12 +1,10 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { useIntersection } from 'react-use';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { AudiobookCard } from '@/components/ui/audiobook-card';
 import { useAppStore } from '@/store/use-store';
-import { useAuthors, useGenres } from '@/lib/queries';
+import { useAuthors, useGenres, useAudiobooks } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,8 +14,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { api } from '@/lib/api-client';
-import type { Comic } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -27,7 +23,7 @@ const itemVariants = {
   hidden: { y: 20, opacity: 0 },
   visible: { y: 0, opacity: 1 },
 };
-function Filters({ filters, setFilters, genres, authors }: any) {
+function Filters({ filters, setFilters, genres }: any) {
   const handleGenreChange = (checked: boolean, genreId: string) => {
     setFilters((prev: any) => ({
       ...prev,
@@ -56,41 +52,16 @@ export function AudiobooksPage() {
   const setSearchTerm = useAppStore(s => s.setSearchTerm);
   const { data: authorsData = [] } = useAuthors();
   const { data: genresData = [] } = useGenres();
+  const { data: audiobooksData = [], isLoading, error } = useAudiobooks();
   const [filters, setFilters] = useState({ genres: [] as string[], sort: 'newest' });
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ['audiobooks', searchTerm, filters],
-    queryFn: async ({ pageParam = 0 }) => {
-      const params = new URLSearchParams({
-        page: pageParam.toString(),
-        limit: '8',
-        search: searchTerm,
-        genres: filters.genres.join(','),
-        sort: filters.sort,
-      });
-      return api<{ items: Comic[], nextPage: number | null }>(`/api/audiobooks?${params.toString()}`);
-    },
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    initialPageParam: 0,
-  });
-  const intersectionRef = useRef(null);
-  const intersection = useIntersection(intersectionRef, {
-    root: null,
-    rootMargin: '0px',
-    threshold: 1.0,
-  });
-  useEffect(() => {
-    if (intersection && intersection.isIntersecting && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [intersection, hasNextPage, isFetchingNextPage, fetchNextPage]);
-  const audiobooks = useMemo(() => data?.pages.flatMap(page => page.items) ?? [], [data]);
+  const filteredAndSortedAudiobooks = useMemo(() => {
+    let audiobooks = [...audiobooksData];
+    if (searchTerm) audiobooks = audiobooks.filter(a => a.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (filters.genres.length > 0) audiobooks = audiobooks.filter(a => a.genreIds.some(gid => filters.genres.includes(gid)));
+    if (filters.sort === 'newest') audiobooks.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+    else if (filters.sort === 'popular') audiobooks.sort((a, b) => b.rating - a.rating);
+    return audiobooks;
+  }, [audiobooksData, searchTerm, filters]);
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
@@ -117,7 +88,7 @@ export function AudiobooksPage() {
                 </SheetTrigger>
                 <SheetContent className="bg-comic-card border-l-white/10 text-white">
                   <SheetHeader><SheetTitle>Filter by Genre</SheetTitle></SheetHeader>
-                  <Filters filters={filters} setFilters={setFilters} genres={genresData} authors={authorsData} />
+                  <Filters filters={filters} setFilters={setFilters} genres={genresData} />
                 </SheetContent>
               </Sheet>
               <div className="hidden sm:block">
@@ -138,15 +109,15 @@ export function AudiobooksPage() {
             </div>
           </div>
         </div>
-        {isFetching && !isFetchingNextPage && !audiobooks.length ? (
+        {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full h-64 rounded-lg" />)}
           </div>
         ) : error ? (
           <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load audiobooks.</h2></div>
-        ) : audiobooks.length > 0 ? (
+        ) : filteredAndSortedAudiobooks.length > 0 ? (
           <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {audiobooks.map((comic) => (
+            {filteredAndSortedAudiobooks.map((comic) => (
               <motion.div key={comic.id} variants={itemVariants}>
                 <AudiobookCard comic={comic} authorName={authorsData.find(a => comic.authorIds.includes(a.id))?.name} />
               </motion.div>
@@ -156,12 +127,6 @@ export function AudiobooksPage() {
           <div className="text-center py-16">
             <h2 className="text-2xl font-semibold">No Results Found</h2>
             <p className="mt-2 text-neutral-400">Try adjusting your search or filters.</p>
-          </div>
-        )}
-        <div ref={intersectionRef} className="h-10" />
-        {isFetchingNextPage && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-            {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="w-full h-64 rounded-lg" />)}
           </div>
         )}
       </main>

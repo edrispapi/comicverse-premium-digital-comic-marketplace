@@ -46,13 +46,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     } else if (sort === 'popular' || sort === 'rating') {
       filteredComics.sort((a, b) => b.rating - a.rating);
     }
-    const page = parseInt(c.req.query('page') || '0');
-    const limit = parseInt(c.req.query('limit') || '12');
-    const start = page * limit;
-    const end = start + limit;
-    const paginatedItems = filteredComics.slice(start, end);
-    const nextPage = end < filteredComics.length ? page + 1 : null;
-    return ok(c, { items: paginatedItems, nextPage });
+    return ok(c, filteredComics);
   });
   app.get('/api/comics/:id', async (c) => {
     const id = c.req.param('id');
@@ -83,14 +77,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (durationMax) {
       audiobooks = audiobooks.filter(a => parseDuration(a.duration) <= parseFloat(durationMax));
     }
-    // Pagination
-    const page = parseInt(c.req.query('page') || '0');
-    const limit = parseInt(c.req.query('limit') || '10');
-    const start = page * limit;
-    const end = start + limit;
-    const paginatedItems = audiobooks.slice(start, end);
-    const nextPage = end < audiobooks.length ? page + 1 : null;
-    return ok(c, { items: paginatedItems, nextPage });
+    return ok(c, audiobooks);
   });
   app.get('/api/audiobooks/new', async (c) => {
     await ComicEntity.ensureSeed(c.env);

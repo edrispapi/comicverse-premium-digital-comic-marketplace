@@ -4,7 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLibraryShelves } from '@/store/use-store';
-import { useComicsItems } from '@/lib/queries';
+import { useComics } from '@/lib/queries';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -39,12 +39,12 @@ function Shelf({ comics, emptyTitle, emptyMessage }: { comics: any[], emptyTitle
 }
 export function LibraryPage() {
   const { reading, completed, wishlist, updateLibrary } = useLibraryShelves();
-  const allComicsItems = useComicsItems();
+  const { data: allComicsData = [] } = useComics();
   useEffect(() => {
-    if (allComicsItems) {
-      updateLibrary(allComicsItems);
+    if (allComicsData) {
+      updateLibrary(allComicsData);
     }
-  }, [allComicsItems, updateLibrary]);
+  }, [allComicsData, updateLibrary]);
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />

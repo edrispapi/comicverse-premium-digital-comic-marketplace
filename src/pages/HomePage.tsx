@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useAppStore } from '@/store/use-store';
-import { useComics, useComicsItems, useAudiobooksItems } from '@/lib/queries';
+import { useComics, useAudiobooks } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Toaster } from '@/components/ui/sonner';
 import {
@@ -23,8 +23,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import useEmblaCarousel from 'embla-carousel-react';
 function HeroSlider() {
-  const { isLoading } = useComics();
-  const allComics = useComicsItems();
+  const { data: allComicsData, isLoading } = useComics();
+  const allComics = allComicsData || [];
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -182,7 +182,8 @@ function HeroSlider() {
   );
 }
 function AudiobookCarousel() {
-  const audiobooks = useAudiobooksItems();
+  const { data: audiobooksData } = useAudiobooks();
+  const audiobooks = audiobooksData || [];
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
   const [scaleValues, setScaleValues] = useState<number[]>([]);
   const onSelect = useCallback(() => {
@@ -248,8 +249,8 @@ const testimonials = [
 ];
 export function HomePage() {
   const searchTerm = useAppStore((s) => s.searchTerm);
-  const { isLoading } = useComics();
-  const allComics = useComicsItems();
+  const { data: allComicsData, isLoading } = useComics();
+  const allComics = allComicsData || [];
   const filteredComics = useMemo(() => {
     if (!allComics) return [];
     if (!searchTerm) return allComics;

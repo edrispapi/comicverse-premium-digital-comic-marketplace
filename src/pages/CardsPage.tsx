@@ -1,12 +1,10 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { useIntersection } from 'react-use';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ComicCard } from '@/components/ui/comic-card';
 import { useAppStore } from '@/store/use-store';
-import { useAuthors, useGenres } from '@/lib/queries';
+import { useAuthors, useGenres, useComics } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,8 +15,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { api } from '@/lib/api-client';
-import type { Comic } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -87,43 +83,20 @@ export function CardsPage() {
   const setSearchTerm = useAppStore(s => s.setSearchTerm);
   const { data: authorsData = [] } = useAuthors();
   const { data: genresData = [] } = useGenres();
+  const { data: comicsData = [], isLoading, error } = useComics();
   const [filters, setFilters] = useState({ genres: [] as string[], authors: [] as string[], priceMax: 100, sort: 'newest' });
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ['cards', searchTerm, filters],
-    queryFn: async ({ pageParam = 0 }) => {
-      const params = new URLSearchParams({
-        page: pageParam.toString(),
-        limit: '12',
-        search: searchTerm,
-        genres: filters.genres.join(','),
-        authorIds: filters.authors.join(','),
-        priceMax: filters.priceMax.toString(),
-        sort: filters.sort,
-      });
-      return api<{ items: Comic[], nextPage: number | null }>(`/api/comics?${params.toString()}`);
-    },
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    initialPageParam: 0,
-  });
-  const intersectionRef = useRef(null);
-  const intersection = useIntersection(intersectionRef, {
-    root: null,
-    rootMargin: '0px',
-    threshold: 1.0,
-  });
-  useEffect(() => {
-    if (intersection && intersection.isIntersecting && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [intersection, hasNextPage, isFetchingNextPage, fetchNextPage]);
-  const comics = useMemo(() => data?.pages.flatMap(page => page.items) ?? [], [data]);
+  const filteredAndSortedComics = useMemo(() => {
+    let comics = [...comicsData];
+    // Filtering
+    if (searchTerm) comics = comics.filter(c => c.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (filters.genres.length > 0) comics = comics.filter(c => c.genreIds.some(gid => filters.genres.includes(gid)));
+    if (filters.authors.length > 0) comics = comics.filter(c => c.authorIds.some(aid => filters.authors.includes(aid)));
+    comics = comics.filter(c => c.price <= filters.priceMax);
+    // Sorting
+    if (filters.sort === 'newest') comics.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+    else if (filters.sort === 'popular' || filters.sort === 'rating') comics.sort((a, b) => b.rating - a.rating);
+    return comics;
+  }, [comicsData, searchTerm, filters]);
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
@@ -172,15 +145,15 @@ export function CardsPage() {
             </div>
           </div>
         </div>
-        {isFetching && !isFetchingNextPage && !comics.length ? (
+        {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
+            {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
           </div>
         ) : error ? (
           <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load comics.</h2></div>
-        ) : comics.length > 0 ? (
+        ) : filteredAndSortedComics.length > 0 ? (
           <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {comics.map((comic) => (
+            {filteredAndSortedComics.map((comic) => (
               <motion.div key={comic.id} variants={itemVariants}>
                 <ComicCard comic={comic} />
               </motion.div>
@@ -190,12 +163,6 @@ export function CardsPage() {
           <div className="text-center py-16">
             <h2 className="text-2xl font-semibold">No Results Found</h2>
             <p className="mt-2 text-neutral-400">Try adjusting your search or filters.</p>
-          </div>
-        )}
-        <div ref={intersectionRef} className="h-10" />
-        {isFetchingNextPage && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
           </div>
         )}
       </main>

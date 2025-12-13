@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AuthDialog } from '@/components/auth/AuthDialog';
-import { useNewAudiobooks, useComicsItems, useUserNotifications } from '@/lib/queries';
+import { useNewAudiobooks, useComics, useUserNotifications } from '@/lib/queries';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,7 +30,7 @@ export function Navbar() {
   const clearAuth = useAppStore(s => s.clearAuth);
   const toggleAuth = useAppStore(s => s.toggleAuth);
   const { data: newAudiobooks } = useNewAudiobooks();
-  const allComics = useComicsItems();
+  const { data: comicsData } = useComics();
   const { data: notificationsData } = useUserNotifications();
   const { notifications, unreadCount, setNotifications, markAsRead } = useNotifications();
   const [openSearch, setOpenSearch] = useState(false);
@@ -43,7 +43,7 @@ export function Navbar() {
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const wishlistCount = wishlist.length;
   const newAudiobooksCount = newAudiobooks?.length || 0;
-  const totalComics = allComics.length;
+  const totalComics = comicsData?.length || 0;
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `relative transition-colors hover:text-red-400 ${isActive ? 'text-red-500' : 'text-neutral-300'} after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:h-[2px] after:w-full after:bg-red-400 after:scale-x-0 after:origin-left after:transition-transform ${isActive ? 'after:scale-x-100' : 'group-hover:after:scale-x-100'}`;
   const navLinks = (
@@ -165,7 +165,7 @@ export function Navbar() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-            {allComics?.slice(0, 3).map(comic => (
+            {comicsData?.slice(0, 3).map(comic => (
               <CommandItem key={comic.id} onSelect={() => runCommand(() => navigate(`/comic/${comic.id}`))}>
                 <img src={comic.coverUrl} alt={comic.title} className="w-8 h-12 object-cover mr-4 rounded" />
                 {comic.title}
