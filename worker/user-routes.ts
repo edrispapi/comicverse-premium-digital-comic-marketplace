@@ -1,13 +1,13 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { UserEntity, ComicEntity, AuthorEntity } from "./entities";
+import { UserEntity, ComicEntity, AuthorEntity, GenreEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
 import type { User } from '@shared/types';
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // COMICS
   app.get('/api/comics', async (c) => {
     await ComicEntity.ensureSeed(c.env);
-    const { items } = await ComicEntity.list(c.env);
+    const { items } = await ComicEntity.list(c.env, null, 50);
     return ok(c, items);
   });
   app.get('/api/comics/:id', async (c) => {
@@ -19,7 +19,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // AUTHORS
   app.get('/api/authors', async (c) => {
     await AuthorEntity.ensureSeed(c.env);
-    const { items } = await AuthorEntity.list(c.env);
+    const { items } = await AuthorEntity.list(c.env, null, 50);
+    return ok(c, items);
+  });
+
+  // GENRES
+  app.get('/api/genres', async (c) => {
+    await GenreEntity.ensureSeed(c.env);
+    const { items } = await GenreEntity.list(c.env, null, 50);
     return ok(c, items);
   });
   // AUTH (Mock)
@@ -28,7 +35,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!isStr(name)) return bad(c, 'name required');
     // In a real app, you'd look up by a unique identifier like email
     // For this mock, we'll find or create by name
-    const { items: existingUsers } = await UserEntity.list(c.env);
+    const { items: existingUsers } = await UserEntity.list(c.env, null, 50);
     let user = existingUsers.find(u => u.name.toLowerCase() === name.toLowerCase());
     if (!user) {
       user = await UserEntity.create(c.env, { id: crypto.randomUUID(), name: name.trim() });
@@ -38,7 +45,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // USERS (for potential admin use, keeping simple)
   app.get('/api/users', async (c) => {
     await UserEntity.ensureSeed(c.env);
-    const page = await UserEntity.list(c.env);
-    return ok(c, page.items);
+    const { items } = await UserEntity.list(c.env, null, 50);
+    return ok(c, items);
   });
 }

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { LayoutGrid, List, Filter } from 'lucide-react';
-import { genres, authors as allAuthors } from '@shared/mock-data';
+import { useAuthors, useGenres } from '@/lib/queries';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -13,7 +13,17 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppStore } from '@/store/use-store';
 import { useComics } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
-function FilterSidebar({ filters, setFilters }: { filters: any, setFilters: any }) {
+function FilterSidebar({
+  filters,
+  setFilters,
+  genres,
+  authors,
+}: {
+  filters: any;
+  setFilters: any;
+  genres: any[];
+  authors: any[];
+}) {
   const handleGenreChange = (checked: boolean, genreId: string) => {
     setFilters((prev: any) => ({
       ...prev,
@@ -47,7 +57,7 @@ function FilterSidebar({ filters, setFilters }: { filters: any, setFilters: any 
         <h3 className="font-semibold text-lg mb-4">Authors</h3>
         <ScrollArea className="h-48">
           <div className="space-y-2 pr-4">
-            {allAuthors.map(author => (
+            {authors.map(author => (
               <div key={author.id} className="flex items-center space-x-2">
                 <Checkbox
                   id={`author-${author.id}`}
@@ -67,6 +77,8 @@ function FilterSidebar({ filters, setFilters }: { filters: any, setFilters: any 
 export function CatalogPage() {
   const searchTerm = useAppStore(s => s.searchTerm);
   const { data: comics, isLoading, error } = useComics();
+  const { data: authorsData = [] } = useAuthors();
+  const { data: genresData = [] } = useGenres();
   const [filters, setFilters] = useState<{ genres: string[], authors: string[] }>({ genres: [], authors: [] });
   const filteredComics = useMemo(() => {
     if (!comics) return [];
@@ -89,14 +101,28 @@ export function CatalogPage() {
                 <SheetTrigger asChild><Button variant="outline" size="icon"><Filter className="h-5 w-5" /></Button></SheetTrigger>
                 <SheetContent className="bg-comic-card border-l-white/10 text-white">
                   <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
-                  <ScrollArea className="h-[calc(100%-4rem)] pr-4"><FilterSidebar filters={filters} setFilters={setFilters} /></ScrollArea>
+                  <ScrollArea className="h-[calc(100%-4rem)] pr-4">
+                    <FilterSidebar
+                      filters={filters}
+                      setFilters={setFilters}
+                      genres={genresData}
+                      authors={authorsData}
+                    />
+                  </ScrollArea>
                 </SheetContent>
               </Sheet>
             </div>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="hidden lg:block lg:col-span-1"><FilterSidebar filters={filters} setFilters={setFilters} /></div>
+          <div className="hidden lg:block lg:col-span-1">
+            <FilterSidebar
+              filters={filters}
+              setFilters={setFilters}
+              genres={genresData}
+              authors={authorsData}
+            />
+          </div>
           <div className="lg:col-span-3">
             {isLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">

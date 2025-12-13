@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Comic, Author, User } from '@shared/types';
+import { Comic, Author, User, Genre } from '@shared/types';
 // Fetch all comics
 export const useComics = () => {
   return useQuery<Comic[]>({
@@ -21,6 +21,13 @@ export const useAuthors = () => {
   return useQuery<Author[]>({
     queryKey: ['authors'],
     queryFn: () => api<Author[]>('/api/authors'),
+  });
+};
+
+export const useGenres = () => {
+  return useQuery<Genre[]>({
+    queryKey: ['genres'],
+    queryFn: () => api<Genre[]>('/api/genres'),
   });
 };
 // Mock login/register mutation

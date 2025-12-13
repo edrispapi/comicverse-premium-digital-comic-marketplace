@@ -1,6 +1,6 @@
 import { IndexedEntity } from "./core-utils";
-import type { User, Comic, Author } from "@shared/types";
-import { MOCK_USERS, COMICS, AUTHORS } from "@shared/mock-data";
+import type { User, Comic, Author, Genre } from "@shared/types";
+import { MOCK_USERS, COMICS, AUTHORS, GENRES } from "@shared/mock-data";
 // USER ENTITY
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
@@ -33,4 +33,12 @@ export class ComicEntity extends IndexedEntity<Comic> {
     previewImageUrls: [],
   };
   static seedData = COMICS;
+}
+
+// GENRE ENTITY
+export class GenreEntity extends IndexedEntity<Genre> {
+  static readonly entityName = 'genre';
+  static readonly indexName = 'genres';
+  static readonly initialState: Genre = { id: '', name: '' };
+  static seedData = GENRES;
 }
