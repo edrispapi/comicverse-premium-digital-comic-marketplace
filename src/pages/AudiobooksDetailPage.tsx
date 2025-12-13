@@ -1,13 +1,13 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, ShoppingCart, Heart, Eye, BookOpenCheck, ChevronDown } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Play, ChevronDown } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AudiobookCard } from '@/components/ui/audiobook-card';
-import { useAppStore } from '@/store/use-store';
+import { useAppStore, useAudioControls } from '@/store/use-store';
 import { cn } from '@/lib/utils';
 import { useAudiobook, useAudiobooks, useAuthors, useGenres } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,7 +32,7 @@ export function AudiobooksDetailPage() {
   const addToCart = useAppStore(s => s.addToCart);
   const toggleWishlist = useAppStore(s => s.toggleWishlist);
   const isInWishlist = useAppStore(s => s.isInWishlist(id || ''));
-  const playAudio = useAppStore(s => s.playAudio);
+  const { playAudio } = useAudioControls();
   if (isLoading) {
     return (
       <div className="bg-comic-black min-h-screen text-white"><Navbar />
@@ -101,7 +101,7 @@ export function AudiobooksDetailPage() {
                 </motion.div>
                 <motion.div variants={itemVariants}>
                   <Button size="lg" className="w-full bg-white text-black hover:bg-neutral-200" onClick={() => playAudio(comic)}>
-                    <Eye className="mr-2 h-5 w-5" /> Listen Now
+                    <Play className="mr-2 h-5 w-5" /> Listen Now
                   </Button>
                 </motion.div>
               </motion.div>
@@ -117,7 +117,7 @@ export function AudiobooksDetailPage() {
                 <CollapsibleContent>
                   <Card className="bg-comic-card border-white/10 mt-2">
                     <CardContent className="p-6 text-neutral-400 text-sm leading-relaxed">
-                      <p>This is a mock transcript. The full transcript for "{comic.title}" would be displayed here, allowing users to read along as they listen. This feature enhances accessibility and provides a deeper engagement with the story...</p>
+                      <p className="whitespace-pre-wrap">{`Mock transcript for ${comic.title}:\n\n[00:01] Narrator: In a world beyond imagination...\n[00:05] Character A: We can't turn back now!\n\nThis feature enhances accessibility and provides a deeper engagement with the story. The full transcript would be displayed here, allowing users to read along as they listen.`}</p>
                     </CardContent>
                   </Card>
                 </CollapsibleContent>

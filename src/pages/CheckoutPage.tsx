@@ -9,7 +9,7 @@ import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { useAppStore, useCartTotals } from '@/store/use-store';
+import { useAppStore, useCartTotals, useCheckoutState } from '@/store/use-store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -37,11 +37,7 @@ export function CheckoutPage() {
   const isMobile = useIsMobile();
   const cart = useAppStore(s => s.cart);
   const clearCart = useAppStore(s => s.clearCart);
-  const promoCode = useAppStore(s => s.promoCode);
-  const setPromoCode = useAppStore(s => s.setPromoCode);
-  const applyPromoCode = useAppStore(s => s.applyPromoCode);
-  const shippingOption = useAppStore(s => s.shippingOption);
-  const setShippingOption = useAppStore(s => s.setShippingOption);
+  const { promoCode, setPromoCode, applyPromoCode, shippingOption, setShippingOption } = useCheckoutState();
   const { subtotal, discount, tax, total, shippingCost } = useCartTotals();
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),

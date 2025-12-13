@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Star, ShoppingCart, Heart, Eye, BookOpenCheck, Send } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Eye, BookOpenCheck, Send, Play } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -10,7 +10,7 @@ import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ComicCard } from '@/components/ui/comic-card';
-import { useAppStore } from '@/store/use-store';
+import { useAppStore, useAudioControls } from '@/store/use-store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
@@ -109,6 +109,7 @@ export function ProductPage() {
   const isInWishlist = useAppStore(s => s.isInWishlist(id || ''));
   const updatePts = useAppStore(s => s.updatePts);
   const pts = useAppStore(s => s.pts);
+  const { playAudio } = useAudioControls();
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 0.5], [0, -100]);
   const commentForm = useForm<CommentFormData>({ resolver: zodResolver(commentSchema) });
@@ -198,6 +199,11 @@ export function ProductPage() {
                       <Carousel className="w-full"><CarouselContent>{comic.previewImageUrls.map((url, index) => (<CarouselItem key={index}><img src={url} alt={`Preview page ${index + 1}`} className="w-full h-auto object-contain rounded-md aspect-video" /></CarouselItem>))}</CarouselContent><CarouselPrevious /><CarouselNext /></Carousel>
                     </DialogContent>
                   </Dialog>
+                  {comic.audioUrl && (
+                    <Button variant="outline" onClick={() => playAudio(comic)}>
+                      <Play className="mr-2 h-4 w-4" /> Listen Audiobook
+                    </Button>
+                  )}
                 </motion.div>
               </motion.div>
             </div>

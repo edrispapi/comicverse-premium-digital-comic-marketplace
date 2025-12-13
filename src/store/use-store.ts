@@ -48,6 +48,19 @@ interface AppState {
   completed: Comic[];
   setStats: (stats: UserStats) => void;
   updateLibrary: (allComics: Comic[]) => void;
+  // Audio Player
+  audioQueue: Comic[];
+  currentAudioId: string | null;
+  playAudio: (comic: Comic, prepend?: boolean) => void;
+  playNext: () => void;
+  playPrev: () => void;
+  clearQueue: () => void;
+  // Checkout
+  promoCode: string;
+  shippingOption: 'standard' | 'express';
+  setPromoCode: (code: string) => void;
+  applyPromoCode: () => boolean;
+  setShippingOption: (option: 'standard' | 'express') => void;
 }
 export const useAppStore = create<AppState>()(
   persist(
@@ -136,6 +149,37 @@ export const useAppStore = create<AppState>()(
           .slice(0, 5);
         return { reading, completed };
       }),
+      // Audio Player
+      audioQueue: [],
+      currentAudioId: null,
+      playAudio: (comic, prepend = false) => set(state => {
+        const newQueue = [...state.audioQueue.filter(c => c.id !== comic.id)];
+        if (prepend) newQueue.unshift(comic);
+        else newQueue.push(comic);
+        return { audioQueue: newQueue, currentAudioId: comic.id };
+      }),
+      playNext: () => set(state => {
+        const currentIndex = state.audioQueue.findIndex(c => c.id === state.currentAudioId);
+        if (currentIndex === -1 || currentIndex === state.audioQueue.length - 1) return {};
+        const nextAudio = state.audioQueue[currentIndex + 1];
+        return { currentAudioId: nextAudio.id };
+      }),
+      playPrev: () => set(state => {
+        const currentIndex = state.audioQueue.findIndex(c => c.id === state.currentAudioId);
+        if (currentIndex <= 0) return {};
+        const prevAudio = state.audioQueue[currentIndex - 1];
+        return { currentAudioId: prevAudio.id };
+      }),
+      clearQueue: () => set({ audioQueue: [], currentAudioId: null }),
+      // Checkout
+      promoCode: '',
+      shippingOption: 'standard',
+      setPromoCode: (code) => set({ promoCode: code }),
+      applyPromoCode: () => {
+        if (get().promoCode.toUpperCase() === 'SAVE20') return true;
+        return false;
+      },
+      setShippingOption: (option) => set({ shippingOption: option }),
     }),
     {
       name: 'comicverse-storage',
@@ -151,6 +195,10 @@ export const useAppStore = create<AppState>()(
         stats: state.stats,
         pts: state.pts,
         awards: state.awards,
+        audioQueue: state.audioQueue,
+        currentAudioId: state.currentAudioId,
+        promoCode: state.promoCode,
+        shippingOption: state.shippingOption,
       }),
     }
   )
@@ -171,4 +219,48 @@ export const useLibraryShelves = () => {
   const wishlist = useAppStore(state => state.wishlist);
   const updateLibrary = useAppStore(state => state.updateLibrary);
   return { reading, completed, wishlist, updateLibrary };
+};
+export const useAudioQueue = () => useAppStore(useShallow(state => state.audioQueue));
+export const useCurrentAudio = () => {
+  const id = useAppStore(state => state.currentAudioId);
+  const audioQueue = useAppStore(state => state.audioQueue);
+  const comic = useMemo(() => audioQueue.find(c => c.id === id), [id, audioQueue]);
+  return useMemo(() => ({ id, comic }), [id, comic]);
+};
+export const useAudioControls = () => {
+  const playAudio = useAppStore(state => state.playAudio);
+  const playNext = useAppStore(state => state.playNext);
+  const playPrev = useAppStore(state => state.playPrev);
+  const clearQueue = useAppStore(state => state.clearQueue);
+  return useMemo(
+    () => ({ playAudio, playNext, playPrev, clearQueue }),
+    [playAudio, playNext, playPrev, clearQueue]
+  );
+};
+export const useCheckoutState = () => {
+  const promoCode = useAppStore(state => state.promoCode);
+  const shippingOption = useAppStore(state => state.shippingOption);
+  const setPromoCode = useAppStore(state => state.setPromoCode);
+  const applyPromoCode = useAppStore(state => state.applyPromoCode);
+  const setShippingOption = useAppStore(state => state.setShippingOption);
+  return useMemo(() => ({
+    promoCode,
+    shippingOption,
+    setPromoCode,
+    applyPromoCode,
+    setShippingOption,
+  }), [promoCode, shippingOption, setPromoCode, applyPromoCode, setShippingOption]);
+};
+export const useCartTotals = () => {
+  const cart = useAppStore(state => state.cart);
+  const shippingOption = useAppStore(state => state.shippingOption);
+  const promoCode = useAppStore(state => state.promoCode);
+  return useMemo(() => {
+    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const shippingCost = shippingOption === 'express' ? 15 : 5;
+    const tax = subtotal * 0.08;
+    const discount = promoCode.toUpperCase() === 'SAVE20' ? subtotal * 0.2 : 0;
+    const total = subtotal + shippingCost + tax - discount;
+    return { subtotal, shippingCost, tax, discount, total };
+  }, [cart, shippingOption, promoCode]);
 };

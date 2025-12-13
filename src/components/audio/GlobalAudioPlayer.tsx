@@ -1,31 +1,28 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAppStore } from '@/store/use-store';
+import { useAudioQueue, useCurrentAudio, useAudioControls } from '@/store/use-store';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, ListMusic, X } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, ListMusic } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '../ui/scroll-area';
 import { Link } from 'react-router-dom';
 export function GlobalAudioPlayer() {
-  const queue = useAppStore(state => state.audioQueue);
-  const currentId = useAppStore(state => state.currentAudioId);
-  const playNext = useAppStore(state => state.playNext);
-  const playPrev = useAppStore(state => state.playPrev);
+  const queue = useAudioQueue();
+  const { id: currentId, comic: currentAudio } = useCurrentAudio();
+  const { playNext, playPrev, playAudio } = useAudioControls();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const isMobile = useIsMobile();
-  const currentAudio = queue.find(item => item.id === currentId);
   useEffect(() => {
     const audio = audioRef.current;
-    if (audio && currentAudio) {
+    if (audio && currentAudio?.audioUrl) {
       if (audio.src !== currentAudio.audioUrl) {
-        audio.src = currentAudio.audioUrl!;
+        audio.src = currentAudio.audioUrl;
+        audio.load();
       }
       audio.play().then(() => setIsPlaying(true)).catch(e => console.error("Audio play failed:", e));
     } else if (audio) {
@@ -34,7 +31,7 @@ export function GlobalAudioPlayer() {
     }
   }, [currentId, currentAudio]);
   const handleTimeUpdate = useCallback(() => {
-    if (audioRef.current) {
+    if (audioRef.current && audioRef.current.duration > 0) {
       setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
     }
   }, []);
@@ -66,25 +63,27 @@ export function GlobalAudioPlayer() {
     }
   };
   const handleProgressChange = (value: number[]) => {
-    if (audioRef.current) {
+    if (audioRef.current && duration > 0) {
       audioRef.current.currentTime = (value[0] / 100) * duration;
     }
   };
   const handleVolumeChange = (value: number[]) => {
     if (audioRef.current) {
-      audioRef.current.volume = value[0];
-      setVolume(value[0]);
-      setIsMuted(value[0] === 0);
+      const newVolume = value[0];
+      audioRef.current.volume = newVolume;
+      setVolume(newVolume);
+      setIsMuted(newVolume === 0);
     }
   };
   const toggleMute = () => {
     if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+      const newMuted = !isMuted;
+      audioRef.current.muted = newMuted;
+      setIsMuted(newMuted);
     }
   };
   const formatTime = (time: number) => {
-    if (isNaN(time)) return '0:00';
+    if (isNaN(time) || time === 0) return '0:00';
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -101,11 +100,11 @@ export function GlobalAudioPlayer() {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={playPrev} disabled={queue.length <= 1} className="text-red-400 hover:text-red-300"><SkipBack className="w-5 h-5" /></Button>
+        <Button variant="ghost" size="icon" onClick={playPrev} disabled={queue.findIndex(c => c.id === currentId) <= 0} className="text-red-400 hover:text-red-300"><SkipBack className="w-5 h-5" /></Button>
         <Button variant="ghost" size="icon" onClick={togglePlay} className="h-12 w-12 bg-red-500 text-white hover:bg-red-600 rounded-full">
           {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
         </Button>
-        <Button variant="ghost" size="icon" onClick={playNext} disabled={queue.length <= 1} className="text-red-400 hover:text-red-300"><SkipForward className="w-5 h-5" /></Button>
+        <Button variant="ghost" size="icon" onClick={playNext} disabled={queue.findIndex(c => c.id === currentId) >= queue.length - 1} className="text-red-400 hover:text-red-300"><SkipForward className="w-5 h-5" /></Button>
       </div>
       <div className="hidden md:flex items-center gap-2 w-32">
         <Button variant="ghost" size="icon" onClick={toggleMute} className="text-red-400 hover:text-red-300">{isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}</Button>
@@ -116,10 +115,10 @@ export function GlobalAudioPlayer() {
         <SheetContent className="bg-comic-card border-l-red-500/20 text-white"><SheetHeader><SheetTitle>Up Next</SheetTitle></SheetHeader>
           <ScrollArea className="h-[calc(100%-4rem)] pr-4 mt-4">
             {queue.map(item => (
-              <Link to={`/audiobooks/${item.id}`} key={item.id} className={`flex items-center gap-4 p-2 rounded-md hover:bg-red-500/10 ${item.id === currentId ? 'bg-red-500/20' : ''}`}>
+              <div key={item.id} onClick={() => playAudio(item)} className={`flex items-center gap-4 p-2 rounded-md cursor-pointer hover:bg-red-500/10 ${item.id === currentId ? 'bg-red-500/20' : ''}`}>
                 <img src={item.coverUrl} alt={item.title} className="w-12 h-12 rounded-md" />
                 <p className="font-semibold">{item.title}</p>
-              </Link>
+              </div>
             ))}
           </ScrollArea>
         </SheetContent>

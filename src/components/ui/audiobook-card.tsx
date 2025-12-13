@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Star, ShoppingCart, Heart, Play, ChevronRight } from 'lucide-react';
 import type { Comic } from '@shared/types';
 import { Button } from '@/components/ui/button';
-import { useAppStore } from '@/store/use-store';
+import { useAppStore, useAudioControls } from '@/store/use-store';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -16,7 +16,7 @@ export function AudiobookCard({ comic, authorName }: AudiobookCardProps) {
   const addToCart = useAppStore(s => s.addToCart);
   const toggleWishlist = useAppStore(s => s.toggleWishlist);
   const isInWishlist = useAppStore(s => s.isInWishlist(comic.id));
-  const playAudio = useAppStore(s => s.playAudio);
+  const { playAudio } = useAudioControls();
   const handleInteraction = (e: React.MouseEvent, action: () => void) => {
     e.preventDefault();
     e.stopPropagation();
@@ -39,7 +39,7 @@ export function AudiobookCard({ comic, authorName }: AudiobookCardProps) {
         <Button
           size="icon"
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-16 text-white bg-red-500/80 hover:bg-red-600 rounded-full backdrop-blur-sm shadow-red-glow animate-pulse-glow opacity-0 group-hover/cover:opacity-100 transition-opacity"
-          onClick={(e) => handleInteraction(e, () => playAudio(comic))}
+          onClick={(e) => handleInteraction(e, () => playAudio(comic, true))}
         >
           <Play className="w-8 h-8" />
         </Button>

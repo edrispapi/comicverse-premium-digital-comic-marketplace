@@ -35,7 +35,7 @@ function HeroSlider() {
   const featuredComics = useMemo(() => {
     if (!allComics) return [];
     return [...allComics]
-      .sort((a, b) => b.ratings.avg - a.ratings.avg)
+      .sort((a, b) => (b.ratings?.avg || 0) - (a.ratings?.avg || 0))
       .slice(0, 5);
   }, [allComics]);
   const startAutoplay = useCallback(() => {
