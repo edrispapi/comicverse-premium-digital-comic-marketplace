@@ -20,8 +20,8 @@ export function CheckoutStepper({ steps, currentStep }: CheckoutStepperProps) {
               <div
                 className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300',
-                  currentStep > index ? 'bg-red-500 border-red-500 text-white' :
-                  currentStep === index ? 'border-red-500 scale-110 shadow-red-glow' : 'border-neutral-600 bg-comic-card text-neutral-400'
+                  currentStep > index ? 'bg-comic-accent border-comic-accent text-comic-black' :
+                  currentStep === index ? 'border-comic-accent scale-110 shadow-accent-glow' : 'border-neutral-600 bg-comic-card text-neutral-400'
                 )}
               >
                 {currentStep > index ? '✓' : index + 1}
@@ -36,7 +36,7 @@ export function CheckoutStepper({ steps, currentStep }: CheckoutStepperProps) {
             {index < steps.length - 1 && (
               <div className={cn(
                 "flex-1 h-0.5 mx-4 transition-colors duration-500",
-                currentStep > index ? 'bg-red-500' : 'bg-neutral-700'
+                currentStep > index ? 'bg-comic-accent' : 'bg-neutral-700'
               )} />
             )}
           </React.Fragment>
