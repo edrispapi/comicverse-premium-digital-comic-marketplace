@@ -16,6 +16,7 @@ import { CatalogPage } from '@/pages/CatalogPage';
 import { ProductPage } from '@/pages/ProductPage';
 import { AuthorsPage } from '@/pages/AuthorsPage';
 import { GenresPage } from '@/pages/GenresPage';
+import { CheckoutPage } from '@/pages/CheckoutPage';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -41,6 +42,11 @@ const router = createBrowserRouter([
   {
     path: "/genres",
     element: <GenresPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/checkout",
+    element: <CheckoutPage />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);

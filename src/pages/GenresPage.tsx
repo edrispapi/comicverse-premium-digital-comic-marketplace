@@ -1,23 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { genres, comics } from '@/lib/comic-data';
+import { genres } from '@shared/mock-data';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Separator } from '@/components/ui/separator';
+import { useComics } from '@/lib/queries';
+import { Skeleton } from '@/components/ui/skeleton';
 export function GenresPage() {
+  const { data: comics, isLoading } = useComics();
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
       <main>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-16 md:py-24">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-center"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-glow">Explore by Genre</h1>
               <p className="mt-4 text-lg text-neutral-300 max-w-3xl mx-auto">
                 From epic superhero sagas to mind-bending sci-fi, find your next favorite story.
@@ -25,31 +23,29 @@ export function GenresPage() {
             </motion.div>
             <div className="mt-16 space-y-16">
               {genres.map((genre, genreIndex) => {
-                const genreComics = comics.filter(comic => comic.genreIds.includes(genre.id)).slice(0, 5); // Show up to 5
+                const genreComics = comics?.filter(comic => comic.genreIds.includes(genre.id)).slice(0, 5) || [];
+                if (isLoading) {
+                  return (
+                    <section key={genre.id}>
+                      <Skeleton className="h-10 w-1/4 mb-6" />
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                        {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
+                      </div>
+                    </section>
+                  )
+                }
                 if (genreComics.length === 0) return null;
                 return (
-                  <motion.section
-                    key={genre.id}
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: genreIndex * 0.1 }}
-                    viewport={{ once: true }}
-                  >
+                  <motion.section key={genre.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: genreIndex * 0.1 }} viewport={{ once: true }}>
                     <h2 className="text-3xl font-bold mb-6">{genre.name}</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                       {genreComics.map((comic, comicIndex) => (
-                        <motion.div
-                          key={comic.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: comicIndex * 0.05 }}
-                          viewport={{ once: true }}
-                        >
+                        <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: comicIndex * 0.05 }} viewport={{ once: true }}>
                           <ComicCard comic={comic} />
                         </motion.div>
                       ))}
                     </div>
-                    {genreIndex < genres.length - 1 && <Separator className="mt-16 bg-white/10" />}
+                    {genreIndex < genres.length - 2 && <Separator className="mt-16 bg-white/10" />}
                   </motion.section>
                 );
               })}
