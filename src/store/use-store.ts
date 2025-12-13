@@ -8,13 +8,14 @@ interface AppState {
   cart: CartItem[];
   wishlist: Comic[];
   isCartOpen: boolean;
+  searchTerm: string;
   addToCart: (comic: Comic) => void;
   removeFromCart: (comicId: string) => void;
   updateQuantity: (comicId: string, quantity: number) => void;
   toggleCart: () => void;
-  addToWishlist: (comic: Comic) => void;
-  removeFromWishlist: (comicId: string) => void;
+  toggleWishlist: (comic: Comic) => void;
   isInWishlist: (comicId: string) => boolean;
+  setSearchTerm: (term: string) => void;
 }
 export const useAppStore = create<AppState>()(
   persist(
@@ -22,6 +23,7 @@ export const useAppStore = create<AppState>()(
       cart: [],
       wishlist: [],
       isCartOpen: false,
+      searchTerm: '',
       addToCart: (comic) =>
         set((state) => {
           const existingItem = state.cart.find((item) => item.id === comic.id);
@@ -45,21 +47,20 @@ export const useAppStore = create<AppState>()(
           ).filter(item => item.quantity > 0),
         })),
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
-      addToWishlist: (comic) =>
+      toggleWishlist: (comic) =>
         set((state) => {
-          if (state.wishlist.some((item) => item.id === comic.id)) {
-            return state; // Already in wishlist
+          const isInWishlist = state.wishlist.some((item) => item.id === comic.id);
+          if (isInWishlist) {
+            return { wishlist: state.wishlist.filter((item) => item.id !== comic.id) };
+          } else {
+            return { wishlist: [...state.wishlist, comic] };
           }
-          return { wishlist: [...state.wishlist, comic] };
         }),
-      removeFromWishlist: (comicId) =>
-        set((state) => ({
-          wishlist: state.wishlist.filter((item) => item.id !== comicId),
-        })),
       isInWishlist: (comicId) => {
         const state = get();
         return state.wishlist.some((item) => item.id === comicId);
       },
+      setSearchTerm: (term) => set({ searchTerm: term }),
     }),
     {
       name: 'comicverse-storage',

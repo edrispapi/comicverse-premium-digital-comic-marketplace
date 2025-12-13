@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { LayoutGrid, List, Filter } from 'lucide-react';
-import { comics, genres, authors } from '@/lib/comic-data';
+import { comics, genres, authors, Comic } from '@/lib/comic-data';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -16,6 +16,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAppStore } from '@/store/use-store';
 function FilterSidebar() {
   return (
     <aside className="w-full space-y-8">
@@ -46,6 +47,13 @@ function FilterSidebar() {
   );
 }
 export function CatalogPage() {
+  const searchTerm = useAppStore(s => s.searchTerm);
+  const filteredComics = useMemo(() => {
+    if (!searchTerm) return comics;
+    return comics.filter(comic =>
+      comic.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm]);
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
@@ -77,18 +85,25 @@ export function CatalogPage() {
             <FilterSidebar />
           </div>
           <div className="lg:col-span-3">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {comics.map((comic, index) => (
-                <motion.div
-                  key={comic.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                >
-                  <ComicCard comic={comic} />
-                </motion.div>
-              ))}
-            </div>
+            {filteredComics.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                {filteredComics.map((comic, index) => (
+                  <motion.div
+                    key={comic.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                  >
+                    <ComicCard comic={comic} />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <h2 className="text-2xl font-semibold">No Results Found</h2>
+                <p className="mt-2 text-neutral-400">Try adjusting your search or filters.</p>
+              </div>
+            )}
           </div>
         </div>
       </main>

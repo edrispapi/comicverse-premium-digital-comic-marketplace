@@ -14,6 +14,8 @@ import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
 import { CatalogPage } from '@/pages/CatalogPage';
 import { ProductPage } from '@/pages/ProductPage';
+import { AuthorsPage } from '@/pages/AuthorsPage';
+import { GenresPage } from '@/pages/GenresPage';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -29,6 +31,16 @@ const router = createBrowserRouter([
   {
     path: "/comic/:id",
     element: <ProductPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/authors",
+    element: <AuthorsPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/genres",
+    element: <GenresPage />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);

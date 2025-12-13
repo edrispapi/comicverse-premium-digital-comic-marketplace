@@ -7,10 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { useAppStore } from '@/store/use-store';
 const featuredComic = comics[1]; // The Watchmen
-const trendingComics = comics.slice(0, 5);
-const newReleases = comics.slice(5, 9);
 export function HomePage() {
+  const searchTerm = useAppStore(s => s.searchTerm);
+  const filterComics = (comicList: typeof comics) => {
+    if (!searchTerm) return comicList;
+    return comicList.filter(comic =>
+      comic.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+  const trendingComics = filterComics(comics.slice(0, 5));
+  const newReleases = filterComics(comics.slice(5, 9));
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
@@ -49,43 +57,47 @@ export function HomePage() {
           </div>
         </section>
         {/* Trending Now Section */}
-        <section className="py-16 md:py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold tracking-tight mb-8">Trending Now</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {trendingComics.map((comic, index) => (
-                <motion.div
-                  key={comic.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <ComicCard comic={comic} />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-        {/* New Releases Section */}
-        <section className="py-16 md:py-24 bg-comic-card">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold tracking-tight mb-8">New Releases</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newReleases.map((comic, index) => (
-                 <motion.div
+        {trendingComics.length > 0 && (
+          <section className="py-16 md:py-24">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 className="text-3xl font-bold tracking-tight mb-8">Trending Now</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {trendingComics.map((comic, index) => (
+                  <motion.div
                     key={comic.id}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true }}
-                >
+                  >
                     <ComicCard comic={comic} />
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
+        {/* New Releases Section */}
+        {newReleases.length > 0 && (
+          <section className="py-16 md:py-24 bg-comic-card">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 className="text-3xl font-bold tracking-tight mb-8">New Releases</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {newReleases.map((comic, index) => (
+                   <motion.div
+                      key={comic.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                  >
+                      <ComicCard comic={comic} />
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </main>
       <Footer />
     </div>
