@@ -25,7 +25,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import type { Post } from '@shared/types';
-import { FixedSizeList as VirtualList } from 'react-window';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -212,11 +212,15 @@ export function ProductPage() {
             <div className="space-y-6">
                 <div className="h-[500px]">
                     {posts && posts.length > 0 ? (
-                        <VirtualList height={500} itemCount={posts.length} itemSize={120} width="100%">
-                            {({ index, style }) => (
-                                <div style={style}><PostBubble post={posts[index]} comicId={id!} /></div>
-                            )}
-                        </VirtualList>
+                        <div className="h-full overflow-auto">
+                            {posts.slice(0, 50).map((post, index) => (
+                                <PostBubble
+                                    key={post.id ?? `post-${index}`}
+                                    post={post}
+                                    comicId={id!}
+                                />
+                            ))}
+                        </div>
                     ) : <div className="text-center text-neutral-400 pt-16">Be the first to post!</div>}
                 </div>
                 <Form {...postForm}><form onSubmit={postForm.handleSubmit(handlePostPost)} className="flex items-start gap-4 pt-6 border-t border-white/10"><Avatar><AvatarImage src={`https://i.pravatar.cc/150?u=current-user`} /><AvatarFallback>👤</AvatarFallback></Avatar><div className="flex-1 space-y-2"><div className="flex gap-2"><FormField control={postForm.control} name="type" render={({ field }) => (<FormItem><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="w-[120px]"><SelectValue placeholder="Type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="image">Image</SelectItem><SelectItem value="video">Video</SelectItem></SelectContent></Select></FormItem>)} /><FormField control={postForm.control} name="content" render={({ field }) => (<FormItem className="flex-1"><FormControl><Input placeholder={postForm.watch('type') === 'text' ? "Share your thoughts..." : "Enter media URL..."} {...field} /></FormControl><FormMessage /></FormItem>)} /></div><div className="flex justify-end"><Button type="submit" className="btn-accent" disabled={isPostingPost}>{isPostingPost ? 'Posting...' : 'Post'}</Button></div></div></form></Form>
