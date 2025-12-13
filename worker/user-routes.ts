@@ -254,6 +254,20 @@ return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - 
     if (!await author.exists()) return notFound(c, 'author not found');
     return ok(c, await author.getState());
 });
+
+  // GENRES
+  app.get('/api/genres', async (c) => {
+    await GenreEntity.ensureSeed(c.env);
+    const { items } = await GenreEntity.list(c.env, null, 50);
+    return ok(c, items);
+  });
+
+  app.get('/api/genres/:id', async (c) => {
+    const id = c.req.param('id');
+    const genre = new GenreEntity(c.env, id);
+    if (!await genre.exists()) return notFound(c, 'genre not found');
+    return ok(c, await genre.getState());
+  });
   // USER STATS & NOTIFICATIONS
   app.get('/api/user/stats', async (c) => { const stats = { reads: Math.floor(20 + Math.random() * 30), hours: Math.floor(40 + Math.random() * 60), spent: parseFloat((120 + Math.random() * 400).toFixed(2)), }; return ok(c, stats); });
   app.get('/api/notifications', async (c) => {
