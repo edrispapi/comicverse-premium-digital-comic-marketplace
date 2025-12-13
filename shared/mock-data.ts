@@ -161,7 +161,7 @@ const generatePosts = (prefix: string, authorIds: string[]): Post[] => {
         down: votes - up,
         stars: parseFloat((3 + (i % 2) * 0.5).toFixed(1)), // 3.0 or 3.5
         emojis: { '👍': i * 2, '❤️': i, '🔥': i % 3 },
-        stickers: { '⭐': i % 5, '💯': i % 3, '😂': i % 4 },
+        stickers: { '⭐': Math.floor(1 + Math.random() * 5), '😂': Math.floor(Math.random() * 4), '💯': Math.floor(Math.random() * 3), '🙌': Math.floor(Math.random() * 2), '🚀': 1 },
         heart: 10 + i * 3,
       },
       replies:
@@ -553,7 +553,7 @@ export const COMICS: Comic[] = [
   },
 ];
 /* -------------------------------------------------
-   EXPORTS – convenience aliases
+   EXPORTS ��� convenience aliases
    ------------------------------------------------- */
 export const genres = GENRES;
 export const authors = AUTHORS;

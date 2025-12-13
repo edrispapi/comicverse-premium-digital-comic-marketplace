@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,17 +7,18 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Crown, Heart, MessageSquare, Award, Send, ThumbsUp, Smile, Image as ImageIcon, Video, Mic, File as FileIcon, X } from 'lucide-react';
 import type { Comic, Post, Comment } from '@shared/types';
-import { useComicPosts, usePostReply, useHeartPost, useAwardComic } from '@/lib/queries';
+import { useComicPosts, usePostReply, useHeartPost, useAwardComic, useReactToPost } from '@/lib/queries';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useLocalStorage } from 'react-use';
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
@@ -50,7 +51,7 @@ const ConfettiBurst = () => (
   </div>
 );
 const PostContent = ({ post, isJoined }: { post: Post; isJoined: boolean }) => {
-  const shouldBlur = !isJoined && post.type !== 'text';
+  const shouldBlur = !isJoined && ['image', 'video', 'voice', 'file'].includes(post.type);
   const contentMap = {
     image: <img src={post.content} className="rounded-md max-h-64 object-cover w-full" alt="Post content" />,
     video: <video src={post.content} controls className="rounded-md w-full max-h-64" />,
@@ -82,19 +83,20 @@ const ReplyModal = ({ post, comicId }: { post: Post; comicId: string }) => {
     <DialogContent className="bg-comic-card border-white/10 text-white sm:max-w-[525px]">
       <DialogHeader>
         <DialogTitle>Replies to {post.user.name}</DialogTitle>
+        <DialogDescription id={`reply-desc-${post.id}`}>View and post replies for this message.</DialogDescription>
       </DialogHeader>
       <div className="flex flex-col h-[60vh]">
         <ScrollArea className="flex-1 pr-4 -mr-4">
           <div className="space-y-4">
-            {post.replies?.map(reply => (
+            {(post.replies && post.replies.length > 0) ? post.replies.map(reply => (
               <div key={reply.id} className="flex items-start gap-3">
-                <Avatar className="w-8 h-8"><AvatarImage src={reply.user.avatar} /><AvatarFallback>����</AvatarFallback></Avatar>
+                <Avatar className="w-8 h-8"><AvatarImage src={reply.user.avatar} /><AvatarFallback>👤</AvatarFallback></Avatar>
                 <div className="flex-1 p-3 rounded-lg bg-neutral-800/50">
                   <div className="flex items-center justify-between"><p className="font-semibold text-sm">{reply.user.name}</p><p className="text-xs text-neutral-400">{formatDistanceToNow(new Date(reply.time), { addSuffix: true })}</p></div>
                   <p className="mt-1 text-sm text-neutral-300">{reply.message}</p>
                 </div>
               </div>
-            ))}
+            )) : <p className="text-center text-neutral-400 pt-8">No replies yet.</p>}
           </div>
         </ScrollArea>
         <div className="mt-4 pt-4 border-t border-white/10">
@@ -110,6 +112,7 @@ const ReplyModal = ({ post, comicId }: { post: Post; comicId: string }) => {
 const PostCard = ({ post, comicId, isJoined }: { post: Post; comicId: string; isJoined: boolean }) => {
   const { mutate: heartPost } = useHeartPost(comicId);
   const { mutate: awardComic } = useAwardComic(comicId);
+  const { mutate: reactToPost } = useReactToPost(comicId);
   const [showConfetti, setShowConfetti] = useState(false);
   const handleAward = () => {
     awardComic({ award: 'top-fan' }, {
@@ -119,6 +122,16 @@ const PostCard = ({ post, comicId, isJoined }: { post: Post; comicId: string; is
         setTimeout(() => setShowConfetti(false), 1500);
       },
       onError: () => toast.error("Failed to give award."),
+    });
+  };
+  const handleReact = (sticker: string) => {
+    reactToPost({ postId: post.id, sticker }, {
+      onSuccess: () => {
+        toast.success(`You reacted with ${sticker}`);
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 1500);
+      },
+      onError: () => toast.error("Failed to react."),
     });
   };
   return (
@@ -133,6 +146,12 @@ const PostCard = ({ post, comicId, isJoined }: { post: Post; comicId: string; is
           <AnimatePresence>{showConfetti && <ConfettiBurst />}</AnimatePresence>
           <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10 text-red-400" onClick={() => heartPost({ postId: post.id })}><Heart className="w-4 h-4" /> {post.reactions.heart}</Button>
           <Dialog><DialogTrigger asChild><Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10"><MessageSquare className="w-4 h-4" /> {post.replies?.length || 0}</Button></DialogTrigger><ReplyModal post={post} comicId={comicId} /></Dialog>
+          <Popover>
+            <PopoverTrigger asChild><Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10"><Smile className="w-4 h-4" /></Button></PopoverTrigger>
+            <PopoverContent className="w-auto p-1 bg-comic-card border-white/10 grid grid-cols-6 gap-1">
+              {STICKERS.map(sticker => <Button key={sticker} variant="ghost" size="icon" className="h-8 w-8 text-xl" onClick={() => handleReact(sticker)}>{sticker}</Button>)}
+            </PopoverContent>
+          </Popover>
           <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10" onClick={handleAward}><Award className="w-4 h-4" /></Button>
         </div>
       </div>
@@ -140,10 +159,10 @@ const PostCard = ({ post, comicId, isJoined }: { post: Post; comicId: string; is
   );
 };
 export function BookCommunityChannel({ comic }: { comic: Comic }) {
-  const [isJoined, setIsJoined] = useState(false);
+  const [isJoined, setIsJoined] = useLocalStorage(`comic-joined-${comic.id}`, false);
   const { data: posts, isLoading } = useComicPosts(comic.id);
   return (
-    <Card className="bg-comic-card border-white/10 flex flex-col h-full" role="log">
+    <Card className="bg-comic-card border-white/10 flex flex-col h-full" role="log" aria-label={`Community channel for ${comic.title}`}>
       <CardContent className="p-0 flex flex-col h-full">
         <div className="p-4 border-b border-white/10 flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -160,7 +179,7 @@ export function BookCommunityChannel({ comic }: { comic: Comic }) {
         <ScrollArea className="flex-1 p-4">
           <motion.div variants={containerVariants} initial="hidden" animate="visible">
             {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full my-3" />)
-              : posts && posts.length > 0 ? posts.map(post => <PostCard key={post.id} post={post} comicId={comic.id} isJoined={isJoined} />)
+              : posts && posts.length > 0 ? posts.map(post => <PostCard key={post.id} post={post} comicId={comic.id} isJoined={!!isJoined} />)
               : <div className="text-center text-neutral-400 pt-16">Be the first to post!</div>}
           </motion.div>
         </ScrollArea>
