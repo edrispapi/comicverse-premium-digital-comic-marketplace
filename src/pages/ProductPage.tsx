@@ -11,7 +11,7 @@ import { useAppStore } from '@/store/use-store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
-import { useComic, useComics, useAllAuthors, useGenres } from '@/lib/queries';
+import { useComic, useComics, useAuthors, useGenres } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,7 +37,7 @@ export function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const { data: comic, isLoading, error } = useComic(id);
   const { data: allComics } = useComics();
-  const { data: allAuthors } = useAllAuthors();
+  const { data: allAuthors } = useAuthors();
   const { data: allGenres = [] } = useGenres();
   const addToCart = useAppStore(s => s.addToCart);
   const toggleWishlist = useAppStore(s => s.toggleWishlist);
