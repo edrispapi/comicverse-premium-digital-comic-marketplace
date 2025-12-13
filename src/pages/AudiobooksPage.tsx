@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -104,7 +105,6 @@ export function AudiobooksPage() {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-glow">Audiobooks</h1>
             <p className="mt-4 text-lg text-neutral-300 max-w-3xl mx-auto">Immerse yourself in captivating stories, brought to life by talented narrators.</p>

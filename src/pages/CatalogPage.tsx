@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Filter } from 'lucide-react';
 import { useAuthors, useGenres, useComics } from '@/lib/queries';
@@ -115,7 +116,6 @@ export function CatalogPage() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold tracking-tight">Full Catalog</h1>
           <div className="flex items-center gap-2">
