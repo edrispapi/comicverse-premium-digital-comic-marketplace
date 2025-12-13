@@ -12,7 +12,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import '@/index.css'
 import { api } from './lib/api-client';
-import { Skeleton } from './components/ui/skeleton';
+import { AppFallback } from './components/AppFallback';
 // Lazy load pages for better code splitting and initial load performance
 const HomePage = React.lazy(() => import('@/pages/HomePage').then(module => ({ default: module.HomePage })));
 const CatalogPage = React.lazy(() => import('@/pages/CatalogPage').then(module => ({ default: module.CatalogPage })));
@@ -98,14 +98,6 @@ const router = createBrowserRouter([
     errorElement: <RouteErrorBoundary />,
   },
 ]);
-const AppFallback = () => (
-  <div className="bg-comic-black min-h-screen flex items-center justify-center">
-    <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-red-500"></div>
-        <p className="text-white text-lg">Loading Universe...</p>
-    </div>
-  </div>
-);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>

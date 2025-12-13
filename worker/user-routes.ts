@@ -2,9 +2,16 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, ComicEntity, AuthorEntity, GenreEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import type { User, Notification } from '@shared/types';
+import type { User, Notification, Comic } from '@shared/types';
 const mockHash = (password: string) => btoa(password);
 const mockGenerateToken = (user: User) => JSON.stringify({ sub: user.id, name: user.name, iat: Date.now() });
+const parseDuration = (durationStr: string | undefined): number => {
+  if (!durationStr) return 0;
+  const parts = durationStr.split(' ');
+  const hours = parts[0] ? parseInt(parts[0].replace('h', '')) : 0;
+  const minutes = parts[1] ? parseInt(parts[1].replace('m', '')) : 0;
+  return hours + minutes / 60;
+};
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // COMICS
   app.get('/api/comics', async (c) => {
@@ -21,8 +28,34 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // AUDIOBOOKS
   app.get('/api/audiobooks', async (c) => {
     await ComicEntity.ensureSeed(c.env);
-    const { items } = await ComicEntity.list(c.env, null, 100);
-    return ok(c, items.filter(comic => comic.audioUrl));
+    const { items: allComics } = await ComicEntity.list(c.env, null, 100);
+    let audiobooks = allComics.filter(comic => comic.audioUrl);
+    // Filtering
+    const search = c.req.query('search');
+    const genres = c.req.query('genres');
+    const priceMax = c.req.query('priceMax');
+    const durationMax = c.req.query('durationMax');
+    if (search) {
+      audiobooks = audiobooks.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
+    }
+    if (genres) {
+      const genreIds = genres.split(',');
+      audiobooks = audiobooks.filter(a => a.genreIds.some(gid => genreIds.includes(gid)));
+    }
+    if (priceMax) {
+      audiobooks = audiobooks.filter(a => a.price <= parseFloat(priceMax));
+    }
+    if (durationMax) {
+      audiobooks = audiobooks.filter(a => parseDuration(a.duration) <= parseFloat(durationMax));
+    }
+    // Pagination
+    const page = parseInt(c.req.query('page') || '0');
+    const limit = parseInt(c.req.query('limit') || '10');
+    const start = page * limit;
+    const end = start + limit;
+    const paginatedItems = audiobooks.slice(start, end);
+    const nextPage = end < audiobooks.length ? page + 1 : null;
+    return ok(c, { items: paginatedItems, nextPage });
   });
   app.get('/api/audiobooks/new', async (c) => {
     await ComicEntity.ensureSeed(c.env);
@@ -59,7 +92,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const { items } = await GenreEntity.list(c.env, null, 50);
     return ok(c, items);
   });
-  // USER STATS & NOTIFICATIONS (NEW)
+  // USER STATS & NOTIFICATIONS
   app.get('/api/user/stats', async (c) => {
     const stats = {
       reads: Math.floor(20 + Math.random() * 30),
