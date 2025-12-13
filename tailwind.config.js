@@ -90,6 +90,9 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+            'comic-black': '#0B0B0B',
+            'comic-card': '#121212',
+            'comic-accent': '#FFA500',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			muted: {
@@ -146,7 +149,8 @@ export default {
   			glow: '0 0 20px -5px rgba(99, 102, 241, 0.4)',
   			'glow-lg': '0 0 40px -10px rgba(99, 102, 241, 0.3)',
   			primary: '0 0 20px -5px hsl(var(--primary) / 0.4)',
-  			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
+  			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+            'accent-glow': '0 0 20px rgba(255, 165, 0, 0.3)',
   		},
   		keyframes: {
   			'fade-in': {
@@ -159,6 +163,16 @@ export default {
   					transform: 'translateY(0)'
   				}
   			},
+            'fade-up': {
+                '0%': {
+                    opacity: '0',
+                    transform: 'translateY(20px)'
+                },
+                '100%': {
+                    opacity: '1',
+                    transform: 'translateY(0)'
+                }
+            },
   			'slide-up': {
   				'0%': {
   					transform: 'translateY(20px)',
@@ -195,6 +209,14 @@ export default {
   					boxShadow: '0 0 40px -5px rgba(99, 102, 241, 0.6)'
   				}
   			},
+            'pulse-glow': {
+                '0%, 100%': {
+                    boxShadow: '0 0 20px rgba(255, 165, 0, 0.3)'
+                },
+                '50%': {
+                    boxShadow: '0 0 30px rgba(255, 165, 0, 0.5)'
+                }
+            },
   			float: {
   				'0%, 100%': {
   					transform: 'translateY(0px)'
@@ -222,10 +244,12 @@ export default {
   		},
   		animation: {
   			'fade-in': 'fade-in 0.6s ease-out',
+            'fade-up': 'fade-up 0.5s ease-out forwards',
   			'slide-up': 'slide-up 0.4s ease-out',
   			'scale-in': 'scale-in 0.3s ease-out',
   			shimmer: 'shimmer 2s infinite',
   			glow: 'glow 2s ease-in-out infinite',
+            'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
   			float: 'float 3s ease-in-out infinite',
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
