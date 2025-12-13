@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Star, ShoppingCart, Heart, Eye, Send, Play, ThumbsUp, ThumbsDown, Smile, File, Mic, Video, Image as ImageIcon, MessageCircle, MessageSquareMore } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Eye, Send, Play, ThumbsUp, Smile, File, Mic, Video, Image as ImageIcon, MessageCircle, Users, Crown, MessageSquarePlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -14,30 +14,24 @@ import { useAppStore, useAudioControls } from '@/store/use-store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
-import { useComic, useComics, useAuthors, useGenres, useComicComments, useUpdateRating, usePostComment, useComicPosts, usePostPost, useVotePost } from '@/lib/queries';
+import { useComic, useComics, useAuthors, useGenres, useComicPosts, useUpdateRating, usePostPost, useVotePost, useReactToPost } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import type { Post } from '@shared/types';
-
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
-const commentSchema = z.object({ message: z.string().min(10, 'Comment must be at least 10 characters').max(500, 'Comment is too long') });
-const postSchema = z.object({
-  type: z.enum(['text', 'image', 'video', 'voice', 'file']),
-  content: z.string().min(1, 'Content is required'),
-});
-type CommentFormData = z.infer<typeof commentSchema>;
+const postSchema = z.object({ content: z.string().min(1, 'Message cannot be empty').max(1000) });
 type PostFormData = z.infer<typeof postSchema>;
+const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '���', '🙌'];
 const Confetti = () => (
     <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
       {Array.from({ length: 30 }).map((_, i) => (
@@ -69,86 +63,81 @@ function StarRating({ comicId, initialRating, votes }: { comicId: string, initia
     </div>
   );
 }
-const ParticleCanvas = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    let animationFrameId: number;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    let particles: { x: number, y: number, size: number, speedX: number, speedY: number, color: string }[] = [];
-    const createParticles = () => {
-      particles = [];
-      const particleCount = 100;
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 2 + 1,
-          speedX: Math.random() * 0.5 - 0.25,
-          speedY: Math.random() * 0.5 - 0.25,
-          color: 'rgba(239, 68, 68, 0.5)',
-        });
-      }
-    };
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => {
-        p.x += p.speedX;
-        p.y += p.speedY;
-        if (p.x > canvas.width || p.x < 0) p.speedX *= -1;
-        if (p.y > canvas.height || p.y < 0) p.speedY *= -1;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    createParticles();
-    animate();
-    const handleResize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; createParticles(); };
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-  return <canvas ref={canvasRef} className="absolute inset-0 -z-10" />;
-};
 const PostBubble = ({ post, comicId }: { post: Post, comicId: string }) => {
     const { mutate: votePost } = useVotePost(comicId);
-    const upvotePercentage = post.reactions.votes > 0 ? (post.reactions.up / post.reactions.votes) * 100 : 50;
-    const PostIcon = ({ type }: { type: Post['type'] }) => {
-        switch (type) {
-          case 'image': return <ImageIcon className="w-4 h-4" />;
-          case 'video': return <Video className="w-4 h-4" />;
-          case 'voice': return <Mic className="w-4 h-4" />;
-          case 'file': return <File className="w-4 h-4" />;
-          default: return null;
+    const { mutate: reactToPost } = useReactToPost(comicId);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const handleReact = (sticker: string) => {
+        reactToPost({ postId: post.id, sticker });
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 1500);
+    };
+    const PostContent = () => {
+        switch (post.type) {
+            case 'image': return <img src={post.content} className="rounded-md max-h-64 object-cover w-full" alt="Post content"/>;
+            case 'video': return <video src={post.content} controls className="rounded-md w-full max-h-64" />;
+            case 'voice': return <audio src={post.content} controls className="w-full" />;
+            default: return <p className="whitespace-pre-wrap">{post.content}</p>;
         }
     };
     return (
-        <div className="flex items-start gap-3 py-3">
+        <motion.div variants={itemVariants} className="flex items-start gap-3 py-3">
             <Avatar className="mt-1"><AvatarImage src={post.user.avatar} /><AvatarFallback>👤</AvatarFallback></Avatar>
-            <div className="flex-1 space-y-2">
-                <div className="relative p-3 rounded-xl bg-neutral-800/50 border-l-4 border-red-500 shadow-md">
-                    <div className="flex items-center justify-between"><p className="font-semibold text-white">{post.user.name}</p><p className="text-xs text-neutral-400">{formatDistanceToNow(new Date(post.time), { addSuffix: true })}</p></div>
-                    <div className="mt-2 text-neutral-300 text-sm">{post.type === 'text' && <p>{post.content}</p>}{post.type === 'image' && <img src={post.content} className="rounded-md max-h-64" alt="Post content"/>}{post.type === 'video' && <video src={post.content} controls className="rounded-md w-full" />}{post.type === 'voice' && <audio src={post.content} controls className="w-full" />}</div>
+            <div className="flex-1 space-y-1">
+                <div className="relative p-3 rounded-xl bg-neutral-800/50 shadow-md">
+                    <div className="flex items-center justify-between"><p className="font-semibold text-white flex items-center gap-2">{post.user.name} {post.user.isCreator && <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />}</p><p className="text-xs text-neutral-400">{formatDistanceToNow(new Date(post.time), { addSuffix: true })}</p></div>
+                    <div className="mt-2 text-neutral-300 text-sm"><PostContent /></div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-neutral-400 pl-2">
-                    <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2" onClick={() => votePost({ postId: post.id, up: true })}><ThumbsUp className="w-4 h-4" /> {post.reactions.up}</Button>
-                    <div className="w-16 h-1 bg-neutral-700 rounded-full overflow-hidden flex-1"><div className="h-full bg-red-500" style={{ width: `${upvotePercentage}%` }} /></div>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2" onClick={() => votePost({ postId: post.id, up: false })}><ThumbsDown className="w-4 h-4" /> {post.reactions.down}</Button>
-                    <div className="flex items-center gap-1 ml-auto">
-                        {Object.entries(post.reactions.stickers).map(([emoji, count]) => <Badge key={emoji} variant="secondary" className="px-1.5">{emoji} {count}</Badge>)}
+                <div className="flex items-center gap-1 text-xs text-neutral-400 pl-2 relative">
+                    <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
+                    <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10 text-red-400" onClick={() => votePost({ postId: post.id, up: true })}><ThumbsUp className="w-4 h-4" /> {post.reactions.up}</Button>
+                    <Popover>
+                        <PopoverTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-red-500/10"><Smile className="w-4 h-4" /></Button></PopoverTrigger>
+                        <PopoverContent className="w-auto p-2 bg-comic-card border-white/10"><div className="grid grid-cols-6 gap-1">{STICKERS.map(s => <Button key={s} variant="ghost" size="icon" className="text-xl" onClick={() => handleReact(s)}>{s}</Button>)}</div></PopoverContent>
+                    </Popover>
+                    <div className="flex items-center gap-1 ml-auto flex-wrap justify-end">
+                        {Object.entries(post.reactions.stickers).sort(([,a],[,b]) => b-a).map(([emoji, count]) => <Badge key={emoji} variant="secondary" className="px-1.5 py-0.5 bg-red-500/20 text-red-400 border-red-500/30 cursor-pointer" onClick={() => handleReact(emoji)}>{emoji} {count}</Badge>)}
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
+    );
+};
+const CommunityFeed = ({ comic }: { comic: Comic }) => {
+    const { data: posts, isLoading } = useComicPosts(comic.id);
+    const { mutate: postPost, isPending: isPosting } = usePostPost(comic.id);
+    const form = useForm<PostFormData>({ resolver: zodResolver(postSchema), defaultValues: { content: '' } });
+    const handlePost = (data: PostFormData) => {
+        postPost({ type: 'text', content: data.content }, {
+            onSuccess: () => { toast.success("Posted to community!"); form.reset(); },
+            onError: () => toast.error("Failed to post.")
+        });
+    };
+    return (
+        <Card className="bg-comic-card border-white/10" role="log">
+            <CardContent className="p-0 flex flex-col h-full">
+                <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                    <div>
+                        <h3 className="text-lg font-bold">Community: {comic.title}</h3>
+                        <p className="text-sm text-neutral-400 flex items-center gap-2"><Users className="w-4 h-4" /> {Math.floor(100 + Math.random() * 900)} members</p>
+                    </div>
+                    <Button className="btn-accent">Join</Button>
+                </div>
+                <ScrollArea className="flex-1 p-4">
+                    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                        {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full my-3" />)
+                            : posts && posts.length > 0 ? posts.map(post => <PostBubble key={post.id} post={post} comicId={comic.id} />)
+                            : <div className="text-center text-neutral-400 pt-16">Be the first to post!</div>}
+                    </motion.div>
+                </ScrollArea>
+                <div className="p-4 border-t border-white/10 mt-auto">
+                    <Form {...form}><form onSubmit={form.handleSubmit(handlePost)} className="flex items-center gap-2">
+                        <FormField control={form.control} name="content" render={({ field }) => (<FormItem className="flex-1"><FormControl><Input placeholder="Share your thoughts..." {...field} className="bg-neutral-800/50" /></FormControl><FormMessage /></FormItem>)} />
+                        <Button type="submit" size="icon" className="btn-accent flex-shrink-0" disabled={isPosting}><Send className="h-4 w-4" /></Button>
+                    </form></Form>
+                </div>
+            </CardContent>
+        </Card>
     );
 };
 export function ProductPage() {
@@ -158,34 +147,13 @@ export function ProductPage() {
   const { data: allComicsData = [], isLoading: comicsLoading } = useComics();
   const { data: allAuthors } = useAuthors();
   const { data: allGenres = [] } = useGenres();
-  const { data: comments } = useComicComments(id);
-  const { data: posts } = useComicPosts(id);
-  const { mutate: postComment, isPending: isPostingComment } = usePostComment(id!);
-  const { mutate: postPost, isPending: isPostingPost } = usePostPost(id!);
-  const [showConfetti, setShowConfetti] = useState(false);
   const addToCart = useAppStore(s => s.addToCart);
   const toggleWishlist = useAppStore(s => s.toggleWishlist);
   const isInWishlist = useAppStore(s => s.isInWishlist(id || ''));
-  const updatePts = useAppStore(s => s.updatePts);
-  const pts = useAppStore(s => s.pts);
   const libraryUnlocked = useAppStore(s => s.libraryUnlocked);
   const { playAudio } = useAudioControls();
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 0.5], [0, -100]);
-  const commentForm = useForm<CommentFormData>({ resolver: zodResolver(commentSchema) });
-  const postForm = useForm<PostFormData>({ resolver: zodResolver(postSchema), defaultValues: { type: 'text', content: '' } });
-  const handlePostComment = (data: CommentFormData) => {
-    postComment(data.message, {
-      onSuccess: () => { toast.success("Comment posted! +10 points"); updatePts(10); setShowConfetti(true); setTimeout(() => setShowConfetti(false), 2000); commentForm.reset(); },
-      onError: () => toast.error("Failed to post comment.")
-    });
-  };
-  const handlePostPost = (data: PostFormData) => {
-    postPost(data, {
-      onSuccess: () => { toast.success("Post added to community feed!"); postForm.reset(); },
-      onError: () => toast.error("Failed to add post.")
-    });
-  };
   const getAwards = (comic: any) => {
     const awards = [];
     if (!comic || !comic.releaseDate || !comic.ratings) return [];
@@ -205,29 +173,6 @@ export function ProductPage() {
       });
     }
   };
-  const CommunityFeed = () => (
-    <Card className="bg-comic-card border-white/10" role="log">
-        <CardHeader><CardTitle>Community Feed ({posts?.length || 0})</CardTitle></CardHeader>
-        <CardContent>
-            <div className="space-y-6">
-                <div className="h-[500px]">
-                    {posts && posts.length > 0 ? (
-                        <div className="h-full overflow-auto">
-                            {posts.slice(0, 50).map((post, index) => (
-                                <PostBubble
-                                    key={post.id ?? `post-${index}`}
-                                    post={post}
-                                    comicId={id!}
-                                />
-                            ))}
-                        </div>
-                    ) : <div className="text-center text-neutral-400 pt-16">Be the first to post!</div>}
-                </div>
-                <Form {...postForm}><form onSubmit={postForm.handleSubmit(handlePostPost)} className="flex items-start gap-4 pt-6 border-t border-white/10"><Avatar><AvatarImage src={`https://i.pravatar.cc/150?u=current-user`} /><AvatarFallback>👤</AvatarFallback></Avatar><div className="flex-1 space-y-2"><div className="flex gap-2"><FormField control={postForm.control} name="type" render={({ field }) => (<FormItem><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="w-[120px]"><SelectValue placeholder="Type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="image">Image</SelectItem><SelectItem value="video">Video</SelectItem></SelectContent></Select></FormItem>)} /><FormField control={postForm.control} name="content" render={({ field }) => (<FormItem className="flex-1"><FormControl><Input placeholder={postForm.watch('type') === 'text' ? "Share your thoughts..." : "Enter media URL..."} {...field} /></FormControl><FormMessage /></FormItem>)} /></div><div className="flex justify-end"><Button type="submit" className="btn-accent" disabled={isPostingPost}>{isPostingPost ? 'Posting...' : 'Post'}</Button></div></div></form></Form>
-            </div>
-        </CardContent>
-    </Card>
-  );
   if (isLoading) return <div className="bg-comic-black min-h-screen text-white"><Navbar /><main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24"><div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12"><Skeleton className="w-full aspect-[2/3] rounded-lg" /><div className="space-y-6"><Skeleton className="h-12 w-3/4" /><Skeleton className="h-6 w-1/2" /><Skeleton className="h-24 w-full" /><div className="flex gap-4"><Skeleton className="h-12 w-48" /><Skeleton className="h-12 w-32" /></div></div></div><div className="mt-16"><Skeleton className="h-64 w-full" /></div></main><Footer /></div>;
   if (error || !comic) return <div className="bg-comic-black min-h-screen text-white flex flex-col"><Navbar /><div className="flex-1 flex items-center justify-center text-center"><div><h1 className="text-4xl font-bold">Comic Not Found</h1><p className="mt-4 text-neutral-400">We couldn't find the comic you're looking for.</p><Button asChild className="mt-8 btn-accent"><Link to="/catalog">Back to Catalog</Link></Button></div></div><Footer /></div>;
   const comicAuthors = comic.authorIds.map(authorId => allAuthors?.find(a => a.id === authorId)).filter(Boolean);
@@ -237,7 +182,6 @@ export function ProductPage() {
   const safeRatings = comic.ratings ?? { avg: 0, votes: 0, up: 0, down: 0 };
   return (
     <div className="bg-comic-black min-h-screen text-white relative overflow-hidden">
-      <ParticleCanvas />
       <Navbar />
       <main className="py-16 md:py-24 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -259,8 +203,8 @@ export function ProductPage() {
             </div>
             <motion.div variants={itemVariants} className="mt-16" id="community">
                 {isMobile ? (
-                    <Sheet><SheetTrigger asChild><Button className="w-full btn-accent" size="lg"><MessageCircle className="mr-2 h-5 w-5" /> View Community</Button></SheetTrigger><SheetContent side="bottom" className="h-[90%] bg-comic-card border-t-white/10 text-white p-0"><SheetHeader className="p-4 border-b border-white/10"><SheetTitle>Community Feed</SheetTitle></SheetHeader><div className="p-4"><CommunityFeed /></div></SheetContent></Sheet>
-                ) : <CommunityFeed />}
+                    <Sheet><SheetTrigger asChild><Button className="w-full btn-accent" size="lg"><MessageCircle className="mr-2 h-5 w-5" /> View Community</Button></SheetTrigger><SheetContent side="bottom" className="h-[90%] bg-comic-card border-t-white/10 text-white p-0 flex flex-col"><CommunityFeed comic={comic} /></SheetContent></Sheet>
+                ) : <div className="h-[80vh]"><CommunityFeed comic={comic} /></div>}
             </motion.div>
           </motion.div>
         </div>

@@ -128,6 +128,20 @@ export const useVotePost = (comicId: string) => {
         },
     });
 };
+export const useReactToPost = (comicId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ postId, sticker }: { postId: string; sticker: string }) => api(`/api/comics/${comicId}/posts/${postId}/react`, {
+            method: 'PATCH',
+            body: JSON.stringify({ sticker }),
+        }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts', comicId] });
+            queryClient.invalidateQueries({ queryKey: ['comic', comicId] });
+            queryClient.invalidateQueries({ queryKey: ['comics'] });
+        },
+    });
+};
 // Auth mutations
 export const useAuthLogin = () => {
     const queryClient = useQueryClient();

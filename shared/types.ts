@@ -25,11 +25,13 @@ export interface Post {
     user: {
         name: string;
         avatar: string;
+        isCreator?: boolean;
     };
     type: 'text' | 'image' | 'video' | 'voice' | 'file';
     content: string;
     time: string;
     reactions: PostReactions;
+    replies?: Comment[];
 }
 export interface Award {
   id: string;

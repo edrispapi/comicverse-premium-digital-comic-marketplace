@@ -132,6 +132,27 @@ return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - 
     const updatedPost = updatedState.posts?.find(p => p.id === postId);
     return ok(c, updatedPost?.reactions);
   });
+  app.patch('/api/comics/:id/posts/:postId/react', async (c) => {
+    const id = c.req.param('id');
+    const postId = c.req.param('postId');
+    const { sticker } = (await c.req.json()) as { sticker?: string };
+    if (!isStr(sticker)) return bad(c, 'sticker:string is required');
+    const comic = new ComicEntity(c.env, id);
+    if (!await comic.exists()) return notFound(c, 'comic not found');
+    const updatedState = await comic.mutate(s => {
+        const postIndex = s.posts?.findIndex(p => p.id === postId);
+        if (postIndex === -1 || !s.posts) return s;
+        const post = s.posts[postIndex];
+        const newStickers = { ...post.reactions.stickers };
+        newStickers[sticker] = (newStickers[sticker] || 0) + 1;
+        const newReactions = { ...post.reactions, stickers: newStickers };
+        const newPosts = [...s.posts];
+        newPosts[postIndex] = { ...post, reactions: newReactions };
+        return { ...s, posts: newPosts };
+    });
+    const updatedPost = updatedState.posts?.find(p => p.id === postId);
+    return ok(c, updatedPost?.reactions);
+  });
   // COMIC RATING
   app.patch('/api/comics/:id/rating', async (c) => {
     const id = c.req.param('id');
