@@ -5,12 +5,13 @@ import { Footer } from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUserStats, useComics, useGenres, useAuthors } from '@/lib/queries';
+import { useUserStats, useComicsItems, useGenres, useAuthors } from '@/lib/queries';
 import { Book, Clock, DollarSign, Download, Activity, TrendingUp } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Pie, Cell, BarChart, Bar, PieChart as RechartsPieChart } from 'recharts';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+const PieChart = RechartsPieChart; // Alias to avoid JSX component naming conflict
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -45,12 +46,12 @@ const handleExport = () => {
 };
 export function DashboardPage() {
   const { data: stats, isLoading: statsLoading } = useUserStats();
-  const { data: comics } = useComics();
+  const comicsItems = useComicsItems();
   const { data: genres } = useGenres();
   const { data: authors } = useAuthors();
   const genreData = React.useMemo(() => {
-    if (!comics || !genres) return [];
-    const genreCounts = comics.reduce((acc, comic) => {
+    if (!comicsItems || !genres) return [];
+    const genreCounts = comicsItems.reduce((acc, comic) => {
       comic.genreIds.forEach(gid => {
         acc[gid] = (acc[gid] || 0) + 1;
       });
@@ -60,10 +61,10 @@ export function DashboardPage() {
       name: genres.find(g => g.id === gid)?.name || 'Unknown',
       value: count,
     })).slice(0, 5);
-  }, [comics, genres]);
+  }, [comicsItems, genres]);
   const authorData = React.useMemo(() => {
-    if (!comics || !authors) return [];
-    const authorRatings = comics.reduce((acc, comic) => {
+    if (!comicsItems || !authors) return [];
+    const authorRatings = comicsItems.reduce((acc, comic) => {
       comic.authorIds.forEach(aid => {
         if (!acc[aid]) acc[aid] = { total: 0, count: 0 };
         acc[aid].total += comic.rating;
@@ -75,7 +76,7 @@ export function DashboardPage() {
       name: authors.find(a => a.id === aid)?.name.split(' ').pop() || 'Unknown',
       avgRating: data.total / data.count,
     })).sort((a, b) => b.avgRating - a.avgRating).slice(0, 5);
-  }, [comics, authors]);
+  }, [comicsItems, authors]);
   const COLORS = ['#EF4444', '#F87171', '#FCA5A5', '#FECACA', '#FEE2E2'];
   return (
     <div className="bg-comic-black min-h-screen text-white">
@@ -112,14 +113,14 @@ export function DashboardPage() {
               </Card>
             </motion.div>
             <motion.div variants={itemVariants}>
-              <Card className="bg-comic-card border-white/10"><CardHeader><CardTitle className="flex items-center gap-2"><RechartsPieChart className="h-4 w-4 text-muted-foreground" /> Genre Breakdown</CardTitle></CardHeader>
+              <Card className="bg-comic-card border-white/10"><CardHeader><CardTitle className="flex items-center gap-2"><PieChart className="h-4 w-4 text-muted-foreground" /> Genre Breakdown</CardTitle></CardHeader>
                 <CardContent className="h-80"><ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
+                    <PieChart>
                       <Pie data={genreData} cx="50%" cy="50%" labelLine={false} outerRadius={80} fill="#8884d8" dataKey="value" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                         {genreData.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}
                       </Pie>
                       <Tooltip contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)' }} />
-                    </RechartsPieChart>
+                    </PieChart>
                 </ResponsiveContainer></CardContent>
               </Card>
             </motion.div>

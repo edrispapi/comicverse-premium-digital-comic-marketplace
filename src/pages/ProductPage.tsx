@@ -11,7 +11,7 @@ import { useAppStore } from '@/store/use-store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
-import { useComic, useComics, useAuthors, useGenres } from '@/lib/queries';
+import { useComic, useComicsItems, useAuthors, useGenres } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +36,7 @@ const itemVariants = {
 export function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const { data: comic, isLoading, error } = useComic(id);
-  const { data: allComics } = useComics();
+  const allComicsItems = useComicsItems();
   const { data: allAuthors } = useAuthors();
   const { data: allGenres = [] } = useGenres();
   const addToCart = useAppStore(s => s.addToCart);
@@ -86,7 +86,7 @@ export function ProductPage() {
   }
   const comicAuthors = comic.authorIds.map(authorId => allAuthors?.find(a => a.id === authorId)).filter(Boolean);
   const comicGenres = comic.genreIds.map(genreId => allGenres.find(g => g.id === genreId)).filter(Boolean);
-  const relatedComics = (allComics || [])
+  const relatedComics = (allComicsItems || [])
     .filter(c => c.genreIds.some(g => comic.genreIds.includes(g)) && c.id !== comic.id)
     .filter(c => c.title.toLowerCase().includes(searchTerm.toLowerCase()))
     .slice(0, 4);
@@ -134,11 +134,11 @@ export function ProductPage() {
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl bg-comic-card border-white/10 text-white">
                       <DialogHeader>
-  <DialogTitle>Preview: {comic.title}</DialogTitle>
-  <DialogDescription className='text-muted-foreground'>
-    Look inside the preview carousel for {comic.title}. Swipe or use arrows to navigate pages.
-  </DialogDescription>
-</DialogHeader>
+                        <DialogTitle>Preview: {comic.title}</DialogTitle>
+                        <DialogDescription className='text-muted-foreground'>
+                          Look inside the preview carousel for {comic.title}. Swipe or use arrows to navigate pages.
+                        </DialogDescription>
+                      </DialogHeader>
                       <Carousel className="w-full">
                         <CarouselContent>
                           {comic.previewImageUrls.map((url, index) => (

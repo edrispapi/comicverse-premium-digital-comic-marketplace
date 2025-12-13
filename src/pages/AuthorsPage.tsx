@@ -5,11 +5,12 @@ import { Footer } from '@/components/layout/Footer';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { useAuthors, useComics } from '@/lib/queries';
+import { useAuthors, useComicsItems, useComics } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 export function AuthorsPage() {
   const { data: authors, isLoading: authorsLoading } = useAuthors();
-  const { data: comics, isLoading: comicsLoading } = useComics();
+  const { isLoading: comicsLoading } = useComics();
+  const comicsItems = useComicsItems();
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
@@ -32,7 +33,7 @@ export function AuthorsPage() {
                 ))
               ) : (
                 authors?.map((author, authorIndex) => {
-                  const authorComics = comics?.filter(comic => comic.authorIds.includes(author.id)) || [];
+                  const authorComics = comicsItems?.filter(comic => comic.authorIds.includes(author.id)) || [];
                   return (
                     <motion.section key={author.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: authorIndex * 0.1 }} viewport={{ once: true }}>
                       <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">

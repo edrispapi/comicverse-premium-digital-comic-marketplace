@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { LayoutGrid, List, Filter } from 'lucide-react';
-import { useAuthors, useGenres } from '@/lib/queries';
+import { Filter } from 'lucide-react';
+import { useAuthors, useGenres, useComics, useComicsItems } from '@/lib/queries';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppStore } from '@/store/use-store';
-import { useComics } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 function FilterSidebar({
   filters,
@@ -76,7 +75,8 @@ function FilterSidebar({
 }
 export function CatalogPage() {
   const searchTerm = useAppStore(s => s.searchTerm);
-  const { data: comics, isLoading, error } = useComics();
+  const { isLoading, error } = useComics();
+  const comics = useComicsItems();
   const { data: authorsData = [] } = useAuthors();
   const { data: genresData = [] } = useGenres();
   const [filters, setFilters] = useState<{ genres: string[], authors: string[] }>({ genres: [], authors: [] });

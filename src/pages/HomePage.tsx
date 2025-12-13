@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { useAppStore } from '@/store/use-store';
-import { useComics, useAudiobooks } from '@/lib/queries';
+import { useComics, useComicsItems, useAudiobooksItems } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Toaster } from '@/components/ui/sonner';
 import {
@@ -23,7 +23,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import useEmblaCarousel from 'embla-carousel-react';
 function HeroSlider() {
-  const { data: allComics, isLoading } = useComics();
+  const { isLoading } = useComics();
+  const allComics = useComicsItems();
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -83,7 +84,7 @@ function HeroSlider() {
     setCurrent(index);
     startAutoplay();
   }, [api, startAutoplay, stopAutoplay]);
-  if (isLoading) {
+  if (isLoading && featuredComics.length === 0) {
     return <Skeleton className="w-full h-[60vh] md:h-[80vh]" />;
   }
   return (
@@ -181,8 +182,7 @@ function HeroSlider() {
   );
 }
 function AudiobookCarousel() {
-  const { data: audiobooksData, isLoading } = useAudiobooks();
-  const audiobooks = audiobooksData?.items;
+  const audiobooks = useAudiobooksItems();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
   const [scaleValues, setScaleValues] = useState<number[]>([]);
   const onSelect = useCallback(() => {
@@ -213,7 +213,7 @@ function AudiobookCarousel() {
     const interval = setInterval(() => emblaApi.scrollNext(), 4000);
     return () => clearInterval(interval);
   }, [emblaApi, onSelect]);
-  if (isLoading) {
+  if (audiobooks.length === 0) {
     return <Skeleton className="w-full h-96" />;
   }
   return (
@@ -248,7 +248,8 @@ const testimonials = [
 ];
 export function HomePage() {
   const searchTerm = useAppStore((s) => s.searchTerm);
-  const { data: allComics, isLoading } = useComics();
+  const { isLoading } = useComics();
+  const allComics = useComicsItems();
   const filteredComics = useMemo(() => {
     if (!allComics) return [];
     if (!searchTerm) return allComics;
@@ -273,7 +274,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <section className="py-16 md:py-24">
             <h2 className="text-3xl font-bold tracking-tight mb-8">Trending Now</h2>
-            {isLoading ? (
+            {isLoading && trendingComics.length === 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
               </div>
@@ -290,7 +291,7 @@ export function HomePage() {
           <section className="py-16 md:py-24 bg-comic-card -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
               <h2 className="text-3xl font-bold tracking-tight mb-8">New Releases</h2>
-              {isLoading ? (
+              {isLoading && newReleases.length === 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                   {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
                 </div>

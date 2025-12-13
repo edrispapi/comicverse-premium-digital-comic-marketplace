@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { BookOpen, Search, ShoppingCart, Heart, Menu, User, LogOut, BookOpenCheck, Bell, BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAppStore, useCart, useWishlist, useNotifications } from '@/store/use-store';
 import { CartSheet } from '@/components/cart/CartSheet';
@@ -18,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AuthDialog } from '@/components/auth/AuthDialog';
-import { useNewAudiobooks, useComics, useUserNotifications } from '@/lib/queries';
+import { useNewAudiobooks, useComicsItems, useUserNotifications } from '@/lib/queries';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
@@ -27,13 +26,11 @@ export function Navbar() {
   const wishlist = useWishlist();
   const toggleCart = useAppStore(s => s.toggleCart);
   const toggleWishlistSheet = useAppStore(s => s.toggleWishlistSheet);
-  const searchTerm = useAppStore(s => s.searchTerm);
-  const setSearchTerm = useAppStore(s => s.setSearchTerm);
   const userId = useAppStore(s => s.userId);
   const clearAuth = useAppStore(s => s.clearAuth);
   const toggleAuth = useAppStore(s => s.toggleAuth);
   const { data: newAudiobooks } = useNewAudiobooks();
-  const { data: allComics } = useComics();
+  const allComics = useComicsItems();
   const { data: notificationsData } = useUserNotifications();
   const { notifications, unreadCount, setNotifications, markAsRead } = useNotifications();
   const [openSearch, setOpenSearch] = useState(false);
@@ -46,7 +43,7 @@ export function Navbar() {
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const wishlistCount = wishlist.length;
   const newAudiobooksCount = newAudiobooks?.length || 0;
-  const totalComics = allComics?.items?.length || 0;
+  const totalComics = allComics.length;
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `relative transition-colors hover:text-red-400 ${isActive ? 'text-red-500' : 'text-neutral-300'} after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:h-[2px] after:w-full after:bg-red-400 after:scale-x-0 after:origin-left after:transition-transform ${isActive ? 'after:scale-x-100' : 'group-hover:after:scale-x-100'}`;
   const navLinks = (
@@ -168,7 +165,7 @@ export function Navbar() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-            {allComics?.items?.slice(0, 3).map(comic => (
+            {allComics?.slice(0, 3).map(comic => (
               <CommandItem key={comic.id} onSelect={() => runCommand(() => navigate(`/comic/${comic.id}`))}>
                 <img src={comic.coverUrl} alt={comic.title} className="w-8 h-12 object-cover mr-4 rounded" />
                 {comic.title}

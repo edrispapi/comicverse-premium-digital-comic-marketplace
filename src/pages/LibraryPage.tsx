@@ -4,7 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLibraryShelves } from '@/store/use-store';
-import { useComics } from '@/lib/queries';
+import { useComicsItems } from '@/lib/queries';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -29,7 +29,7 @@ function Shelf({ comics, emptyTitle, emptyMessage }: { comics: any[], emptyTitle
   }
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-      {comics.map((comic, index) => (
+      {comics.map((comic) => (
         <motion.div key={comic.id} variants={itemVariants}>
           <ComicCard comic={comic} />
         </motion.div>
@@ -39,12 +39,12 @@ function Shelf({ comics, emptyTitle, emptyMessage }: { comics: any[], emptyTitle
 }
 export function LibraryPage() {
   const { reading, completed, wishlist, updateLibrary } = useLibraryShelves();
-  const { data: allComics } = useComics();
+  const allComicsItems = useComicsItems();
   useEffect(() => {
-    if (allComics) {
-      updateLibrary(allComics);
+    if (allComicsItems) {
+      updateLibrary(allComicsItems);
     }
-  }, [allComics, updateLibrary]);
+  }, [allComicsItems, updateLibrary]);
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
