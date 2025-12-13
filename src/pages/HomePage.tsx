@@ -181,7 +181,8 @@ function HeroSlider() {
   );
 }
 function AudiobookCarousel() {
-  const { data: audiobooks, isLoading } = useAudiobooks();
+  const { data: audiobooksData, isLoading } = useAudiobooks();
+  const audiobooks = audiobooksData?.items;
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
   const [scaleValues, setScaleValues] = useState<number[]>([]);
   const onSelect = useCallback(() => {

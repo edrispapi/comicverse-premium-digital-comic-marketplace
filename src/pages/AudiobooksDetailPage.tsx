@@ -26,7 +26,8 @@ const itemVariants = {
 export function AudiobooksDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: comic, isLoading, error } = useAudiobook(id);
-  const { data: allAudiobooks } = useAudiobooks();
+  const { data: allAudiobooksData } = useAudiobooks();
+  const allAudiobooks = allAudiobooksData?.items;
   const { data: allAuthors } = useAuthors();
   const { data: allGenres = [] } = useGenres();
   const addToCart = useAppStore(s => s.addToCart);
