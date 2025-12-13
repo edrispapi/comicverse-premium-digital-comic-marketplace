@@ -14,7 +14,7 @@ export function CartSheet() {
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   return (
     <Sheet open={isCartOpen} onOpenChange={toggleCart}>
-      <SheetContent className="bg-comic-card border-l-white/10 text-white flex flex-col w-full sm:max-w-md">
+      <SheetContent className="bg-comic-card border-l-red-500/20 text-white flex flex-col w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="text-2xl font-bold text-white">Your Cart</SheetTitle>
         </SheetHeader>
@@ -22,7 +22,7 @@ export function CartSheet() {
           <ScrollArea className="h-full pr-4">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center text-neutral-400">
-                <ShoppingCart className="w-16 h-16 mb-4" />
+                <ShoppingCart className="w-16 h-16 mb-4 text-red-400" />
                 <h3 className="text-xl font-semibold">Your cart is empty</h3>
                 <p className="mt-2 text-sm">Add some comics to get started!</p>
               </div>
@@ -50,7 +50,7 @@ export function CartSheet() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-7 w-7 hover:text-red-400"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
                             <Minus className="w-4 h-4" />
@@ -59,7 +59,7 @@ export function CartSheet() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-7 w-7 hover:text-red-400"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
                             <Plus className="w-4 h-4" />
@@ -86,7 +86,7 @@ export function CartSheet() {
             <div className="w-full space-y-4">
               <div className="flex justify-between font-semibold text-lg">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span className="text-red-400">${subtotal.toFixed(2)}</span>
               </div>
               <Button size="lg" className="w-full btn-accent">
                 Proceed to Checkout

@@ -42,13 +42,13 @@ export function AudiobookCard({ comic }: AudiobookCardProps) {
     <Link to={`/audiobooks/${comic.id}`} className="block group">
       <motion.div
         className="bg-comic-card rounded-lg overflow-hidden border border-white/10 transition-all duration-300 relative"
-        whileHover={{ y: -8, boxShadow: '0 10px 20px rgba(255, 165, 0, 0.1)', rotateY: 2, scale: 1.02 }}
+        whileHover={{ y: -8, boxShadow: '0 10px 20px rgba(239, 68, 68, 0.1)', rotateY: 2, scale: 1.02 }}
       >
         <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <Button
             size="icon"
             variant="ghost"
-            className="rounded-full h-9 w-9 bg-black/50 hover:bg-black/70"
+            className="rounded-full h-9 w-9 bg-black/50 hover:bg-red-500/70"
             onClick={(e) => handleInteraction(e, () => toggleWishlist(comic))}
           >
             <Heart className={cn("w-5 h-5 text-white", isInWishlist && "fill-red-500 text-red-500")} />
@@ -63,19 +63,19 @@ export function AudiobookCard({ comic }: AudiobookCardProps) {
             transition={{ duration: 0.3 }}
           />
           {comic.duration && (
-            <Badge className="absolute bottom-2 left-2 z-10 bg-black/70 backdrop-blur-sm">{comic.duration}</Badge>
+            <Badge className="absolute bottom-2 left-2 z-10 bg-red-500/70 backdrop-blur-sm text-white">{comic.duration}</Badge>
           )}
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-             <Button size="icon" variant="ghost" className="h-16 w-16 text-white bg-black/50 rounded-full backdrop-blur-sm" onClick={togglePlay}>
+             <Button size="icon" variant="ghost" className="h-16 w-16 text-white bg-red-500/80 hover:bg-red-600 rounded-full backdrop-blur-sm" onClick={togglePlay}>
                 {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8" />}
               </Button>
           </div>
         </div>
         <div className="p-4">
-          <h3 className="font-bold text-lg truncate text-white group-hover:text-comic-accent transition-colors">{comic.title}</h3>
+          <h3 className="font-bold text-lg truncate text-white group-hover:text-red-400 transition-colors">{comic.title}</h3>
           <div className="flex items-center justify-between mt-2 text-sm">
-            <div className="flex items-center gap-1 text-amber-400">
+            <div className="flex items-center gap-1 text-red-400">
               <Star className="w-4 h-4 fill-current" />
               <span>{comic.rating.toFixed(1)}</span>
             </div>

@@ -144,8 +144,8 @@ function HeroSlider() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
-        <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:shadow-red-glow" />
+        <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:shadow-red-glow" />
       </Carousel>
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center space-x-4">
         <div className="flex space-x-2">
@@ -154,7 +154,7 @@ function HeroSlider() {
               key={index}
               onClick={() => onDotClick(index)}
               className={`h-2 rounded-full transition-all duration-300 ${
-                current === index ? 'w-6 bg-comic-accent' : 'w-2 bg-white/50'
+                current === index ? 'w-6 bg-red-500' : 'w-2 bg-red-500/30'
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -168,7 +168,7 @@ function HeroSlider() {
               cy="18"
               r="16"
               fill="none"
-              stroke="hsl(var(--foreground))"
+              stroke="hsl(var(--primary))"
               strokeWidth="2"
               strokeDasharray="100.53"
               strokeDashoffset={100.53 - (progress / 100) * 100.53}
@@ -234,8 +234,8 @@ function AudiobookCarousel() {
           ))}
         </div>
       </div>
-      <Button variant="outline" size="icon" className="absolute left-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => emblaApi?.scrollPrev()}><ArrowRight className="rotate-180" /></Button>
-      <Button variant="outline" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => emblaApi?.scrollNext()}><ArrowRight /></Button>
+      <Button variant="outline" size="icon" className="absolute left-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity border-red-500 hover:bg-red-500/20" onClick={() => emblaApi?.scrollPrev()}><ArrowRight className="rotate-180" /></Button>
+      <Button variant="outline" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity border-red-500 hover:bg-red-500/20" onClick={() => emblaApi?.scrollNext()}><ArrowRight /></Button>
     </div>
   );
 }
@@ -309,13 +309,13 @@ export function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {testimonials.map((testimonial, index) => (
                 <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }}>
-                  <Card className="bg-comic-card border border-white/10 h-full flex flex-col p-6 hover:border-comic-accent/50 hover:shadow-accent-glow transition-all duration-300">
+                  <Card className="bg-comic-card border border-white/10 h-full flex flex-col p-6 hover:border-red-500/50 hover:shadow-red-glow transition-all duration-300">
                     <CardContent className="flex flex-col flex-1 p-0">
                       <div className="flex items-center mb-4">
                         <Avatar className="h-12 w-12 mr-4"><AvatarImage src={testimonial.avatar} alt={testimonial.name} /><AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback></Avatar>
                         <div>
                           <p className="font-semibold text-white">{testimonial.name}</p>
-                          <div className="flex text-amber-400">{[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}</div>
+                          <div className="flex text-red-400">{[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}</div>
                         </div>
                       </div>
                       <p className="text-neutral-300 text-sm flex-1">"{testimonial.quote}"</p>

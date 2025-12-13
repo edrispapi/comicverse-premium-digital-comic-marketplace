@@ -96,27 +96,27 @@ export function GlobalAudioPlayer() {
         <p className="font-semibold truncate">{currentAudio?.title || 'No track selected'}</p>
         <div className="flex items-center gap-2">
           <span className="text-xs text-neutral-400">{formatTime(audioRef.current?.currentTime || 0)}</span>
-          <Slider value={[progress]} onValueChange={handleProgressChange} className="flex-1" />
+          <Slider value={[progress]} onValueChange={handleProgressChange} className="[&>span:first-child]:bg-red-800 [&>span:first-child>span]:bg-red-500" />
           <span className="text-xs text-neutral-400">{formatTime(duration)}</span>
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={playPrev} disabled={queue.length <= 1}><SkipBack className="w-5 h-5" /></Button>
-        <Button variant="ghost" size="icon" onClick={togglePlay} className="h-12 w-12 bg-comic-accent text-comic-black hover:bg-amber-500 rounded-full">
+        <Button variant="ghost" size="icon" onClick={playPrev} disabled={queue.length <= 1} className="text-red-400 hover:text-red-300"><SkipBack className="w-5 h-5" /></Button>
+        <Button variant="ghost" size="icon" onClick={togglePlay} className="h-12 w-12 bg-red-500 text-white hover:bg-red-600 rounded-full">
           {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
         </Button>
-        <Button variant="ghost" size="icon" onClick={playNext} disabled={queue.length <= 1}><SkipForward className="w-5 h-5" /></Button>
+        <Button variant="ghost" size="icon" onClick={playNext} disabled={queue.length <= 1} className="text-red-400 hover:text-red-300"><SkipForward className="w-5 h-5" /></Button>
       </div>
       <div className="hidden md:flex items-center gap-2 w-32">
-        <Button variant="ghost" size="icon" onClick={toggleMute}>{isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}</Button>
-        <Slider value={[isMuted ? 0 : volume]} onValueChange={handleVolumeChange} max={1} step={0.01} />
+        <Button variant="ghost" size="icon" onClick={toggleMute} className="text-red-400 hover:text-red-300">{isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}</Button>
+        <Slider value={[isMuted ? 0 : volume]} onValueChange={handleVolumeChange} max={1} step={0.01} className="[&>span:first-child]:bg-red-800 [&>span:first-child>span]:bg-red-500" />
       </div>
       <Sheet>
-        <SheetTrigger asChild><Button variant="ghost" size="icon"><ListMusic className="w-5 h-5" /></Button></SheetTrigger>
-        <SheetContent className="bg-comic-card border-l-white/10 text-white"><SheetHeader><SheetTitle>Up Next</SheetTitle></SheetHeader>
+        <SheetTrigger asChild><Button variant="ghost" size="icon" className="text-red-400 hover:text-red-300"><ListMusic className="w-5 h-5" /></Button></SheetTrigger>
+        <SheetContent className="bg-comic-card border-l-red-500/20 text-white"><SheetHeader><SheetTitle>Up Next</SheetTitle></SheetHeader>
           <ScrollArea className="h-[calc(100%-4rem)] pr-4 mt-4">
             {queue.map(item => (
-              <Link to={`/audiobooks/${item.id}`} key={item.id} className={`flex items-center gap-4 p-2 rounded-md hover:bg-white/10 ${item.id === currentId ? 'bg-white/10' : ''}`}>
+              <Link to={`/audiobooks/${item.id}`} key={item.id} className={`flex items-center gap-4 p-2 rounded-md hover:bg-red-500/10 ${item.id === currentId ? 'bg-red-500/20' : ''}`}>
                 <img src={item.coverUrl} alt={item.title} className="w-12 h-12 rounded-md" />
                 <p className="font-semibold">{item.title}</p>
               </Link>

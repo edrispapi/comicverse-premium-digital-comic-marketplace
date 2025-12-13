@@ -33,7 +33,7 @@ const Confetti = () => (
     {Array.from({ length: 30 }).map((_, i) => (
       <motion.div
         key={i}
-        className="absolute w-2 h-2 bg-comic-accent rounded-full"
+        className="absolute w-2 h-2 bg-red-500 rounded-full"
         style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
         initial={{ scale: 0, opacity: 1 }}
         animate={{
@@ -99,9 +99,9 @@ function AuthForm() {
         <DialogDescription className="text-neutral-400 mt-2">Unlock a universe of comics.</DialogDescription>
       </DialogHeader>
       <Tabs defaultValue="login" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-neutral-800">
-          <TabsTrigger value="login">Login</TabsTrigger>
-          <TabsTrigger value="signup">Sign Up</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-red-500/20">
+          <TabsTrigger value="login" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">Login</TabsTrigger>
+          <TabsTrigger value="signup" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">Sign Up</TabsTrigger>
         </TabsList>
         <TabsContent value="login">
           <Form {...loginForm}>
@@ -113,7 +113,7 @@ function AuthForm() {
                   <FormControl>
                     <div className="relative">
                       <Input type={showPassword ? 'text' : 'password'} {...field} />
-                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
+                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 hover:text-red-400" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
@@ -123,7 +123,7 @@ function AuthForm() {
               )} />
               <div className="flex items-center justify-between text-sm">
                 <FormField control={loginForm.control} name="rememberMe" render={({ field }) => <FormItem className="flex items-center space-x-2"><FormControl><Checkbox id="rememberMe" checked={!!field.value} onCheckedChange={field.onChange} /></FormControl><Label htmlFor="rememberMe" className="font-normal">Remember me</Label></FormItem>} />
-                <a href="#" className="hover:text-comic-accent transition-colors">Forgot password?</a>
+                <a href="#" className="hover:text-red-400 transition-colors">Forgot password?</a>
               </div>
               <Button type="submit" className="w-full btn-accent" disabled={isLoginPending}>{isLoginPending ? 'Logging in...' : 'Login'}</Button>
             </form>
@@ -140,7 +140,7 @@ function AuthForm() {
                   <FormControl>
                     <div className="relative">
                       <Input type={showPassword ? 'text' : 'password'} {...field} />
-                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
+                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 hover:text-red-400" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
