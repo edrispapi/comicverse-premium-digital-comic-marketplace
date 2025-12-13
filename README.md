@@ -42,6 +42,9 @@ The backend is powered by a Hono server running on Cloudflare Workers.
 - `POST /api/comics/:id/posts`: Post a new message.
 - `PATCH /api/comics/:id/posts/:postId/vote`: Upvote/downvote a post.
 - `PATCH /api/comics/:id/posts/:postId/react`: Add a sticker reaction to a post.
+- `POST /api/comics/:id/posts/:postId/reply`: Post a reply to a message.
+- `PATCH /api/comics/:id/posts/:postId/heart`: Add a heart reaction to a post.
+- `PATCH /api/comics/:id/awards`: Give an award to a comic.
 - `PATCH /api/comics/:id/rating`: Submit a rating for a comic.
 - `GET /api/audiobooks`: Fetch all audiobooks.
 - `GET /api/authors`: Fetch all authors.
