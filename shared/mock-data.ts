@@ -157,3 +157,5 @@ export const COMICS: Comic[] = [
     ]
   },
 ];
+export const genres = GENRES;
+export const authors = AUTHORS;
