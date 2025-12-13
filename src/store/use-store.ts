@@ -180,8 +180,15 @@ export const useAppStore = create<AppState>()(
       setStats: (stats) => set({ stats }),
       updateLibrary: (allComics) => set(state => {
         // This is a mock implementation. In a real app, this would be based on user data.
-        const reading = allComics.filter(c => c.chapters.some(ch => ch.progress > 0 && ch.progress < 100)).slice(0, 5);
-        const completed = allComics.filter(c => c.chapters.every(ch => ch.progress === 100)).slice(0, 5);
+        if (!allComics || !Array.isArray(allComics)) {
+          return { reading: [], completed: [] };
+        }
+        const reading = allComics
+          .filter(c => (c.chapters || []).some(ch => ch?.progress > 0 && ch?.progress < 100))
+          .slice(0, 5);
+        const completed = allComics
+          .filter(c => (c.chapters || []).every(ch => ch?.progress === 100))
+          .slice(0, 5);
         return { reading, completed };
       }),
     }),
