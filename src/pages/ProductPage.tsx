@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import type { Post } from '@shared/types';
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
@@ -117,7 +118,7 @@ const ParticleCanvas = () => {
 export function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const { data: comic, isLoading, error } = useComic(id);
-  const { data: allComicsData = [] } = useComics();
+  const { data: allComicsData = [], isLoading: comicsLoading } = useComics();
   const { data: allAuthors } = useAuthors();
   const { data: allGenres = [] } = useGenres();
   const { data: comments } = useComicComments(id);
@@ -170,7 +171,7 @@ export function ProductPage() {
   if (isLoading) return <div className="bg-comic-black min-h-screen text-white"><Navbar /><main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24"><div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12"><Skeleton className="w-full aspect-[2/3] rounded-lg" /><div className="space-y-6"><Skeleton className="h-12 w-3/4" /><Skeleton className="h-6 w-1/2" /><Skeleton className="h-24 w-full" /><div className="flex gap-4"><Skeleton className="h-12 w-48" /><Skeleton className="h-12 w-32" /></div></div></div><div className="mt-16"><Skeleton className="h-64 w-full" /></div></main><Footer /></div>;
   if (error || !comic) return <div className="bg-comic-black min-h-screen text-white flex flex-col"><Navbar /><div className="flex-1 flex items-center justify-center text-center"><div><h1 className="text-4xl font-bold">Comic Not Found</h1><p className="mt-4 text-neutral-400">We couldn't find the comic you're looking for.</p><Button asChild className="mt-8 btn-accent"><Link to="/catalog">Back to Catalog</Link></Button></div></div><Footer /></div>;
   const comicAuthors = comic.authorIds.map(authorId => allAuthors?.find(a => a.id === authorId)).filter(Boolean);
-  const comicGenres = comic.genreIds.map(genreId => allGenres.find(g => g.id === genreId)).filter(Boolean);
+  const comicGenres = comic.genreIds.map(genreId => allGenres?.find(g => g.id === genreId)).filter(Boolean);
   const relatedComics = allComicsData.filter(c => c.genreIds?.some(g => comic.genreIds?.includes(g)) && c.id !== comic.id).slice(0, 4);
   const awards = getAwards(comic);
   const safeRatings = comic.ratings ?? { avg: 0, votes: 0, up: 0, down: 0 };
