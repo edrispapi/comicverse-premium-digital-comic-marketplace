@@ -3,6 +3,8 @@ import type { Env } from './core-utils';
 import { UserEntity, ComicEntity, AuthorEntity, GenreEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
 import type { User } from '@shared/types';
+const mockHash = (password: string) => btoa(password);
+const mockGenerateToken = (user: User) => JSON.stringify({ sub: user.id, name: user.name, iat: Date.now() });
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // COMICS
   app.get('/api/comics', async (c) => {
@@ -22,25 +24,45 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const { items } = await AuthorEntity.list(c.env, null, 50);
     return ok(c, items);
   });
-
   // GENRES
   app.get('/api/genres', async (c) => {
     await GenreEntity.ensureSeed(c.env);
     const { items } = await GenreEntity.list(c.env, null, 50);
     return ok(c, items);
   });
-  // AUTH (Mock)
+  // AUTH
   app.post('/api/auth/login', async (c) => {
-    const { name } = (await c.req.json()) as { name?: string };
-    if (!isStr(name)) return bad(c, 'name required');
-    // In a real app, you'd look up by a unique identifier like email
-    // For this mock, we'll find or create by name
-    const { items: existingUsers } = await UserEntity.list(c.env, null, 50);
-    let user = existingUsers.find(u => u.name.toLowerCase() === name.toLowerCase());
-    if (!user) {
-      user = await UserEntity.create(c.env, { id: crypto.randomUUID(), name: name.trim() });
+    const { email, password } = (await c.req.json()) as { email?: string, password?: string };
+    if (!isStr(email) || !isStr(password)) return bad(c, 'Email and password required');
+    await UserEntity.ensureSeed(c.env);
+    const { items: allUsers } = await UserEntity.list(c.env, null, 1000);
+    const user = allUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!user || user.passwordHash !== mockHash(password)) {
+      return c.json({ success: false, error: 'Invalid credentials' }, 401);
     }
-    return ok(c, { user });
+    const token = mockGenerateToken(user);
+    const { passwordHash, ...userResponse } = user;
+    return ok(c, { user: userResponse, token });
+  });
+  app.post('/api/auth/signup', async (c) => {
+    const { name, email, password } = (await c.req.json()) as { name?: string, email?: string, password?: string };
+    if (!isStr(name) || !isStr(email) || !isStr(password)) return bad(c, 'Name, email, and password required');
+    await UserEntity.ensureSeed(c.env);
+    const { items: allUsers } = await UserEntity.list(c.env, null, 1000);
+    const existingUser = allUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (existingUser) {
+      return c.json({ success: false, error: 'An account with this email already exists' }, 409);
+    }
+    const newUser: User = {
+      id: crypto.randomUUID(),
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      passwordHash: mockHash(password),
+    };
+    await UserEntity.create(c.env, newUser);
+    const token = mockGenerateToken(newUser);
+    const { passwordHash, ...userResponse } = newUser;
+    return ok(c, { user: userResponse, token });
   });
   // USERS (for potential admin use, keeping simple)
   app.get('/api/users', async (c) => {

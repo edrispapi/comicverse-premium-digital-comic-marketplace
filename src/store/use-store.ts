@@ -1,22 +1,27 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Comic } from '@shared/types';
+import { Comic, User } from '@shared/types';
+import { useShallow } from 'zustand/react/shallow';
 interface CartItem extends Comic {
   quantity: number;
 }
 interface AppState {
   // User state
   userId: string | null;
+  authToken: string | null;
+  rememberMe: boolean;
   setUserId: (userId: string) => void;
-  logout: () => void;
+  setAuthToken: (token: string | null) => void;
+  setRememberMe: (remember: boolean) => void;
+  clearAuth: () => void;
   // UI state
   isCartOpen: boolean;
   isWishlistOpen: boolean;
-  isAuthSheetOpen: boolean;
+  isAuthOpen: boolean;
   searchTerm: string;
   toggleCart: () => void;
   toggleWishlistSheet: () => void;
-  toggleAuthSheet: () => void;
+  toggleAuth: (isOpen?: boolean) => void;
   setSearchTerm: (term: string) => void;
   // Cart & Wishlist
   cart: CartItem[];
@@ -45,16 +50,20 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       // User state
       userId: null,
+      authToken: null,
+      rememberMe: false,
       setUserId: (userId) => set({ userId }),
-      logout: () => set({ userId: null, cart: [], wishlist: [] }),
+      setAuthToken: (token) => set({ authToken: token }),
+      setRememberMe: (remember) => set({ rememberMe: remember }),
+      clearAuth: () => set({ userId: null, authToken: null }),
       // UI state
       isCartOpen: false,
       isWishlistOpen: false,
-      isAuthSheetOpen: false,
+      isAuthOpen: false,
       searchTerm: '',
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
       toggleWishlistSheet: () => set((state) => ({ isWishlistOpen: !state.isWishlistOpen })),
-      toggleAuthSheet: () => set((state) => ({ isAuthSheetOpen: !state.isAuthSheetOpen })),
+      toggleAuth: (isOpen) => set((state) => ({ isAuthOpen: isOpen !== undefined ? isOpen : !state.isAuthOpen })),
       setSearchTerm: (term) => set({ searchTerm: term }),
       // Cart & Wishlist
       cart: [],
@@ -120,6 +129,8 @@ export const useAppStore = create<AppState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         userId: state.userId,
+        authToken: state.authToken,
+        rememberMe: state.rememberMe,
         cart: state.cart,
         wishlist: state.wishlist,
         promoCode: state.promoCode,
@@ -132,14 +143,16 @@ export const useAppStore = create<AppState>()(
 );
 // Selectors for derived state to prevent unnecessary re-renders
 export const useCartTotals = () => {
-  const { cart, shippingCost, discountPercent } = useAppStore(state => ({
-    cart: state.cart,
-    shippingCost: state.shippingCost,
-    discountPercent: state.discountPercent,
-  }));
+  // Select each piece of state individually to keep selector stable
+  const cart = useAppStore(state => state.cart);
+  const shippingCost = useAppStore(state => state.shippingCost);
+  const discountPercent = useAppStore(state => state.discountPercent);
+
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const discount = subtotal * discountPercent;
   const tax = (subtotal - discount) * 0.08; // Tax calculated on discounted price
   const total = subtotal - discount + tax + shippingCost;
   return { subtotal, discount, tax, total, shippingCost };
 };
+export const useCart = () => useAppStore(useShallow(state => state.cart));
+export const useWishlist = () => useAppStore(useShallow(state => state.wishlist));

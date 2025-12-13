@@ -17,6 +17,7 @@ import { ProductPage } from '@/pages/ProductPage';
 import { AuthorsPage } from '@/pages/AuthorsPage';
 import { GenresPage } from '@/pages/GenresPage';
 import { CheckoutPage } from '@/pages/CheckoutPage';
+import { ProfilePage } from '@/pages/ProfilePage';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -47,6 +48,11 @@ const router = createBrowserRouter([
   {
     path: "/checkout",
     element: <CheckoutPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/profile",
+    element: <ProfilePage />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);

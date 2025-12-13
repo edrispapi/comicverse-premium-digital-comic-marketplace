@@ -1,63 +1,33 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { BookOpen, Search, ShoppingCart, Heart, Menu, X, User } from 'lucide-react';
+import { BookOpen, Search, ShoppingCart, Heart, Menu, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useAppStore } from '@/store/use-store';
+import { useAppStore, useCart, useWishlist } from '@/store/use-store';
 import { CartSheet } from '@/components/cart/CartSheet';
 import { WishlistSheet } from '@/components/WishlistSheet';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { useAuth } from '@/lib/queries';
-import { toast } from 'sonner';
-function AuthSheet() {
-  const { mutate: login, isPending } = useAuth();
-  const setUserId = useAppStore(s => s.setUserId);
-  const toggleAuthSheet = useAppStore(s => s.toggleAuthSheet);
-  const [name, setName] = useState('');
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      toast.error('Please enter a name.');
-      return;
-    }
-    login({ name }, {
-      onSuccess: (data) => {
-        setUserId(data.user.id);
-        toast.success(`Welcome, ${data.user.name}!`);
-        toggleAuthSheet();
-      },
-      onError: (error) => {
-        toast.error(`Login failed: ${error.message}`);
-      }
-    });
-  };
-  return (
-    <form onSubmit={handleLogin} className="p-6 space-y-4">
-      <Input
-        placeholder="Enter your name to login/register"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        disabled={isPending}
-        className="bg-neutral-800"
-      />
-      <Button type="submit" className="w-full btn-accent" disabled={isPending}>
-        {isPending ? 'Logging in...' : 'Login / Register'}
-      </Button>
-    </form>
-  );
-}
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { AuthDialog } from '@/components/auth/AuthDialog';
 export function Navbar() {
-  const cart = useAppStore(s => s.cart);
-  const wishlist = useAppStore(s => s.wishlist);
+  const cart = useCart();
+  const wishlist = useWishlist();
   const toggleCart = useAppStore(s => s.toggleCart);
   const toggleWishlistSheet = useAppStore(s => s.toggleWishlistSheet);
   const searchTerm = useAppStore(s => s.searchTerm);
   const setSearchTerm = useAppStore(s => s.setSearchTerm);
   const userId = useAppStore(s => s.userId);
-  const logout = useAppStore(s => s.logout);
-  const isAuthSheetOpen = useAppStore(s => s.isAuthSheetOpen);
-  const toggleAuthSheet = useAppStore(s => s.toggleAuthSheet);
+  const clearAuth = useAppStore(s => s.clearAuth);
+  const toggleAuth = useAppStore(s => s.toggleAuth);
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const wishlistCount = wishlist.length;
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -109,11 +79,35 @@ export function Navbar() {
                 <span className="sr-only">Open cart</span>
               </Button>
               {userId ? (
-                <Button onClick={logout} variant="ghost" size="icon" className="text-neutral-300 hover:text-white">
-                  <User className="h-6 w-6" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={`https://i.pravatar.cc/150?u=${userId}`} alt="User" />
+                        <AvatarFallback>U</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-comic-card border-white/10 text-white" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">My Account</p>
+                        <p className="text-xs leading-none text-muted-foreground">Welcome back!</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link to="/profile"><User className="mr-2 h-4 w-4" /><span>Profile</span></Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuItem onClick={clearAuth} className="cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
-                <Button onClick={toggleAuthSheet} variant="ghost" className="hidden md:inline-flex">Login</Button>
+                <Button onClick={() => toggleAuth(true)} variant="ghost" className="hidden md:inline-flex">Login</Button>
               )}
               <div className="md:hidden">
                 <Sheet>
@@ -126,7 +120,7 @@ export function Navbar() {
                       <NavLink to="/catalog" className={navLinkClass}>Catalog</NavLink>
                       <NavLink to="/genres" className={navLinkClass}>Genres</NavLink>
                       <NavLink to="/authors" className={navLinkClass}>Authors</NavLink>
-                      {!userId && <Button onClick={toggleAuthSheet} className="w-full mt-4">Login</Button>}
+                      {!userId && <Button onClick={() => toggleAuth(true)} className="w-full mt-4">Login</Button>}
                     </nav>
                   </SheetContent>
                 </Sheet>
@@ -137,12 +131,7 @@ export function Navbar() {
       </header>
       <CartSheet />
       <WishlistSheet />
-      <Sheet open={isAuthSheetOpen} onOpenChange={toggleAuthSheet}>
-        <SheetContent className="bg-comic-card border-l-white/10 text-white">
-          <SheetHeader><SheetTitle>Login or Register</SheetTitle></SheetHeader>
-          <AuthSheet />
-        </SheetContent>
-      </Sheet>
+      <AuthDialog />
     </>
   );
 }

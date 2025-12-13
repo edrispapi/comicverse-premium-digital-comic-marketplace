@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,28 +12,26 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, Github } from 'lucide-react';
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  rememberMe: z.boolean().default(false).optional(),
+  rememberMe: z.boolean().default(false),
 });
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
-type LoginFormData = z.infer<typeof loginSchema>;
-type SignupFormData = z.infer<typeof signupSchema>;
 const Confetti = () => (
   <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
     {Array.from({ length: 30 }).map((_, i) => (
       <motion.div
         key={i}
-        className="absolute w-2 h-2 bg-red-500 rounded-full"
+        className="absolute w-2 h-2 bg-comic-accent rounded-full"
         style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
         initial={{ scale: 0, opacity: 1 }}
         animate={{
@@ -57,28 +55,28 @@ function AuthForm() {
   const setAuthToken = useAppStore(s => s.setAuthToken);
   const setRememberMe = useAppStore(s => s.setRememberMe);
   const toggleAuth = useAppStore(s => s.toggleAuth);
-  const loginForm = useForm<LoginFormData>({
+  const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '', rememberMe: false },
   });
-  const signupForm = useForm<SignupFormData>({
+  const signupForm = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: { name: '', email: '', password: '' },
   });
-  const handleLogin: SubmitHandler<LoginFormData> = (values) => {
+  const handleLogin = (values: z.infer<typeof loginSchema>) => {
     login(values, {
       onSuccess: (data) => {
         toast.success(`Welcome back, ${data.user.name}!`);
         setShowConfetti(true);
         setUserId(data.user.id);
         setAuthToken(data.token);
-        setRememberMe(values.rememberMe || false);
+        setRememberMe(values.rememberMe);
         setTimeout(() => toggleAuth(false), 1500);
       },
       onError: (error) => toast.error(error.message || 'Login failed. Please check your credentials.'),
     });
   };
-  const handleSignup: SubmitHandler<SignupFormData> = (values) => {
+  const handleSignup = (values: z.infer<typeof signupSchema>) => {
     signup(values, {
       onSuccess: (data) => {
         toast.success(`Welcome to ComicVerse, ${data.user.name}!`);
@@ -94,18 +92,14 @@ function AuthForm() {
   return (
     <div className="relative p-6 sm:p-8 text-white">
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
-      <SheetHeader className="text-center mb-8 sm:hidden">
-        <SheetTitle id="auth-title-mobile" className="text-3xl font-bold text-glow">Join the Adventure</SheetTitle>
-        <SheetDescription id="auth-desc-mobile" className="text-neutral-400 mt-2">Unlock a universe of comics.</SheetDescription>
-      </SheetHeader>
-      <DialogHeader className="text-center mb-8 hidden sm:block">
-        <DialogTitle id="auth-title-desktop" className="text-3xl font-bold text-glow">Join the Adventure</DialogTitle>
-        <DialogDescription id="auth-desc-desktop" className="text-neutral-400 mt-2">Unlock a universe of comics.</DialogDescription>
-      </DialogHeader>
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-glow">Join the Adventure</h2>
+        <p className="text-neutral-400 mt-2">Unlock a universe of comics.</p>
+      </div>
       <Tabs defaultValue="login" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-red-500/20">
-          <TabsTrigger value="login" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">Login</TabsTrigger>
-          <TabsTrigger value="signup" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">Sign Up</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-neutral-800">
+          <TabsTrigger value="login">Login</TabsTrigger>
+          <TabsTrigger value="signup">Sign Up</TabsTrigger>
         </TabsList>
         <TabsContent value="login">
           <Form {...loginForm}>
@@ -117,7 +111,7 @@ function AuthForm() {
                   <FormControl>
                     <div className="relative">
                       <Input type={showPassword ? 'text' : 'password'} {...field} />
-                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 hover:text-red-400" onClick={() => setShowPassword(!showPassword)}>
+                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
@@ -126,8 +120,8 @@ function AuthForm() {
                 </FormItem>
               )} />
               <div className="flex items-center justify-between text-sm">
-                <FormField control={loginForm.control} name="rememberMe" render={({ field }) => <FormItem className="flex items-center space-x-2"><FormControl><Checkbox id="rememberMe" checked={!!field.value} onCheckedChange={field.onChange} /></FormControl><Label htmlFor="rememberMe" className="font-normal">Remember me</Label></FormItem>} />
-                <a href="#" className="hover:text-red-400 transition-colors">Forgot password?</a>
+                <FormField control={loginForm.control} name="rememberMe" render={({ field }) => <FormItem className="flex items-center space-x-2"><FormControl><Checkbox id="rememberMe" checked={field.value} onCheckedChange={field.onChange} /></FormControl><Label htmlFor="rememberMe" className="font-normal">Remember me</Label></FormItem>} />
+                <a href="#" className="hover:text-comic-accent transition-colors">Forgot password?</a>
               </div>
               <Button type="submit" className="w-full btn-accent" disabled={isLoginPending}>{isLoginPending ? 'Logging in...' : 'Login'}</Button>
             </form>
@@ -144,7 +138,7 @@ function AuthForm() {
                   <FormControl>
                     <div className="relative">
                       <Input type={showPassword ? 'text' : 'password'} {...field} />
-                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 hover:text-red-400" onClick={() => setShowPassword(!showPassword)}>
+                      <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
@@ -172,12 +166,7 @@ export function AuthDialog() {
   if (isMobile) {
     return (
       <Sheet open={isAuthOpen} onOpenChange={toggleAuth}>
-        <SheetContent
-          side="bottom"
-          className="h-[90vh] p-0 bg-comic-card border-none text-white"
-          aria-labelledby="auth-title-mobile"
-          aria-describedby="auth-desc-mobile"
-        >
+        <SheetContent side="bottom" className="h-full p-0 bg-comic-card border-none text-white">
           <AuthForm />
         </SheetContent>
       </Sheet>
@@ -185,11 +174,7 @@ export function AuthDialog() {
   }
   return (
     <Dialog open={isAuthOpen} onOpenChange={toggleAuth}>
-      <DialogContent
-        className="sm:max-w-md bg-comic-card border-white/10 p-0"
-        aria-labelledby="auth-title-desktop"
-        aria-describedby="auth-desc-desktop"
-      >
+      <DialogContent className="sm:max-w-md bg-comic-card border-white/10 p-0">
         <AuthForm />
       </DialogContent>
     </Dialog>

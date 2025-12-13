@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Comic, Author, User, Genre } from '@shared/types';
+import { Comic, Author, User, Genre, AuthResponse } from '@shared/types';
 // Fetch all comics
 export const useComics = () => {
   return useQuery<Comic[]>({
@@ -23,20 +23,31 @@ export const useAuthors = () => {
     queryFn: () => api<Author[]>('/api/authors'),
   });
 };
-
 export const useGenres = () => {
   return useQuery<Genre[]>({
     queryKey: ['genres'],
     queryFn: () => api<Genre[]>('/api/genres'),
   });
 };
-// Mock login/register mutation
-export const useAuth = () => {
+// Auth mutations
+export const useAuthLogin = () => {
     const queryClient = useQueryClient();
-    return useMutation<{ user: User }, Error, { name: string }>({
-        mutationFn: ({ name }) => api('/api/auth/login', {
+    return useMutation<AuthResponse, Error, { email: string; password: string }>({
+        mutationFn: ({ email, password }) => api('/api/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ name }),
+            body: JSON.stringify({ email, password }),
+        }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user'] });
+        }
+    });
+};
+export const useAuthSignup = () => {
+    const queryClient = useQueryClient();
+    return useMutation<AuthResponse, Error, { name: string; email: string; password: string }>({
+        mutationFn: ({ name, email, password }) => api('/api/auth/signup', {
+            method: 'POST',
+            body: JSON.stringify({ name, email, password }),
         }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['user'] });

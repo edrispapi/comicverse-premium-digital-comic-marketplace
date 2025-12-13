@@ -7,10 +7,12 @@ export interface ApiResponse<T = unknown> {
 export interface User {
   id: string;
   name: string;
+  email: string;
+  passwordHash?: string;
 }
-export interface LoginResponse {
+export interface AuthResponse {
   user: User;
-  token?: string; // For future use
+  token: string;
 }
 export interface Author {
   id: string;
