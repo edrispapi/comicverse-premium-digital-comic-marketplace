@@ -79,7 +79,8 @@ function updateWranglerJsonc() {
 function runSetupCommands() {
     const commands = [
     "bun install embla-carousel-autoplay",
-    "bun install react-window @types/react-window"
+    "bun install react-window @types/react-window",
+    "bun add react-window"
 ];
     
     if (commands.length === 0) {
