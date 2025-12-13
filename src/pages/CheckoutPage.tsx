@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from 'sonner';
 import { CheckoutStepper } from '@/components/checkout/CheckoutStepper';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 const checkoutSchema = z.object({
   // Shipping
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -30,7 +32,9 @@ const checkoutSchema = z.object({
 });
 export function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const cart = useAppStore(s => s.cart);
   const clearCart = useAppStore(s => s.clearCart);
   const promoCode = useAppStore(s => s.promoCode);
@@ -60,8 +64,11 @@ export function CheckoutPage() {
   const onSubmit = (values: z.infer<typeof checkoutSchema>) => {
     console.log('Order placed:', values);
     toast.success('Order placed successfully! A confirmation has been sent to your email.');
-    clearCart();
-    navigate('/');
+    setShowConfetti(true);
+    setTimeout(() => {
+        clearCart();
+        navigate('/');
+    }, 2000);
   };
   const steps = [
     { title: 'Shipping', content: (
@@ -100,10 +107,10 @@ export function CheckoutPage() {
       </div>
     )},
   ];
-  if (cart.length === 0) {
+  if (cart.length === 0 && !showConfetti) {
     return (
       <div className="bg-comic-black min-h-screen text-white flex flex-col"><Navbar />
-        <main className="flex-1 flex items-center justify-center text-center">
+        <main className="flex-1 flex items-center justify-center text-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="text-4xl font-bold">Your Cart is Empty</h1>
             <p className="mt-4 text-neutral-400">You can't check out with an empty cart.</p>
@@ -114,14 +121,51 @@ export function CheckoutPage() {
     );
   }
   return (
-    <div className="bg-comic-black min-h-screen text-white"><Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div className="bg-comic-black min-h-screen text-white">
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+          <AnimatePresence>
+            {Array.from({ length: 30 }).map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-3 h-3 bg-comic-accent rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                initial={{ scale: 0, opacity: 1 }}
+                animate={{
+                  scale: [1, 2, 0],
+                  opacity: [1, 1, 0],
+                  x: Math.random() * 400 - 200,
+                  y: Math.random() * 400 - 200,
+                  rotate: Math.random() * 720 - 360,
+                }}
+                transition={{ duration: 2, delay: i * 0.05, ease: "easeOut" }}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+      <Navbar />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 lg:py-24">
         <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-bold tracking-tight text-center mb-12">Checkout</motion.h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <Card className="bg-comic-card border-white/10"><CardContent className="p-6 sm:p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
-                <CheckoutStepper steps={steps} currentStep={currentStep} />
+                {isMobile ? (
+                  <Accordion type="single" collapsible value={`${currentStep}`} onValueChange={(val) => setCurrentStep(Number(val))} className="w-full">
+                    {steps.map((step, i) => (
+                      <AccordionItem key={i} value={`${i}`}>
+                        <AccordionTrigger>{i + 1}. {step.title}</AccordionTrigger>
+                        <AccordionContent>{step.content}</AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                ) : (
+                  <CheckoutStepper steps={steps} currentStep={currentStep} />
+                )}
                 <div className="mt-8 flex justify-between">
                   {currentStep > 0 && <Button type="button" variant="outline" onClick={() => setCurrentStep(s => s - 1)}>Back</Button>}
                   {currentStep < steps.length - 1 && <Button type="button" className="btn-accent ml-auto" onClick={handleNextStep}>Next</Button>}
@@ -130,7 +174,7 @@ export function CheckoutPage() {
               </form>
             </Form>
           </CardContent></Card>
-          <div className="space-y-8 sticky top-24">
+          <div className="space-y-8 sticky top-24 lg:top-32">
             <Card className="bg-comic-card border-white/10"><CardHeader><CardTitle>Order Summary</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {cart.map(item => (
