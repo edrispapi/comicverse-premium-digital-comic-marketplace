@@ -32,7 +32,7 @@ const containerVariants = {
 };
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } },
+  visible: { y: 0, opacity: 1, transition: { type: 'spring' as const, stiffness: 100 } },
 };
 function HeroSlider() {
   const { data: allComicsData, isLoading } = useComics();
@@ -263,7 +263,9 @@ export function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8">Audiobooks Spotlight</motion.h2>
           </div>
-          <AudiobookCarousel />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <AudiobookCarousel />
+          </div>
         </section>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <section className="py-16 md:py-24">
@@ -282,25 +284,27 @@ export function HomePage() {
               </motion.div>
             )}
           </section>
-          <section className="py-16 md:py-24 bg-comic-card -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-              <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8">New Releases</motion.h2>
-              {isLoading && newReleases.length === 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                  {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
-                </div>
-              ) : (
-                <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                  {newReleases.map((comic) => (
-                    <motion.div key={comic.id} variants={itemVariants}>
-                      <ComicCard comic={comic} />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </div>
-          </section>
-          <section className="py-16 md:py-24">
+        </div>
+        <section className="py-16 md:py-24 bg-comic-card">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8">New Releases</motion.h2>
+            {isLoading && newReleases.length === 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
+              </div>
+            ) : (
+              <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {newReleases.map((comic) => (
+                  <motion.div key={comic.id} variants={itemVariants}>
+                    <ComicCard comic={comic} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+        </section>
+        <section className="py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8 text-center">What Our Readers Say</motion.h2>
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -326,11 +330,13 @@ export function HomePage() {
                 ))}
               </motion.div>
             )}
-          </section>
-          <section className="py-16 md:py-24">
+          </div>
+        </section>
+        <section className="py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <RecommendedCarousel type="comics" />
-          </section>
-        </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </div>

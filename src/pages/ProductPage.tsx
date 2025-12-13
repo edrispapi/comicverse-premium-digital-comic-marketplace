@@ -40,7 +40,7 @@ const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, trans
 const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
 const postSchema = z.object({ content: z.string().min(1, 'Message cannot be empty').max(1000) });
 type PostFormData = z.infer<typeof postSchema>;
-const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '���', '🙌'];
+const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
 const Confetti = () => (
     <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
       {Array.from({ length: 30 }).map((_, i) => (
@@ -192,8 +192,8 @@ export function ProductPage() {
   return (
     <div className="bg-comic-black min-h-screen text-white relative overflow-hidden">
       <Navbar />
-      <main className="py-16 md:py-24 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <Breadcrumb className="mb-8">
             <BreadcrumbList>
               <BreadcrumbItem>

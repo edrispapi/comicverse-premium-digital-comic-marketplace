@@ -102,74 +102,76 @@ export function CatalogPage() {
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <Breadcrumb className="mb-8">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/">Home</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Catalog</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold tracking-tight">Full Catalog</h1>
-          <div className="flex items-center gap-2">
-            <div className="lg:hidden">
-              <Sheet>
-                <SheetTrigger asChild><Button variant="outline" size="icon"><Filter className="h-5 w-5" /></Button></SheetTrigger>
-                <SheetContent className="bg-comic-card border-l-white/10 text-white">
-                  <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
-                  <ScrollArea className="h-[calc(100%-4rem)] pr-4">
-                    <FilterSidebar
-                      filters={filters}
-                      setFilters={setFilters}
-                      genres={genresData}
-                      authors={authorsData}
-                    />
-                  </ScrollArea>
-                </SheetContent>
-              </Sheet>
+      <main>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+          <Breadcrumb className="mb-8">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Catalog</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-4xl font-bold tracking-tight">Full Catalog</h1>
+            <div className="flex items-center gap-2">
+              <div className="lg:hidden">
+                <Sheet>
+                  <SheetTrigger asChild><Button variant="outline" size="icon"><Filter className="h-5 w-5" /></Button></SheetTrigger>
+                  <SheetContent className="bg-comic-card border-l-white/10 text-white">
+                    <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
+                    <ScrollArea className="h-[calc(100%-4rem)] pr-4">
+                      <FilterSidebar
+                        filters={filters}
+                        setFilters={setFilters}
+                        genres={genresData}
+                        authors={authorsData}
+                      />
+                    </ScrollArea>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-24 space-y-12">
-              <FilterSidebar
-                filters={filters}
-                setFilters={setFilters}
-                genres={genresData}
-                authors={authorsData}
-              />
-              <RecommendedCarousel type="comics" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="hidden lg:block lg:col-span-1">
+              <div className="sticky top-24 space-y-12">
+                <FilterSidebar
+                  filters={filters}
+                  setFilters={setFilters}
+                  genres={genresData}
+                  authors={authorsData}
+                />
+                <RecommendedCarousel type="comics" />
+              </div>
             </div>
-          </div>
-          <div className="lg:col-span-3">
-            {isLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
-              </div>
-            ) : error ? (
-              <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load comics.</h2></div>
-            ) : filteredComics.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {filteredComics.map((comic, index) => (
-                  <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }}>
-                    <ComicCard comic={comic} />
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <h2 className="text-2xl font-semibold">No Results Found</h2>
-                <p className="mt-2 text-neutral-400">Try adjusting your search or filters.</p>
-              </div>
-            )}
+            <div className="lg:col-span-3">
+              {isLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
+                </div>
+              ) : error ? (
+                <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load comics.</h2></div>
+              ) : filteredComics.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  {filteredComics.map((comic, index) => (
+                    <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }}>
+                      <ComicCard comic={comic} />
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <h2 className="text-2xl font-semibold">No Results Found</h2>
+                  <p className="mt-2 text-neutral-400">Try adjusting your search or filters.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
