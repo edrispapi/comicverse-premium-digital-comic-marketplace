@@ -3,14 +3,15 @@ import { useAppStore } from '@/store/use-store';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Heart, X } from 'lucide-react';
+import { Heart, X, MessageCircle } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 export function WishlistSheet() {
   const isWishlistOpen = useAppStore(s => s.isWishlistOpen);
   const toggleWishlistSheet = useAppStore(s => s.toggleWishlistSheet);
   const wishlist = useAppStore(s => s.wishlist);
   const toggleWishlist = useAppStore(s => s.toggleWishlist);
+  const navigate = useNavigate();
   return (
     <Sheet open={isWishlistOpen} onOpenChange={toggleWishlistSheet}>
       <SheetContent className="bg-comic-card border-l-white/10 text-white flex flex-col w-full sm:max-w-md">
@@ -49,6 +50,25 @@ export function WishlistSheet() {
                           <h4 className="font-semibold text-white hover:text-comic-accent transition-colors">{item.title}</h4>
                         </Link>
                         <p className="text-sm text-neutral-400">${item.price.toFixed(2)}</p>
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.2 }}
+                          className="mt-2"
+                        >
+                          <Button
+                            variant="outline"
+                            className="btn-accent w-full text-sm h-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/comic/${item.id}#community`);
+                              toggleWishlistSheet();
+                            }}
+                          >
+                            <MessageCircle className="mr-2 h-4 w-4" />
+                            Join Community
+                          </Button>
+                        </motion.div>
                       </div>
                       <Button
                         variant="ghost"

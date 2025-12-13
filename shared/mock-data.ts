@@ -1,5 +1,4 @@
 import type { User, Comic, Author, Genre, Comment, Post } from './types';
-
 export const MOCK_USERS: User[] = [
   { id: 'u1', name: 'User A', email: 'user.a@example.com', passwordHash: 'cGFzc3dvcmQxMjM=', pts: 250, awards: [{id: crypto.randomUUID(), type: 'top-rated', earnedAt: new Date().toISOString()}], libraryUnlocked: {'comic-1': true, 'comic-2': true} }, // password123
   { id: 'u2', name: 'User B', email: 'user.b@example.com', passwordHash: 'cGFzc3dvcmQ0NTY=', pts: 120, awards: [], libraryUnlocked: {} }  // password456
@@ -65,6 +64,8 @@ const generatePosts = (): Post[] => {
     };
     return Array.from({ length: numPosts }).map((_, i) => {
         const type = postTypes[i % postTypes.length];
+        const votes = Math.floor(Math.random() * 50);
+        const up = Math.floor(votes * (0.4 + Math.random() * 0.5));
         return {
             id: crypto.randomUUID(),
             user: mockCommenters[i % mockCommenters.length],
@@ -72,9 +73,12 @@ const generatePosts = (): Post[] => {
             content: postContents[type],
             time: new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 3).toISOString(),
             reactions: {
-                votes: Math.floor(Math.random() * 50),
+                votes,
+                up,
+                down: votes - up,
                 stars: parseFloat((3 + Math.random() * 2).toFixed(1)),
-                emojis: { '👍': Math.floor(Math.random() * 15), '❤️': Math.floor(Math.random() * 10), '🔥': Math.floor(Math.random() * 5) }
+                emojis: { '👍': Math.floor(Math.random() * 15), '❤️': Math.floor(Math.random() * 10), '🔥': Math.floor(Math.random() * 5) },
+                stickers: {'⭐':Math.floor(Math.random()*5),'💯':Math.floor(Math.random()*3),'😂':Math.floor(Math.random()*4)}
             }
         };
     });
@@ -210,7 +214,7 @@ export const COMICS: Comic[] = [
     releaseDate: '2022-08-20',
     previewImageUrls: [
         'https://images.unsplash.com/photo-1583305911787-57d1699511d0?q=80&w=400&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1507842217343-583bb7278b66?q=80&w=400&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1507842217343-583bb7278b66?q=80&w=800&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-6'),
     comments: generateComments(),

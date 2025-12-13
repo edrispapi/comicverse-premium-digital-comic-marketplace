@@ -12,6 +12,14 @@ export interface Comment {
   message: string;
   time: string;
 }
+export interface PostReactions {
+    votes: number;
+    stars: number;
+    up: number;
+    down: number;
+    emojis: { [emoji: string]: number };
+    stickers: { [emoji: string]: number };
+}
 export interface Post {
     id: string;
     user: {
@@ -21,11 +29,7 @@ export interface Post {
     type: 'text' | 'image' | 'video' | 'voice' | 'file';
     content: string;
     time: string;
-    reactions: {
-        votes: number;
-        stars: number;
-        emojis: { [emoji: string]: number };
-    };
+    reactions: PostReactions;
 }
 export interface Award {
   id: string;

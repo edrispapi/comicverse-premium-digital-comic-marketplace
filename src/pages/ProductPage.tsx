@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Star, ShoppingCart, Heart, Eye, Send, Play, ThumbsUp, ThumbsDown, Smile, File, Mic, Video, Image as ImageIcon } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Eye, Send, Play, ThumbsUp, ThumbsDown, Smile, File, Mic, Video, Image as ImageIcon, MessageCircle, MessageSquareMore } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -14,7 +14,7 @@ import { useAppStore, useAudioControls } from '@/store/use-store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
-import { useComic, useComics, useAuthors, useGenres, useComicComments, useUpdateRating, usePostComment, useComicPosts, usePostPost } from '@/lib/queries';
+import { useComic, useComics, useAuthors, useGenres, useComicComments, useUpdateRating, usePostComment, useComicPosts, usePostPost, useVotePost } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -25,6 +25,10 @@ import { formatDistanceToNow } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import type { Post } from '@shared/types';
+import { FixedSizeList as VirtualList } from 'react-window';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
 const commentSchema = z.object({ message: z.string().min(10, 'Comment must be at least 10 characters').max(500, 'Comment is too long') });
@@ -115,8 +119,41 @@ const ParticleCanvas = () => {
   }, []);
   return <canvas ref={canvasRef} className="absolute inset-0 -z-10" />;
 };
+const PostBubble = ({ post, comicId }: { post: Post, comicId: string }) => {
+    const { mutate: votePost } = useVotePost(comicId);
+    const upvotePercentage = post.reactions.votes > 0 ? (post.reactions.up / post.reactions.votes) * 100 : 50;
+    const PostIcon = ({ type }: { type: Post['type'] }) => {
+        switch (type) {
+          case 'image': return <ImageIcon className="w-4 h-4" />;
+          case 'video': return <Video className="w-4 h-4" />;
+          case 'voice': return <Mic className="w-4 h-4" />;
+          case 'file': return <File className="w-4 h-4" />;
+          default: return null;
+        }
+    };
+    return (
+        <div className="flex items-start gap-3 py-3">
+            <Avatar className="mt-1"><AvatarImage src={post.user.avatar} /><AvatarFallback>👤</AvatarFallback></Avatar>
+            <div className="flex-1 space-y-2">
+                <div className="relative p-3 rounded-xl bg-neutral-800/50 border-l-4 border-red-500 shadow-md">
+                    <div className="flex items-center justify-between"><p className="font-semibold text-white">{post.user.name}</p><p className="text-xs text-neutral-400">{formatDistanceToNow(new Date(post.time), { addSuffix: true })}</p></div>
+                    <div className="mt-2 text-neutral-300 text-sm">{post.type === 'text' && <p>{post.content}</p>}{post.type === 'image' && <img src={post.content} className="rounded-md max-h-64" alt="Post content"/>}{post.type === 'video' && <video src={post.content} controls className="rounded-md w-full" />}{post.type === 'voice' && <audio src={post.content} controls className="w-full" />}</div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-neutral-400 pl-2">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2" onClick={() => votePost({ postId: post.id, up: true })}><ThumbsUp className="w-4 h-4" /> {post.reactions.up}</Button>
+                    <div className="w-16 h-1 bg-neutral-700 rounded-full overflow-hidden flex-1"><div className="h-full bg-red-500" style={{ width: `${upvotePercentage}%` }} /></div>
+                    <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2" onClick={() => votePost({ postId: post.id, up: false })}><ThumbsDown className="w-4 h-4" /> {post.reactions.down}</Button>
+                    <div className="flex items-center gap-1 ml-auto">
+                        {Object.entries(post.reactions.stickers).map(([emoji, count]) => <Badge key={emoji} variant="secondary" className="px-1.5">{emoji} {count}</Badge>)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 export function ProductPage() {
   const { id } = useParams<{ id: string }>();
+  const isMobile = useIsMobile();
   const { data: comic, isLoading, error } = useComic(id);
   const { data: allComicsData = [], isLoading: comicsLoading } = useComics();
   const { data: allAuthors } = useAuthors();
@@ -168,6 +205,25 @@ export function ProductPage() {
       });
     }
   };
+  const CommunityFeed = () => (
+    <Card className="bg-comic-card border-white/10" role="log">
+        <CardHeader><CardTitle>Community Feed ({posts?.length || 0})</CardTitle></CardHeader>
+        <CardContent>
+            <div className="space-y-6">
+                <div className="h-[500px]">
+                    {posts && posts.length > 0 ? (
+                        <VirtualList height={500} itemCount={posts.length} itemSize={120} width="100%">
+                            {({ index, style }) => (
+                                <div style={style}><PostBubble post={posts[index]} comicId={id!} /></div>
+                            )}
+                        </VirtualList>
+                    ) : <div className="text-center text-neutral-400 pt-16">Be the first to post!</div>}
+                </div>
+                <Form {...postForm}><form onSubmit={postForm.handleSubmit(handlePostPost)} className="flex items-start gap-4 pt-6 border-t border-white/10"><Avatar><AvatarImage src={`https://i.pravatar.cc/150?u=current-user`} /><AvatarFallback>👤</AvatarFallback></Avatar><div className="flex-1 space-y-2"><div className="flex gap-2"><FormField control={postForm.control} name="type" render={({ field }) => (<FormItem><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="w-[120px]"><SelectValue placeholder="Type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="image">Image</SelectItem><SelectItem value="video">Video</SelectItem></SelectContent></Select></FormItem>)} /><FormField control={postForm.control} name="content" render={({ field }) => (<FormItem className="flex-1"><FormControl><Input placeholder={postForm.watch('type') === 'text' ? "Share your thoughts..." : "Enter media URL..."} {...field} /></FormControl><FormMessage /></FormItem>)} /></div><div className="flex justify-end"><Button type="submit" className="btn-accent" disabled={isPostingPost}>{isPostingPost ? 'Posting...' : 'Post'}</Button></div></div></form></Form>
+            </div>
+        </CardContent>
+    </Card>
+  );
   if (isLoading) return <div className="bg-comic-black min-h-screen text-white"><Navbar /><main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24"><div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12"><Skeleton className="w-full aspect-[2/3] rounded-lg" /><div className="space-y-6"><Skeleton className="h-12 w-3/4" /><Skeleton className="h-6 w-1/2" /><Skeleton className="h-24 w-full" /><div className="flex gap-4"><Skeleton className="h-12 w-48" /><Skeleton className="h-12 w-32" /></div></div></div><div className="mt-16"><Skeleton className="h-64 w-full" /></div></main><Footer /></div>;
   if (error || !comic) return <div className="bg-comic-black min-h-screen text-white flex flex-col"><Navbar /><div className="flex-1 flex items-center justify-center text-center"><div><h1 className="text-4xl font-bold">Comic Not Found</h1><p className="mt-4 text-neutral-400">We couldn't find the comic you're looking for.</p><Button asChild className="mt-8 btn-accent"><Link to="/catalog">Back to Catalog</Link></Button></div></div><Footer /></div>;
   const comicAuthors = comic.authorIds.map(authorId => allAuthors?.find(a => a.id === authorId)).filter(Boolean);
@@ -175,15 +231,6 @@ export function ProductPage() {
   const relatedComics = allComicsData.filter(c => c.genreIds?.some(g => comic.genreIds?.includes(g)) && c.id !== comic.id).slice(0, 4);
   const awards = getAwards(comic);
   const safeRatings = comic.ratings ?? { avg: 0, votes: 0, up: 0, down: 0 };
-  const PostIcon = ({ type }: { type: Post['type'] }) => {
-    switch (type) {
-      case 'image': return <ImageIcon className="w-4 h-4" />;
-      case 'video': return <Video className="w-4 h-4" />;
-      case 'voice': return <Mic className="w-4 h-4" />;
-      case 'file': return <File className="w-4 h-4" />;
-      default: return null;
-    }
-  };
   return (
     <div className="bg-comic-black min-h-screen text-white relative overflow-hidden">
       <ParticleCanvas />
@@ -206,8 +253,11 @@ export function ProductPage() {
                 <motion.div variants={itemVariants} className="flex items-center flex-wrap gap-4"><Dialog><DialogTrigger asChild><Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Look Inside ({comic.previewImageUrls?.length ?? 0})</Button></DialogTrigger><DialogContent className="max-w-4xl bg-comic-card border-white/10 text-white"><DialogHeader><DialogTitle>Preview: {comic.title}</DialogTitle><DialogDescription className='text-muted-foreground'>Swipe or use arrows to navigate pages.</DialogDescription></DialogHeader><Carousel className="w-full"><CarouselContent>{comic.previewImageUrls?.map((url, index) => (<CarouselItem key={index}><img src={url} alt={`Preview page ${index + 1}`} className="w-full h-auto object-contain rounded-md aspect-video" loading="lazy" /></CarouselItem>))}</CarouselContent><CarouselPrevious /><CarouselNext /></Carousel></DialogContent></Dialog></motion.div>
               </motion.div>
             </div>
-            <motion.div variants={itemVariants} className="mt-16" id="community"><Card className="bg-comic-card border-white/10 relative" role="log"><AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence><CardHeader><CardTitle>Comments ({comments?.length || 0})</CardTitle></CardHeader><CardContent><div className="space-y-6"><Form {...commentForm}><form onSubmit={commentForm.handleSubmit(handlePostComment)} className="flex items-start gap-4"><Avatar><AvatarImage src={`https://i.pravatar.cc/150?u=current-user`} /><AvatarFallback>👤</AvatarFallback></Avatar><div className="flex-1 space-y-2"><FormField control={commentForm.control} name="message" render={({ field }) => (<FormItem><FormControl><Textarea placeholder="Add a comment..." {...field} className="bg-neutral-800/50" /></FormControl><FormMessage /></FormItem>)} /><div className="flex justify-between items-center"><p className="text-xs text-neutral-400">Your points: {pts}</p><Button type="submit" className="btn-accent" disabled={isPostingComment}><Send className="mr-2 h-4 w-4" /> {isPostingComment ? 'Posting...' : 'Post Comment'}</Button></div></div></form></Form><div className="space-y-4"><AnimatePresence>{comments?.map((comment, index) => (<motion.div key={comment.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1 }} className="flex items-start gap-4"><Avatar><AvatarImage src={comment.user.avatar} /><AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback></Avatar><div className="flex-1 bg-neutral-800/50 rounded-lg p-3"><div className="flex items-center justify-between"><p className="font-semibold text-white">{comment.user.name}</p><p className="text-xs text-neutral-400">{formatDistanceToNow(new Date(comment.time), { addSuffix: true })}</p></div><p className="text-neutral-300 mt-1">{comment.message}</p></div></motion.div>))}</AnimatePresence></div></div></CardContent></Card></motion.div>
-            <motion.div variants={itemVariants} className="mt-8"><Card className="bg-comic-card border-white/10"><CardHeader><CardTitle>Community Feed ({posts?.length || 0})</CardTitle></CardHeader><CardContent><div className="space-y-6"><div className="space-y-4 max-h-[500px] overflow-y-auto pr-4">{posts?.map(post => (<div key={post.id} className="flex items-start gap-4"><Avatar><AvatarImage src={post.user.avatar} /><AvatarFallback>👤</AvatarFallback></Avatar><div className="flex-1 bg-neutral-800/50 rounded-lg p-3"><div className="flex items-center justify-between"><p className="font-semibold text-white">{post.user.name}</p><p className="text-xs text-neutral-400">{formatDistanceToNow(new Date(post.time), { addSuffix: true })}</p></div><div className="mt-2 text-neutral-300">{post.type === 'text' && <p>{post.content}</p>}{post.type === 'image' && <img src={post.content} className="rounded-md max-h-64" alt="Post content"/>}{post.type === 'video' && <video src={post.content} controls className="rounded-md w-full" />}{post.type === 'voice' && <audio src={post.content} controls className="w-full" />}</div><div className="flex items-center gap-4 mt-2 text-xs text-neutral-400"><Button variant="ghost" size="sm" className="flex items-center gap-1"><ThumbsUp className="w-4 h-4" /> {post.reactions.votes}</Button><Button variant="ghost" size="sm" className="flex items-center gap-1"><Star className="w-4 h-4" /> {post.reactions.stars}</Button><div className="flex items-center gap-1">{Object.entries(post.reactions.emojis).map(([emoji, count]) => <Badge key={emoji} variant="secondary">{emoji} {count}</Badge>)}</div></div></div></div>))}</div><Form {...postForm}><form onSubmit={postForm.handleSubmit(handlePostPost)} className="flex items-start gap-4 pt-6 border-t border-white/10"><Avatar><AvatarImage src={`https://i.pravatar.cc/150?u=current-user`} /><AvatarFallback>👤</AvatarFallback></Avatar><div className="flex-1 space-y-2"><div className="flex gap-2"><FormField control={postForm.control} name="type" render={({ field }) => (<FormItem><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="w-[120px]"><SelectValue placeholder="Type" /></SelectTrigger></FormControl><SelectContent><SelectItem value="text">Text</SelectItem><SelectItem value="image">Image</SelectItem><SelectItem value="video">Video</SelectItem></SelectContent></Select></FormItem>)} /><FormField control={postForm.control} name="content" render={({ field }) => (<FormItem className="flex-1"><FormControl><Input placeholder={postForm.watch('type') === 'text' ? "Share your thoughts..." : "Enter media URL..."} {...field} /></FormControl><FormMessage /></FormItem>)} /></div><div className="flex justify-end"><Button type="submit" className="btn-accent" disabled={isPostingPost}>{isPostingPost ? 'Posting...' : 'Post'}</Button></div></div></form></Form></div></CardContent></Card></motion.div>
+            <motion.div variants={itemVariants} className="mt-16" id="community">
+                {isMobile ? (
+                    <Sheet><SheetTrigger asChild><Button className="w-full btn-accent" size="lg"><MessageCircle className="mr-2 h-5 w-5" /> View Community</Button></SheetTrigger><SheetContent side="bottom" className="h-[90%] bg-comic-card border-t-white/10 text-white p-0"><SheetHeader className="p-4 border-b border-white/10"><SheetTitle>Community Feed</SheetTitle></SheetHeader><div className="p-4"><CommunityFeed /></div></SheetContent></Sheet>
+                ) : <CommunityFeed />}
+            </motion.div>
           </motion.div>
         </div>
       </main>

@@ -3,7 +3,6 @@ import type { Env } from './core-utils';
 import { UserEntity, ComicEntity, AuthorEntity, GenreEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
 import type { User, Notification, Comic, Comment, Post } from '@shared/types';
-
 const mockHash = (password: string) => btoa(password);
 const mockGenerateToken = (user: User) => JSON.stringify({ sub: user.id, name: user.name, iat: Date.now() });
 const parseDuration = (durationStr: string | undefined): number => {
@@ -101,13 +100,37 @@ return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - 
       type,
       content,
       time: new Date().toISOString(),
-      reactions: { votes: 0, stars: 0, emojis: {} },
+      reactions: { votes: 0, stars: 0, up: 0, down: 0, emojis: {}, stickers: {} },
     };
     await comic.mutate(state => ({
       ...state,
       posts: [newPost, ...(state.posts ?? [])],
     }));
     return ok(c, newPost);
+  });
+  app.patch('/api/comics/:id/posts/:postId/vote', async (c) => {
+    const id = c.req.param('id');
+    const postId = c.req.param('postId');
+    const { up } = (await c.req.json()) as { up?: boolean };
+    if (typeof up !== 'boolean') return bad(c, 'up:boolean is required');
+    const comic = new ComicEntity(c.env, id);
+    if (!await comic.exists()) return notFound(c, 'comic not found');
+    const updatedState = await comic.mutate(s => {
+      const postIndex = s.posts?.findIndex(p => p.id === postId);
+      if (postIndex === -1 || !s.posts) return s;
+      const post = s.posts[postIndex];
+      const newReactions = {
+        ...post.reactions,
+        votes: post.reactions.votes + 1,
+        up: post.reactions.up + (up ? 1 : 0),
+        down: post.reactions.down + (!up ? 1 : 0),
+      };
+      const newPosts = [...s.posts];
+      newPosts[postIndex] = { ...post, reactions: newReactions };
+      return { ...s, posts: newPosts };
+    });
+    const updatedPost = updatedState.posts?.find(p => p.id === postId);
+    return ok(c, updatedPost?.reactions);
   });
   // COMIC RATING
   app.patch('/api/comics/:id/rating', async (c) => {
