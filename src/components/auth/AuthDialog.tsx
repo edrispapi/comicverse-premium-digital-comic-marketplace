@@ -12,20 +12,22 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, Github } from 'lucide-react';
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean().optional().default(false),
 });
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
+type LoginFormData = z.infer<typeof loginSchema>;
+type SignupFormData = z.infer<typeof signupSchema>;
 const Confetti = () => (
   <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
     {Array.from({ length: 30 }).map((_, i) => (
@@ -55,28 +57,28 @@ function AuthForm() {
   const setAuthToken = useAppStore(s => s.setAuthToken);
   const setRememberMe = useAppStore(s => s.setRememberMe);
   const toggleAuth = useAppStore(s => s.toggleAuth);
-  const loginForm = useForm<z.infer<typeof loginSchema>>({
+  const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '', rememberMe: false },
   });
-  const signupForm = useForm<z.infer<typeof signupSchema>>({
+  const signupForm = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: { name: '', email: '', password: '' },
   });
-  const handleLogin = (values: z.infer<typeof loginSchema>) => {
+  const handleLogin = (values: LoginFormData) => {
     login(values, {
       onSuccess: (data) => {
         toast.success(`Welcome back, ${data.user.name}!`);
         setShowConfetti(true);
         setUserId(data.user.id);
         setAuthToken(data.token);
-        setRememberMe(values.rememberMe);
+        setRememberMe(values.rememberMe ?? false);
         setTimeout(() => toggleAuth(false), 1500);
       },
       onError: (error) => toast.error(error.message || 'Login failed. Please check your credentials.'),
     });
   };
-  const handleSignup = (values: z.infer<typeof signupSchema>) => {
+  const handleSignup = (values: SignupFormData) => {
     signup(values, {
       onSuccess: (data) => {
         toast.success(`Welcome to ComicVerse, ${data.user.name}!`);
@@ -92,10 +94,10 @@ function AuthForm() {
   return (
     <div className="relative p-6 sm:p-8 text-white">
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-glow">Join the Adventure</h2>
-        <p className="text-neutral-400 mt-2">Unlock a universe of comics.</p>
-      </div>
+      <DialogHeader className="text-center mb-8">
+        <DialogTitle className="text-3xl font-bold text-glow">Join the Adventure</DialogTitle>
+        <DialogDescription className="text-neutral-400 mt-2">Unlock a universe of comics.</DialogDescription>
+      </DialogHeader>
       <Tabs defaultValue="login" className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-neutral-800">
           <TabsTrigger value="login">Login</TabsTrigger>

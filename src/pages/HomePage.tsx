@@ -20,65 +20,76 @@ import {
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
 function HeroSlider() {
   const { data: allComics, isLoading } = useComics();
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-  const userInteracted = useRef(false);
+  const [progress, setProgress] = useState(0);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
-
+  const progressRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(Date.now());
+  const isHovering = useRef(false);
   const featuredComics = useMemo(() => {
     if (!allComics) return [];
     return [...allComics]
       .sort((a, b) => b.rating - a.rating)
       .slice(0, 5);
   }, [allComics]);
-
+  const startAutoplay = useCallback(() => {
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    startTimeRef.current = Date.now();
+    progressRef.current = 0;
+    autoplayRef.current = setInterval(() => {
+      if (!isHovering.current) {
+        api?.scrollNext();
+      }
+    }, 5000);
+  }, [api]);
   const stopAutoplay = useCallback(() => {
-    userInteracted.current = true;
     if (autoplayRef.current) {
       clearInterval(autoplayRef.current);
       autoplayRef.current = null;
     }
   }, []);
-
   useEffect(() => {
-    if (!api || userInteracted.current) return;
-
-    const intervalId = setInterval(() => {
-      api.scrollNext();
-    }, 5000);
-    autoplayRef.current = intervalId;
-
-    api.on('select', () => {
+    if (!api) return;
+    startAutoplay();
+    const onSelect = () => {
       setCurrent(api.selectedScrollSnap());
-    });
+      startAutoplay();
+    };
+    api.on('select', onSelect);
     api.on('pointerDown', stopAutoplay);
-
-    return () => {
-      if (autoplayRef.current) {
-        clearInterval(autoplayRef.current);
-        autoplayRef.current = null;
+    const animationFrame = () => {
+      if (autoplayRef.current && !isHovering.current) {
+        const elapsedTime = Date.now() - startTimeRef.current;
+        progressRef.current = (elapsedTime / 5000) * 100;
+        setProgress(progressRef.current);
       }
+      requestAnimationFrame(animationFrame);
+    };
+    requestAnimationFrame(animationFrame);
+    return () => {
+      stopAutoplay();
+      api.off('select', onSelect);
       api.off('pointerDown', stopAutoplay);
     };
-  }, [api, stopAutoplay]);
-
-  const onDotClick = useCallback(
-    (index: number) => {
-      stopAutoplay();
-      api?.scrollTo(index);
-    },
-    [api, stopAutoplay],
-  );
-
+  }, [api, startAutoplay, stopAutoplay]);
+  const onDotClick = useCallback((index: number) => {
+    stopAutoplay();
+    api?.scrollTo(index);
+    setCurrent(index);
+    startAutoplay();
+  }, [api, startAutoplay, stopAutoplay]);
   if (isLoading) {
     return <Skeleton className="w-full h-[60vh] md:h-[80vh]" />;
   }
-
   return (
-    <div className="relative w-full h-[60vh] md:h-[80vh] group">
+    <div 
+      className="relative w-full h-[60vh] md:h-[80vh] group"
+      onMouseEnter={() => isHovering.current = true}
+      onMouseLeave={() => isHovering.current = false}
+    >
       <Carousel setApi={setApi} opts={{ loop: true }} className="w-full h-full">
         <CarouselContent>
           {featuredComics.map((comic) => (
@@ -134,22 +145,39 @@ function HeroSlider() {
         <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
         <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
       </Carousel>
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex space-x-2">
-        {featuredComics.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => onDotClick(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              current === index ? 'w-6 bg-comic-accent' : 'w-2 bg-white/50'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center space-x-4">
+        <div className="flex space-x-2">
+          {featuredComics.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => onDotClick(index)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                current === index ? 'w-6 bg-comic-accent' : 'w-2 bg-white/50'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+        <div className="w-8 h-8 relative">
+          <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+            <circle cx="18" cy="18" r="16" fill="none" stroke="white/20" strokeWidth="2" />
+            <motion.circle
+              cx="18"
+              cy="18"
+              r="16"
+              fill="none"
+              stroke="hsl(var(--foreground))"
+              strokeWidth="2"
+              strokeDasharray="100.53"
+              strokeDashoffset={100.53 - (progress / 100) * 100.53}
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
       </div>
     </div>
   );
 }
-
 const testimonials = [
   {
     name: 'Alex R.',
@@ -180,11 +208,9 @@ const testimonials = [
       "A beautifully designed app that truly respects the art form. The 'cinematic' feel is real. A must-have for any fan.",
   },
 ];
-
 export function HomePage() {
   const searchTerm = useAppStore((s) => s.searchTerm);
   const { data: allComics, isLoading } = useComics();
-
   const filteredComics = useMemo(() => {
     if (!allComics) return [];
     if (!searchTerm) return allComics;
@@ -192,10 +218,8 @@ export function HomePage() {
       comic.title.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [allComics, searchTerm]);
-
   const trendingComics = useMemo(() => filteredComics.slice(0, 5), [filteredComics]);
   const newReleases = useMemo(() => filteredComics.slice(5, 10), [filteredComics]);
-
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Toaster theme="dark" />
@@ -228,7 +252,6 @@ export function HomePage() {
               </div>
             ) : null}
           </section>
-
           {/* New Releases Section */}
           <section className="py-16 md:py-24 bg-comic-card -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
@@ -256,7 +279,6 @@ export function HomePage() {
               ) : null}
             </div>
           </section>
-
           {/* Testimonials Section */}
           <section className="py-16 md:py-24">
             <h2 className="text-3xl font-bold tracking-tight mb-8 text-center">
@@ -300,4 +322,3 @@ export function HomePage() {
     </div>
   );
 }
-//
