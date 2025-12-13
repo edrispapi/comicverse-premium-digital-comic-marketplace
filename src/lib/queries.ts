@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Comic, Author, User, Genre, AuthResponse, UserStats, Notification, Comment } from '@shared/types';
+import { Comic, Author, User, Genre, AuthResponse, UserStats, Notification, Comment, Post } from '@shared/types';
 // Fetch all comics
 export const useComics = () => {
   return useQuery<Comic[]>({
@@ -89,6 +89,28 @@ export const usePostComment = (comicId: string) => {
         }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['comments', comicId] });
+        },
+    });
+};
+// Comic Posts
+export const useComicPosts = (comicId?: string) => {
+    return useQuery<Post[]>({
+        queryKey: ['posts', comicId],
+        queryFn: () => api<Post[]>(`/api/comics/${comicId}/posts`),
+        enabled: !!comicId,
+    });
+};
+export const usePostPost = (comicId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (postData: { type: Post['type']; content: string }) => api(`/api/comics/${comicId}/posts`, {
+            method: 'POST',
+            body: JSON.stringify(postData),
+        }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts', comicId] });
+            queryClient.invalidateQueries({ queryKey: ['comic', comicId] });
+            queryClient.invalidateQueries({ queryKey: ['comics'] });
         },
     });
 };

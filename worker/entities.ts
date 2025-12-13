@@ -5,7 +5,7 @@ import { MOCK_USERS, COMICS, AUTHORS, GENRES } from "@shared/mock-data";
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
   static readonly indexName = "users";
-  static readonly initialState: User = { id: "", name: "", email: "", passwordHash: "", pts: 0, awards: [] };
+  static readonly initialState: User = { id: "", name: "", email: "", passwordHash: "", pts: 0, awards: [], libraryUnlocked: {} };
   static seedData = MOCK_USERS;
 }
 // AUTHOR ENTITY
@@ -34,6 +34,7 @@ export class ComicEntity extends IndexedEntity<Comic> {
     previewImageUrls: [],
     chapters: [],
     comments: [],
+    posts: [],
     audioUrl: '',
     duration: '',
   };

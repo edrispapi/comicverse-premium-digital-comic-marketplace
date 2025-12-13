@@ -9,7 +9,7 @@ import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { useAppStore, useCartTotals, useCheckoutState } from '@/store/use-store';
+import { useAppStore, useCartTotals, useCheckoutState, useLibraryShelves, useToggleLibraryUnlock } from '@/store/use-store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -39,6 +39,8 @@ export function CheckoutPage() {
   const clearCart = useAppStore(s => s.clearCart);
   const { promoCode, setPromoCode, applyPromoCode, shippingOption, setShippingOption } = useCheckoutState();
   const { subtotal, discount, tax, total, shippingCost } = useCartTotals();
+  const { updateLibrary } = useLibraryShelves();
+  const toggleLibraryUnlock = useToggleLibraryUnlock();
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: { name: '', email: '', address: '', city: '', zip: '', cardName: '', cardNumber: '', expiryDate: '', cvc: '' },
@@ -59,11 +61,22 @@ export function CheckoutPage() {
   };
   const onSubmit = (values: z.infer<typeof checkoutSchema>) => {
     console.log('Order placed:', values);
-    toast.success('Order placed successfully! A confirmation has been sent to your email.');
+    cart.forEach(item => {
+        if (item.audioUrl) {
+            toggleLibraryUnlock(item.id);
+        }
+    });
+    // This is a mock update; a real app would fetch the user's library
+    // and merge it with the new items.
+    // updateLibrary(cart.map(item => ({ ...item, chapters: item.chapters.map(c => ({...c, progress: 0})) })));
+    toast.success('Order placed successfully! Items added to your library.');
+    if (cart.some(item => item.audioUrl)) {
+        toast.info("Audiobooks are now unlocked for playback!");
+    }
     setShowConfetti(true);
     setTimeout(() => {
         clearCart();
-        navigate('/');
+        navigate('/library');
     }, 2000);
   };
   const steps = [

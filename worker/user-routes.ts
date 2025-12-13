@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, ComicEntity, AuthorEntity, GenreEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import type { User, Notification, Comic, Comment } from '@shared/types';
+import type { User, Notification, Comic, Comment, Post } from '@shared/types';
 import { v4 as uuidv4 } from 'uuid';
 const mockHash = (password: string) => btoa(password);
 const mockGenerateToken = (user: User) => JSON.stringify({ sub: user.id, name: user.name, iat: Date.now() });
@@ -80,6 +80,34 @@ return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - 
       comments: [newComment, ...(state.comments ?? [])],
     }));
     return ok(c, newComment);
+  });
+  // COMIC POSTS
+  app.get('/api/comics/:id/posts', async (c) => {
+    const id = c.req.param('id');
+    const comic = new ComicEntity(c.env, id);
+    if (!await comic.exists()) return notFound(c, 'comic not found');
+    const state = await comic.getState();
+    return ok(c, (state.posts ?? []).sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
+  });
+  app.post('/api/comics/:id/posts', async (c) => {
+    const id = c.req.param('id');
+    const { type, content } = (await c.req.json()) as { type?: Post['type'], content?: string };
+    if (!type || !isStr(content)) return bad(c, 'Type and content are required');
+    const comic = new ComicEntity(c.env, id);
+    if (!await comic.exists()) return notFound(c, 'comic not found');
+    const newPost: Post = {
+      id: uuidv4(),
+      user: { name: 'MockUser', avatar: 'https://i.pravatar.cc/150?u=current-user' },
+      type,
+      content,
+      time: new Date().toISOString(),
+      reactions: { votes: 0, stars: 0, emojis: {} },
+    };
+    await comic.mutate(state => ({
+      ...state,
+      posts: [newPost, ...(state.posts ?? [])],
+    }));
+    return ok(c, newPost);
   });
   // COMIC RATING
   app.patch('/api/comics/:id/rating', async (c) => {
@@ -164,7 +192,7 @@ return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - 
     if (allUsers.find(u => u.email.toLowerCase() === email.toLowerCase())) {
       return c.json({ success: false, error: 'An account with this email already exists' }, 409);
     }
-    const newUser: User = { id: uuidv4(), name: name.trim(), email: email.trim().toLowerCase(), passwordHash: mockHash(password), pts: 0, awards: [] };
+    const newUser: User = { id: uuidv4(), name: name.trim(), email: email.trim().toLowerCase(), passwordHash: mockHash(password), pts: 0, awards: [], libraryUnlocked: {} };
     await UserEntity.create(c.env, newUser);
     const token = mockGenerateToken(newUser);
     const { passwordHash, ...userResponse } = newUser;

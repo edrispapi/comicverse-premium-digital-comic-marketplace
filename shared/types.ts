@@ -12,6 +12,21 @@ export interface Comment {
   message: string;
   time: string;
 }
+export interface Post {
+    id: string;
+    user: {
+        name: string;
+        avatar: string;
+    };
+    type: 'text' | 'image' | 'video' | 'voice' | 'file';
+    content: string;
+    time: string;
+    reactions: {
+        votes: number;
+        stars: number;
+        emojis: { [emoji: string]: number };
+    };
+}
 export interface Award {
   id: string;
   type: 'top-rated' | 'new-hot' | 'bestseller';
@@ -24,6 +39,7 @@ export interface User {
   passwordHash?: string;
   pts: number;
   awards: Award[];
+  libraryUnlocked: Record<string, boolean>;
 }
 export interface AuthResponse {
   user: User;
@@ -64,6 +80,7 @@ export interface Comic {
   previewImageUrls: string[];
   chapters: Chapter[];
   comments: Comment[];
+  posts: Post[];
   audioUrl?: string;
   duration?: string; // e.g., '2h 15m'
 }

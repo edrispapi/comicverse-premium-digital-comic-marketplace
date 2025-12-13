@@ -14,12 +14,14 @@ interface AppState {
   rememberMe: boolean;
   pts: number;
   awards: Award[];
+  libraryUnlocked: Record<string, boolean>;
   setUserId: (userId: string) => void;
   setAuthToken: (token: string | null) => void;
   setRememberMe: (remember: boolean) => void;
   clearAuth: () => void;
   updatePts: (delta: number) => void;
   earnAward: (type: Award['type']) => void;
+  toggleLibraryUnlock: (comicId: string) => void;
   // UI state
   isCartOpen: boolean;
   isWishlistOpen: boolean;
@@ -72,13 +74,17 @@ export const useAppStore = create<AppState>()(
       rememberMe: false,
       pts: 0,
       awards: [],
+      libraryUnlocked: {},
       setUserId: (userId) => set({ userId }),
       setAuthToken: (token) => set({ authToken: token }),
       setRememberMe: (remember) => set({ rememberMe: remember }),
-      clearAuth: () => set({ userId: null, authToken: null, pts: 0, awards: [] }),
+      clearAuth: () => set({ userId: null, authToken: null, pts: 0, awards: [], libraryUnlocked: {} }),
       updatePts: (delta) => set((state) => ({ pts: state.pts + delta })),
       earnAward: (type) => set((state) => ({
         awards: [...state.awards, { id: uuidv4(), type, earnedAt: new Date().toISOString() }],
+      })),
+      toggleLibraryUnlock: (comicId) => set((state) => ({
+        libraryUnlocked: { ...state.libraryUnlocked, [comicId]: true },
       })),
       // UI state
       isCartOpen: false,
@@ -200,6 +206,7 @@ export const useAppStore = create<AppState>()(
         currentAudioId: state.currentAudioId,
         promoCode: state.promoCode,
         shippingOption: state.shippingOption,
+        libraryUnlocked: state.libraryUnlocked,
       }),
     }
   )
@@ -265,3 +272,5 @@ export const useCartTotals = () => {
     return { subtotal, shippingCost, tax, discount, total };
   }, [cart, shippingOption, promoCode]);
 };
+export const useLibraryUnlocked = () => useAppStore(useShallow(state => state.libraryUnlocked));
+export const useToggleLibraryUnlock = () => useAppStore(state => state.toggleLibraryUnlock);
