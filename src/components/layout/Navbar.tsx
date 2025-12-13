@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AuthDialog } from '@/components/auth/AuthDialog';
+import { useNewAudiobooks } from '@/lib/queries';
 export function Navbar() {
   const cart = useCart();
   const wishlist = useWishlist();
@@ -28,10 +29,28 @@ export function Navbar() {
   const userId = useAppStore(s => s.userId);
   const clearAuth = useAppStore(s => s.clearAuth);
   const toggleAuth = useAppStore(s => s.toggleAuth);
+  const { data: newAudiobooks } = useNewAudiobooks();
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const wishlistCount = wishlist.length;
+  const newAudiobooksCount = newAudiobooks?.length || 0;
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `transition-colors hover:text-comic-accent ${isActive ? 'text-comic-accent' : 'text-neutral-300'}`;
+  const navLinks = (
+    <>
+      <NavLink to="/" className={navLinkClass} end>Home</NavLink>
+      <NavLink to="/catalog" className={navLinkClass}>Catalog</NavLink>
+      <NavLink to="/genres" className={navLinkClass}>Genres</NavLink>
+      <NavLink to="/authors" className={navLinkClass}>Authors</NavLink>
+      <NavLink to="/audiobooks" className={navLinkClass + " flex items-center"}>
+        Audiobooks
+        {newAudiobooksCount > 0 && (
+          <Badge variant="destructive" className="ml-2 h-4 px-1.5 text-xs leading-none">
+            {newAudiobooksCount}
+          </Badge>
+        )}
+      </NavLink>
+    </>
+  );
   return (
     <>
       <header className="sticky top-0 z-50 w-full glass-dark shadow-md">
@@ -43,11 +62,7 @@ export function Navbar() {
                 <span className="text-2xl font-bold">ComicVerse</span>
               </Link>
               <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-                <NavLink to="/" className={navLinkClass} end>Home</NavLink>
-                <NavLink to="/catalog" className={navLinkClass}>Catalog</NavLink>
-                <NavLink to="/genres" className={navLinkClass}>Genres</NavLink>
-                <NavLink to="/authors" className={navLinkClass}>Authors</NavLink>
-                <NavLink to="/audiobooks" className={navLinkClass}>Audiobooks</NavLink>
+                {navLinks}
               </nav>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
@@ -117,11 +132,7 @@ export function Navbar() {
                   </SheetTrigger>
                   <SheetContent className="bg-comic-card border-l-white/10 text-white">
                     <nav className="flex flex-col space-y-4 pt-8 text-lg">
-                      <NavLink to="/" className={navLinkClass}>Home</NavLink>
-                      <NavLink to="/catalog" className={navLinkClass}>Catalog</NavLink>
-                      <NavLink to="/genres" className={navLinkClass}>Genres</NavLink>
-                      <NavLink to="/authors" className={navLinkClass}>Authors</NavLink>
-                      <NavLink to="/audiobooks" className={navLinkClass}>Audiobooks</NavLink>
+                      {navLinks}
                       {!userId && <Button onClick={() => toggleAuth(true)} className="w-full mt-4">Login</Button>}
                     </nav>
                   </SheetContent>

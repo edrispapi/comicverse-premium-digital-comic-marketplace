@@ -40,6 +40,13 @@ interface AppState {
   setPromoCode: (code: string) => void;
   applyPromoCode: () => boolean;
   setShippingOption: (option: 'standard' | 'express') => void;
+  // Audio Player State
+  audioQueue: Comic[];
+  currentAudioId: string | null;
+  playAudio: (comic: Comic) => void;
+  playNext: () => void;
+  playPrev: () => void;
+  clearAudioQueue: () => void;
 }
 const PROMO_CODES: { [key: string]: number } = {
   COMICVERSE10: 0.10, // 10% off
@@ -123,6 +130,30 @@ export const useAppStore = create<AppState>()(
           set({ shippingOption: 'express', shippingCost: 15.00 });
         }
       },
+      // Audio Player State
+      audioQueue: [],
+      currentAudioId: null,
+      playAudio: (comic) => set((state) => {
+        const queue = state.audioQueue;
+        const isAlreadyInQueue = queue.some(item => item.id === comic.id);
+        const newQueue = isAlreadyInQueue ? queue : [...queue, comic];
+        return { audioQueue: newQueue, currentAudioId: comic.id };
+      }),
+      playNext: () => set((state) => {
+        const { audioQueue, currentAudioId } = state;
+        if (audioQueue.length === 0) return {};
+        const currentIndex = audioQueue.findIndex(item => item.id === currentAudioId);
+        const nextIndex = (currentIndex + 1) % audioQueue.length;
+        return { currentAudioId: audioQueue[nextIndex].id };
+      }),
+      playPrev: () => set((state) => {
+        const { audioQueue, currentAudioId } = state;
+        if (audioQueue.length === 0) return {};
+        const currentIndex = audioQueue.findIndex(item => item.id === currentAudioId);
+        const prevIndex = (currentIndex - 1 + audioQueue.length) % audioQueue.length;
+        return { currentAudioId: audioQueue[prevIndex].id };
+      }),
+      clearAudioQueue: () => set({ audioQueue: [], currentAudioId: null }),
     }),
     {
       name: 'comicverse-storage',
@@ -137,17 +168,17 @@ export const useAppStore = create<AppState>()(
         discountPercent: state.discountPercent,
         shippingOption: state.shippingOption,
         shippingCost: state.shippingCost,
+        audioQueue: state.audioQueue,
+        currentAudioId: state.currentAudioId,
       }),
     }
   )
 );
 // Selectors for derived state to prevent unnecessary re-renders
 export const useCartTotals = () => {
-  // Select each piece of state individually to keep selector stable
   const cart = useAppStore(state => state.cart);
   const shippingCost = useAppStore(state => state.shippingCost);
   const discountPercent = useAppStore(state => state.discountPercent);
-
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const discount = subtotal * discountPercent;
   const tax = (subtotal - discount) * 0.08; // Tax calculated on discounted price
@@ -156,3 +187,11 @@ export const useCartTotals = () => {
 };
 export const useCart = () => useAppStore(useShallow(state => state.cart));
 export const useWishlist = () => useAppStore(useShallow(state => state.wishlist));
+export const useAudioQueue = () => {
+  const queue = useAppStore(state => state.audioQueue);
+  const currentId = useAppStore(state => state.currentAudioId);
+  const playAudio = useAppStore(state => state.playAudio);
+  const playNext = useAppStore(state => state.playNext);
+  const playPrev = useAppStore(state => state.playPrev);
+  return { queue, currentId, playAudio, playNext, playPrev };
+};

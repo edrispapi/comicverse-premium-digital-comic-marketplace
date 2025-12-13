@@ -23,6 +23,21 @@ export const useAudiobooks = () => {
     queryFn: () => api<Comic[]>('/api/audiobooks'),
   });
 };
+// Fetch a single audiobook by ID
+export const useAudiobook = (id: string | undefined) => {
+  return useQuery<Comic>({
+    queryKey: ['audiobook', id],
+    queryFn: () => api<Comic>(`/api/audiobooks/${id}`),
+    enabled: !!id,
+  });
+};
+// Fetch new release audiobooks
+export const useNewAudiobooks = () => {
+  return useQuery<Comic[]>({
+    queryKey: ['newAudiobooks'],
+    queryFn: () => api<Comic[]>('/api/audiobooks/new'),
+  });
+};
 // Fetch all authors
 export const useAuthors = () => {
   return useQuery<Author[]>({

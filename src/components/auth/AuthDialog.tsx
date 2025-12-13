@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,7 +19,7 @@ import { Eye, EyeOff, Github } from 'lucide-react';
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean().default(false).optional(),
 });
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -65,20 +65,20 @@ function AuthForm() {
     resolver: zodResolver(signupSchema),
     defaultValues: { name: '', email: '', password: '' },
   });
-  const handleLogin = (values: LoginFormData) => {
+  const handleLogin: SubmitHandler<LoginFormData> = (values) => {
     login(values, {
       onSuccess: (data) => {
         toast.success(`Welcome back, ${data.user.name}!`);
         setShowConfetti(true);
         setUserId(data.user.id);
         setAuthToken(data.token);
-        setRememberMe(values.rememberMe);
+        setRememberMe(values.rememberMe || false);
         setTimeout(() => toggleAuth(false), 1500);
       },
       onError: (error) => toast.error(error.message || 'Login failed. Please check your credentials.'),
     });
   };
-  const handleSignup = (values: SignupFormData) => {
+  const handleSignup: SubmitHandler<SignupFormData> = (values) => {
     signup(values, {
       onSuccess: (data) => {
         toast.success(`Welcome to ComicVerse, ${data.user.name}!`);

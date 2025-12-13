@@ -24,6 +24,23 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const { items } = await ComicEntity.list(c.env, null, 100);
     return ok(c, items.filter(comic => comic.audioUrl));
   });
+  app.get('/api/audiobooks/new', async (c) => {
+    await ComicEntity.ensureSeed(c.env);
+    const { items } = await ComicEntity.list(c.env, null, 100);
+    const audiobooks = items.filter(comic => comic.audioUrl);
+    const newReleases = audiobooks
+      .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
+      .slice(0, 5);
+    return ok(c, newReleases);
+  });
+  app.get('/api/audiobooks/:id', async (c) => {
+    const id = c.req.param('id');
+    const comic = new ComicEntity(c.env, id);
+    if (!await comic.exists()) return notFound(c, 'audiobook not found');
+    const data = await comic.getState();
+    if (!data.audioUrl) return notFound(c, 'audiobook not found');
+    return ok(c, data);
+  });
   // AUTHORS
   app.get('/api/authors', async (c) => {
     await AuthorEntity.ensureSeed(c.env);

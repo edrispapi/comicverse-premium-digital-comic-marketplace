@@ -43,4 +43,5 @@ export interface Comic {
   previewImageUrls: string[];
   chapters: Chapter[];
   audioUrl?: string;
+  duration?: string; // e.g., '2h 15m'
 }

@@ -20,6 +20,7 @@ import { CheckoutPage } from '@/pages/CheckoutPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { AuthorDetailPage } from '@/pages/AuthorDetailPage';
 import { AudiobooksPage } from '@/pages/AudiobooksPage';
+import { AudiobooksDetailPage } from '@/pages/AudiobooksDetailPage';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
@@ -55,6 +56,11 @@ const router = createBrowserRouter([
   {
     path: "/audiobooks",
     element: <AudiobooksPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/audiobooks/:id",
+    element: <AudiobooksDetailPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {
