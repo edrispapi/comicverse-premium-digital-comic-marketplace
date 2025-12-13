@@ -16,8 +16,43 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // COMICS
   app.get('/api/comics', async (c) => {
     await ComicEntity.ensureSeed(c.env);
-    const { items } = await ComicEntity.list(c.env, null, 50);
-    return ok(c, items);
+    const { items: allComics } = await ComicEntity.list(c.env, null, 500);
+    const search = c.req.query('search');
+    const genres = c.req.query('genres');
+    const authorIdsParam = c.req.query('authorIds');
+    const priceMax = c.req.query('priceMax');
+    const sort = c.req.query('sort') || 'newest';
+    let filteredComics = allComics;
+    if (search) {
+      filteredComics = filteredComics.filter(comic => comic.title.toLowerCase().includes(search.toLowerCase()));
+    }
+    if (genres) {
+      const genreIds = genres.split(',').filter(Boolean);
+      if (genreIds.length > 0) {
+        filteredComics = filteredComics.filter(comic => comic.genreIds.some(gid => genreIds.includes(gid)));
+      }
+    }
+    if (authorIdsParam) {
+      const authorIds = authorIdsParam.split(',').filter(Boolean);
+      if (authorIds.length > 0) {
+        filteredComics = filteredComics.filter(comic => comic.authorIds.some(aid => authorIds.includes(aid)));
+      }
+    }
+    if (priceMax) {
+      filteredComics = filteredComics.filter(comic => comic.price <= parseFloat(priceMax));
+    }
+    if (sort === 'newest') {
+      filteredComics.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+    } else if (sort === 'popular' || sort === 'rating') {
+      filteredComics.sort((a, b) => b.rating - a.rating);
+    }
+    const page = parseInt(c.req.query('page') || '0');
+    const limit = parseInt(c.req.query('limit') || '12');
+    const start = page * limit;
+    const end = start + limit;
+    const paginatedItems = filteredComics.slice(start, end);
+    const nextPage = end < filteredComics.length ? page + 1 : null;
+    return ok(c, { items: paginatedItems, nextPage });
   });
   app.get('/api/comics/:id', async (c) => {
     const id = c.req.param('id');
