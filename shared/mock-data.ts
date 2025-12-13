@@ -1,7 +1,7 @@
 import type { User, Comic, Author, Genre, Comment, Post } from './types';
-import { v4 as uuidv4 } from 'uuid';
+
 export const MOCK_USERS: User[] = [
-  { id: 'u1', name: 'User A', email: 'user.a@example.com', passwordHash: 'cGFzc3dvcmQxMjM=', pts: 250, awards: [{id: uuidv4(), type: 'top-rated', earnedAt: new Date().toISOString()}], libraryUnlocked: {'comic-1': true, 'comic-2': true} }, // password123
+  { id: 'u1', name: 'User A', email: 'user.a@example.com', passwordHash: 'cGFzc3dvcmQxMjM=', pts: 250, awards: [{id: crypto.randomUUID(), type: 'top-rated', earnedAt: new Date().toISOString()}], libraryUnlocked: {'comic-1': true, 'comic-2': true} }, // password123
   { id: 'u2', name: 'User B', email: 'user.b@example.com', passwordHash: 'cGFzc3dvcmQ0NTY=', pts: 120, awards: [], libraryUnlocked: {} }  // password456
 ];
 export const AUTHORS: Author[] = [
@@ -47,7 +47,7 @@ const mockMessages = [
 const generateComments = (): Comment[] => {
     const numComments = 3 + Math.floor(Math.random() * 6);
     return Array.from({ length: numComments }).map((_, i) => ({
-        id: uuidv4(),
+        id: crypto.randomUUID(),
         user: mockCommenters[i % mockCommenters.length],
         message: mockMessages[i % mockMessages.length],
         time: new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 7).toISOString(),
@@ -66,7 +66,7 @@ const generatePosts = (): Post[] => {
     return Array.from({ length: numPosts }).map((_, i) => {
         const type = postTypes[i % postTypes.length];
         return {
-            id: uuidv4(),
+            id: crypto.randomUUID(),
             user: mockCommenters[i % mockCommenters.length],
             type,
             content: postContents[type],

@@ -3,7 +3,7 @@ import type { Env } from './core-utils';
 import { UserEntity, ComicEntity, AuthorEntity, GenreEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
 import type { User, Notification, Comic, Comment, Post } from '@shared/types';
-import { v4 as uuidv4 } from 'uuid';
+
 const mockHash = (password: string) => btoa(password);
 const mockGenerateToken = (user: User) => JSON.stringify({ sub: user.id, name: user.name, iat: Date.now() });
 const parseDuration = (durationStr: string | undefined): number => {
@@ -70,7 +70,7 @@ return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - 
     const comic = new ComicEntity(c.env, id);
     if (!await comic.exists()) return notFound(c, 'comic not found');
     const newComment: Comment = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       user: { name: 'MockUser', avatar: 'https://i.pravatar.cc/150?u=current-user' },
       message,
       time: new Date().toISOString(),
@@ -96,7 +96,7 @@ return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - 
     const comic = new ComicEntity(c.env, id);
     if (!await comic.exists()) return notFound(c, 'comic not found');
     const newPost: Post = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       user: { name: 'MockUser', avatar: 'https://i.pravatar.cc/150?u=current-user' },
       type,
       content,
@@ -165,11 +165,21 @@ return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - 
   });
   // AUTHORS & GENRES
   app.get('/api/authors', async (c) => { await AuthorEntity.ensureSeed(c.env); const { items } = await AuthorEntity.list(c.env, null, 50); return ok(c, items); });
-  app.get('/api/authors/:id', async (c) => { const id = c.req.param('id'); const author = new AuthorEntity(c.env, id); if (!await author.exists()) return notFound(c, 'author not found'); return ok(c, await author.getState()); });
-  app.get('/api/genres', async (c) => { await GenreEntity.ensureSeed(c.env); const { items } = await GenreEntity.list(c.env, null, 50); return ok(c, items); });
+  app.get('/api/authors/:id', async (c) => {
+    const id = c.req.param('id');
+    const author = new AuthorEntity(c.env, id);
+    if (!await author.exists()) return notFound(c, 'author not found');
+    return ok(c, await author.getState());
+});
   // USER STATS & NOTIFICATIONS
   app.get('/api/user/stats', async (c) => { const stats = { reads: Math.floor(20 + Math.random() * 30), hours: Math.floor(40 + Math.random() * 60), spent: parseFloat((120 + Math.random() * 400).toFixed(2)), }; return ok(c, stats); });
-  app.get('/api/notifications', async (c) => { const notifications: Notification[] = [ { id: uuidv4(), type: 'release', title: 'New Release: Cosmic Odyssey Vol. 2!', date: new Date(Date.now() - 86400000).toISOString(), read: false }, { id: uuidv4(), type: 'promo', title: 'Weekend Sale: 20% off all Superhero comics!', date: new Date(Date.now() - 2 * 86400000).toISOString(), read: false }, ]; return ok(c, notifications); });
+  app.get('/api/notifications', async (c) => {
+    const notifications: Notification[] = [
+      { id: crypto.randomUUID(), type: 'release', title: 'New Release: Cosmic Odyssey Vol. 2!', date: new Date(Date.now() - 86400000).toISOString(), read: false },
+      { id: crypto.randomUUID(), type: 'promo', title: 'Weekend Sale: 20% off all Superhero comics!', date: new Date(Date.now() - 2 * 86400000).toISOString(), read: false },
+    ];
+    return ok(c, notifications);
+});
   // AUTH
   app.post('/api/auth/login', async (c) => {
     const { email, password } = (await c.req.json()) as { email?: string, password?: string };
@@ -192,7 +202,7 @@ return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - 
     if (allUsers.find(u => u.email.toLowerCase() === email.toLowerCase())) {
       return c.json({ success: false, error: 'An account with this email already exists' }, 409);
     }
-    const newUser: User = { id: uuidv4(), name: name.trim(), email: email.trim().toLowerCase(), passwordHash: mockHash(password), pts: 0, awards: [], libraryUnlocked: {} };
+    const newUser: User = { id: crypto.randomUUID(), name: name.trim(), email: email.trim().toLowerCase(), passwordHash: mockHash(password), pts: 0, awards: [], libraryUnlocked: {} };
     await UserEntity.create(c.env, newUser);
     const token = mockGenerateToken(newUser);
     const { passwordHash, ...userResponse } = newUser;
