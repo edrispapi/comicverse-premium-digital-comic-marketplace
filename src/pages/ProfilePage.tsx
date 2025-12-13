@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Heart, Package, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
-import { Comic } from '@/lib/comic-data';
+import type { Comic } from '@shared/types';
 const mockOrders = [
   { id: 'ORD-001', date: '2023-10-15', total: 45.98, status: 'Delivered', items: 2 },
   { id: 'ORD-002', date: '2023-11-01', total: 12.99, status: 'Delivered', items: 1 },

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, ShoppingCart, Heart } from 'lucide-react';
-import { Comic } from '@/lib/comic-data';
+import type { Comic } from '@shared/types';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/store/use-store';
 import { cn } from '@/lib/utils';

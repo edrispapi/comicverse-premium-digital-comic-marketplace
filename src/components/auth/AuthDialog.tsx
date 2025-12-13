@@ -19,7 +19,7 @@ import { Eye, EyeOff, Github } from 'lucide-react';
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  rememberMe: z.boolean().optional().default(false),
+  rememberMe: z.boolean().default(false),
 });
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -72,7 +72,7 @@ function AuthForm() {
         setShowConfetti(true);
         setUserId(data.user.id);
         setAuthToken(data.token);
-        setRememberMe(values.rememberMe ?? false);
+        setRememberMe(values.rememberMe);
         setTimeout(() => toggleAuth(false), 1500);
       },
       onError: (error) => toast.error(error.message || 'Login failed. Please check your credentials.'),
@@ -122,7 +122,7 @@ function AuthForm() {
                 </FormItem>
               )} />
               <div className="flex items-center justify-between text-sm">
-                <FormField control={loginForm.control} name="rememberMe" render={({ field }) => <FormItem className="flex items-center space-x-2"><FormControl><Checkbox id="rememberMe" checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl><Label htmlFor="rememberMe" className="font-normal">Remember me</Label></FormItem>} />
+                <FormField control={loginForm.control} name="rememberMe" render={({ field }) => <FormItem className="flex items-center space-x-2"><FormControl><Checkbox id="rememberMe" checked={field.value} onCheckedChange={field.onChange} /></FormControl><Label htmlFor="rememberMe" className="font-normal">Remember me</Label></FormItem>} />
                 <a href="#" className="hover:text-comic-accent transition-colors">Forgot password?</a>
               </div>
               <Button type="submit" className="w-full btn-accent" disabled={isLoginPending}>{isLoginPending ? 'Logging in...' : 'Login'}</Button>
