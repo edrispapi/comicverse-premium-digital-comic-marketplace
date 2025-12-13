@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ComicCard } from '@/components/ui/comic-card';
 import { useAppStore } from '@/store/use-store';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
 import { useComic, useComics, useAuthors, useGenres } from '@/lib/queries';
@@ -133,7 +133,12 @@ export function ProductPage() {
                       <Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Look Inside ({comic.previewImageUrls.length})</Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl bg-comic-card border-white/10 text-white">
-                      <DialogHeader><DialogTitle>Preview: {comic.title}</DialogTitle></DialogHeader>
+                      <DialogHeader>
+  <DialogTitle>Preview: {comic.title}</DialogTitle>
+  <DialogDescription className='text-muted-foreground'>
+    Look inside the preview carousel for {comic.title}. Swipe or use arrows to navigate pages.
+  </DialogDescription>
+</DialogHeader>
                       <Carousel className="w-full">
                         <CarouselContent>
                           {comic.previewImageUrls.map((url, index) => (
