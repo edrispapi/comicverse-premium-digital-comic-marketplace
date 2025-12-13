@@ -1,5 +1,4 @@
 import type { User, Comic, Author, Genre, Comment, Post } from './types';
-
 /* -------------------------------------------------
    MOCK USERS – deterministic data (no random UUIDs)
    ------------------------------------------------- */
@@ -29,7 +28,6 @@ export const MOCK_USERS: User[] = [
     libraryUnlocked: {},
   }, // password456
 ];
-
 /* -------------------------------------------------
    AUTHORS & GENRES
    ------------------------------------------------- */
@@ -71,7 +69,6 @@ export const AUTHORS: Author[] = [
     bio: 'An English author of short fiction, novels, comic books, graphic novels, nonfiction, audio theatre, and films. His work includes The Sandman comic book series.',
   },
 ];
-
 export const GENRES: Genre[] = [
   { id: 'genre-1', name: 'Superhero' },
   { id: 'genre-2', name: 'Sci-Fi' },
@@ -81,7 +78,6 @@ export const GENRES: Genre[] = [
   { id: 'genre-6', name: 'Graphic Novel' },
   { id: 'genre-7', name: 'Noir' },
 ];
-
 /* -------------------------------------------------
    HELPERS – deterministic mock data
    ------------------------------------------------- */
@@ -97,7 +93,6 @@ const chapterTitles = [
   'Epilogue',
   'New Beginning',
 ];
-
 const generateChapters = (comicId: string) => {
   const numChapters = 10 + Math.floor(Math.random() * 11); // 10‑20 chapters (acceptable randomness)
   return Array.from({ length: numChapters }).map((_, i) => ({
@@ -106,7 +101,6 @@ const generateChapters = (comicId: string) => {
     progress: Math.floor(Math.random() * 101),
   }));
 };
-
 const mockCommenters = [
   { name: 'ComicFan82', avatar: 'https://i.pravatar.cc/150?u=fan1' },
   { name: 'ArtLover', avatar: 'https://i.pravatar.cc/150?u=fan2' },
@@ -114,7 +108,6 @@ const mockCommenters = [
   { name: 'MangaManiac', avatar: 'https://i.pravatar.cc/150?u=fan4' },
   { name: 'GeekVerse', avatar: 'https://i.pravatar.cc/150?u=fan5' },
 ];
-
 const mockMessages = [
   'Absolutely stunning artwork! The story is captivating.',
   "A must-read for any fan of the genre. I couldn't put it down.",
@@ -122,7 +115,6 @@ const mockMessages = [
   'A bit slow to start, but the ending is mind-blowing!',
   "I've read this three times already. It's a masterpiece.",
 ];
-
 const generateComments = (prefix: string): Comment[] => {
   const numComments = 3 + Math.floor(Math.random() * 6);
   return Array.from({ length: numComments }).map((_, i) => ({
@@ -132,7 +124,6 @@ const generateComments = (prefix: string): Comment[] => {
     time: `2024-12-${String(10 + i).padStart(2, '0')}T12:00:00Z`,
   }));
 };
-
 const generatePosts = (prefix: string, authorIds: string[]): Post[] => {
   const numPosts = 8 + Math.floor(Math.random() * 5);
   const postTypes: Post['type'][] = ['text', 'image', 'video', 'text', 'text'];
@@ -171,15 +162,15 @@ const generatePosts = (prefix: string, authorIds: string[]): Post[] => {
         stars: parseFloat((3 + (i % 2) * 0.5).toFixed(1)), // 3.0 or 3.5
         emojis: { '👍': i * 2, '❤️': i, '🔥': i % 3 },
         stickers: { '⭐': i % 5, '💯': i % 3, '😂': i % 4 },
+        heart: 10 + i * 3,
       },
       replies:
-        i % 3 === 0
+        i % 2 === 0
           ? generateComments(`${prefix}-post-${String(i + 1).padStart(3, '0')}`).slice(0, 2)
           : [],
     };
   });
 };
-
 const generateRatings = (prefix: string) => {
   const avg = 4.5 + (prefix.charCodeAt(0) % 10) / 10; // 4.5‑5.4
   const votes = 80 + (prefix.charCodeAt(1) % 20) * 10; // 80‑380
@@ -187,7 +178,6 @@ const generateRatings = (prefix: string) => {
   const down = votes - up;
   return { avg: parseFloat(avg.toFixed(1)), votes, up, down };
 };
-
 /* -------------------------------------------------
    COMICS – deterministic mock catalog
    ------------------------------------------------- */
@@ -213,6 +203,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-1'),
     comments: generateComments('comic-1'),
     posts: generatePosts('comic-1', ['author-1', 'author-2']),
+    awards: ['top-fan'],
     audioUrl: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3',
     duration: '3h 45m',
   },
@@ -237,6 +228,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-2'),
     comments: generateComments('comic-2'),
     posts: generatePosts('comic-2', ['author-3']),
+    awards: ['super-reader'],
     audioUrl: 'https://www.soundjay.com/misc/sounds/dream-harp-01.mp3',
     duration: '5h 12m',
   },
@@ -261,6 +253,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-3'),
     comments: generateComments('comic-3'),
     posts: generatePosts('comic-3', ['author-5']),
+    awards: [],
   },
   {
     id: 'comic-4',
@@ -283,6 +276,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-4'),
     comments: generateComments('comic-4'),
     posts: generatePosts('comic-4', ['author-4']),
+    awards: ['top-fan'],
     audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-1.mp3',
     duration: '2h 55m',
   },
@@ -307,6 +301,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-5'),
     comments: generateComments('comic-5'),
     posts: generatePosts('comic-5', ['author-1']),
+    awards: [],
     audioUrl: 'https://www.soundjay.com/misc/sounds/magic-chime-01.mp3',
     duration: '2h 10m',
   },
@@ -331,6 +326,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-6'),
     comments: generateComments('comic-6'),
     posts: generatePosts('comic-6', ['author-3', 'author-6']),
+    awards: [],
   },
   {
     id: 'comic-7',
@@ -353,6 +349,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-7'),
     comments: generateComments('comic-7'),
     posts: generatePosts('comic-7', ['author-4']),
+    awards: [],
     audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-2.mp3',
     duration: '1h 58m',
   },
@@ -377,6 +374,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-8'),
     comments: generateComments('comic-8'),
     posts: generatePosts('comic-8', ['author-5']),
+    awards: [],
   },
   {
     id: 'comic-9',
@@ -399,6 +397,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-9'),
     comments: generateComments('comic-9'),
     posts: generatePosts('comic-9', ['author-6']),
+    awards: [],
     audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-3.mp3',
     duration: '4h 30m',
   },
@@ -423,6 +422,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-10'),
     comments: generateComments('comic-10'),
     posts: generatePosts('comic-10', ['author-1', 'author-2']),
+    awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-1.mp3',
     duration: '3h 15m',
   },
@@ -447,6 +447,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-11'),
     comments: generateComments('comic-11'),
     posts: generatePosts('comic-11', ['author-4']),
+    awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-2.mp3',
     duration: '2h 40m',
   },
@@ -471,6 +472,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-12'),
     comments: generateComments('comic-12'),
     posts: generatePosts('comic-12', ['author-6']),
+    awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-3.mp3',
     duration: '4h 05m',
   },
@@ -495,6 +497,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-13'),
     comments: generateComments('comic-13'),
     posts: generatePosts('comic-13', ['author-1']),
+    awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-4.mp3',
     duration: '2h 20m',
   },
@@ -519,6 +522,7 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-14'),
     comments: generateComments('comic-14'),
     posts: generatePosts('comic-14', ['author-3']),
+    awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-5.mp3',
     duration: '1h 55m',
   },
@@ -543,11 +547,11 @@ export const COMICS: Comic[] = [
     chapters: generateChapters('comic-15'),
     comments: generateComments('comic-15'),
     posts: generatePosts('comic-15', ['author-5']),
+    awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-6.mp3',
     duration: '2h 00m',
   },
 ];
-
 /* -------------------------------------------------
    EXPORTS – convenience aliases
    ------------------------------------------------- */

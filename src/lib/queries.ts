@@ -8,7 +8,6 @@ export const useComics = () => {
     queryFn: () => api<Comic[]>('/api/comics'),
   });
 };
-
 // Search comics
 export const useSearchResults = (params: { q?: string; genres?: string[]; authorIds?: string[]; priceMax?: number; sort?: string }, enabled: boolean) => {
   const queryKey = ['searchResults', params];
@@ -155,6 +154,42 @@ export const useReactToPost = (comicId: string) => {
         }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['posts', comicId] });
+            queryClient.invalidateQueries({ queryKey: ['comic', comicId] });
+            queryClient.invalidateQueries({ queryKey: ['comics'] });
+        },
+    });
+};
+export const usePostReply = (comicId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ postId, message }: { postId: string; message: string }) => api(`/api/comics/${comicId}/posts/${postId}/reply`, {
+            method: 'POST',
+            body: JSON.stringify({ message }),
+        }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts', comicId] });
+        },
+    });
+};
+export const useHeartPost = (comicId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ postId }: { postId: string }) => api(`/api/comics/${comicId}/posts/${postId}/heart`, {
+            method: 'PATCH',
+        }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts', comicId] });
+        },
+    });
+};
+export const useAwardComic = (comicId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ award }: { award: string }) => api(`/api/comics/${comicId}/awards`, {
+            method: 'PATCH',
+            body: JSON.stringify({ award }),
+        }),
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['comic', comicId] });
             queryClient.invalidateQueries({ queryKey: ['comics'] });
         },

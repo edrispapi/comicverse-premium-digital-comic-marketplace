@@ -19,6 +19,7 @@ export interface PostReactions {
     down: number;
     emojis: { [emoji: string]: number };
     stickers: { [emoji: string]: number };
+    heart: number;
 }
 export interface Post {
     id: string;
@@ -87,6 +88,7 @@ export interface Comic {
   chapters: Chapter[];
   comments: Comment[];
   posts: Post[];
+  awards: string[];
   audioUrl?: string;
   duration?: string; // e.g., '2h 15m'
 }

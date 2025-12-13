@@ -35,6 +35,7 @@ export class ComicEntity extends IndexedEntity<Comic> {
     chapters: [],
     comments: [],
     posts: [],
+    awards: [],
     audioUrl: '',
     duration: '',
   };

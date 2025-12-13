@@ -14,7 +14,7 @@ import { useAppStore, useAudioControls } from '@/store/use-store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
-import { useComic, useComics, useAuthors, useGenres, useComicPosts, useUpdateRating, usePostPost, useVotePost, useReactToPost } from '@/lib/queries';
+import { useComic, useComics, useAuthors, useGenres, useUpdateRating } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -36,18 +36,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Comic } from '@shared/types';
+import { BookCommunityChannel } from '@/components/community/BookCommunityChannel';
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
-const postSchema = z.object({ content: z.string().min(1, 'Message cannot be empty').max(1000) });
-type PostFormData = z.infer<typeof postSchema>;
-const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
-const Confetti = () => (
-    <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
-      {Array.from({ length: 30 }).map((_, i) => (
-        <motion.div key={i} className="absolute w-2 h-2 bg-red-500 rounded-full" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }} initial={{ scale: 0, opacity: 1 }} animate={{ scale: [1, 1.5, 0], opacity: [1, 1, 0], x: Math.random() * 200 - 100, y: Math.random() * 200 - 100, rotate: Math.random() * 360 }} transition={{ duration: 1.5, delay: i * 0.03, ease: "easeOut" }} />
-      ))}
-    </div>
-);
 function StarRating({ comicId, initialRating, votes }: { comicId: string, initialRating: number, votes: number }) {
   const [hoverRating, setHoverRating] = useState(0);
   const [currentRating, setCurrentRating] = useState(0);
@@ -72,83 +63,6 @@ function StarRating({ comicId, initialRating, votes }: { comicId: string, initia
     </div>
   );
 }
-const PostBubble = ({ post, comicId }: { post: Post, comicId: string }) => {
-    const { mutate: votePost } = useVotePost(comicId);
-    const { mutate: reactToPost } = useReactToPost(comicId);
-    const [showConfetti, setShowConfetti] = useState(false);
-    const handleReact = (sticker: string) => {
-        reactToPost({ postId: post.id, sticker });
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 1500);
-    };
-    const PostContent = () => {
-        switch (post.type) {
-            case 'image': return <img src={post.content} className="rounded-md max-h-64 object-cover w-full" alt="Post content"/>;
-            case 'video': return <video src={post.content} controls className="rounded-md w-full max-h-64" />;
-            case 'voice': return <audio src={post.content} controls className="w-full" />;
-            default: return <p className="whitespace-pre-wrap">{post.content}</p>;
-        }
-    };
-    return (
-        <motion.div variants={itemVariants} className="flex items-start gap-3 py-3">
-            <Avatar className="mt-1"><AvatarImage src={post.user.avatar} /><AvatarFallback>👤</AvatarFallback></Avatar>
-            <div className="flex-1 space-y-1">
-                <div className="relative p-3 rounded-xl bg-neutral-800/50 shadow-md">
-                    <div className="flex items-center justify-between"><p className="font-semibold text-white flex items-center gap-2">{post.user.name} {post.user.isCreator && <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />}</p><p className="text-xs text-neutral-400">{formatDistanceToNow(new Date(post.time), { addSuffix: true })}</p></div>
-                    <div className="mt-2 text-neutral-300 text-sm"><PostContent /></div>
-                </div>
-                <div className="flex items-center gap-1 text-xs text-neutral-400 pl-2 relative">
-                    <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10 text-red-400" onClick={() => votePost({ postId: post.id, up: true })}><ThumbsUp className="w-4 h-4" /> {post.reactions.up}</Button>
-                    <Popover>
-                        <PopoverTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-red-500/10"><Smile className="w-4 h-4" /></Button></PopoverTrigger>
-                        <PopoverContent className="w-auto p-2 bg-comic-card border-white/10"><div className="grid grid-cols-6 gap-1">{STICKERS.map(s => <Button key={s} variant="ghost" size="icon" className="text-xl" onClick={() => handleReact(s)}>{s}</Button>)}</div></PopoverContent>
-                    </Popover>
-                    <div className="flex items-center gap-1 ml-auto flex-wrap justify-end">
-                        {Object.entries(post.reactions.stickers).sort(([,a],[,b]) => b-a).map(([emoji, count]) => <Badge key={emoji} variant="secondary" className="px-1.5 py-0.5 bg-red-500/20 text-red-400 border-red-500/30 cursor-pointer" onClick={() => handleReact(emoji)}>{emoji} {count}</Badge>)}
-                    </div>
-                </div>
-            </div>
-        </motion.div>
-    );
-};
-const CommunityFeed = ({ comic }: { comic: Comic }) => {
-    const { data: posts, isLoading } = useComicPosts(comic.id);
-    const { mutate: postPost, isPending: isPosting } = usePostPost(comic.id);
-    const form = useForm<PostFormData>({ resolver: zodResolver(postSchema), defaultValues: { content: '' } });
-    const handlePost = (data: PostFormData) => {
-        postPost({ type: 'text', content: data.content }, {
-            onSuccess: () => { toast.success("Posted to community!"); form.reset(); },
-            onError: () => toast.error("Failed to post.")
-        });
-    };
-    return (
-        <Card className="bg-comic-card border-white/10" role="log">
-            <CardContent className="p-0 flex flex-col h-full">
-                <div className="p-4 border-b border-white/10 flex justify-between items-center">
-                    <div>
-                        <h3 className="text-lg font-bold">Community: {comic.title}</h3>
-                        <p className="text-sm text-neutral-400 flex items-center gap-2"><Users className="w-4 h-4" /> {Math.floor(100 + Math.random() * 900)} members</p>
-                    </div>
-                    <Button className="btn-accent">Join</Button>
-                </div>
-                <ScrollArea className="flex-1 p-4">
-                    <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                        {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full my-3" />)
-                            : posts && posts.length > 0 ? posts.map(post => <PostBubble key={post.id} post={post} comicId={comic.id} />)
-                            : <div className="text-center text-neutral-400 pt-16">Be the first to post!</div>}
-                    </motion.div>
-                </ScrollArea>
-                <div className="p-4 border-t border-white/10 mt-auto">
-                    <Form {...form}><form onSubmit={form.handleSubmit(handlePost)} className="flex items-center gap-2">
-                        <FormField control={form.control} name="content" render={({ field }) => (<FormItem className="flex-1"><FormControl><Input placeholder="Share your thoughts..." {...field} className="bg-neutral-800/50" /></FormControl><FormMessage /></FormItem>)} />
-                        <Button type="submit" size="icon" className="btn-accent flex-shrink-0" disabled={isPosting}><Send className="h-4 w-4" /></Button>
-                    </form></Form>
-                </div>
-            </CardContent>
-        </Card>
-    );
-};
 export function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const isMobile = useIsMobile();
@@ -196,21 +110,11 @@ export function ProductPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <Breadcrumb className="mb-8">
             <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
+              <BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem>
               <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/catalog">Catalog</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
+              <BreadcrumbItem><BreadcrumbLink asChild><Link to="/catalog">Catalog</Link></BreadcrumbLink></BreadcrumbItem>
               <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{comic.title}</BreadcrumbPage>
-              </BreadcrumbItem>
+              <BreadcrumbItem><BreadcrumbPage>{comic.title}</BreadcrumbPage></BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
           <motion.div variants={containerVariants} initial="hidden" animate="visible">
@@ -231,8 +135,8 @@ export function ProductPage() {
             </div>
             <motion.div variants={itemVariants} className="mt-16" id="community">
                 {isMobile ? (
-                    <Sheet><SheetTrigger asChild><Button className="w-full btn-accent" size="lg"><MessageCircle className="mr-2 h-5 w-5" /> View Community</Button></SheetTrigger><SheetContent side="bottom" className="h-[90%] bg-comic-card border-t-white/10 text-white p-0 flex flex-col"><CommunityFeed comic={comic} /></SheetContent></Sheet>
-                ) : <div className="h-[80vh]"><CommunityFeed comic={comic} /></div>}
+                    <Sheet><SheetTrigger asChild><Button className="w-full btn-accent" size="lg"><MessageCircle className="mr-2 h-5 w-5" /> View Community ({comic.posts?.length || 0})</Button></SheetTrigger><SheetContent side="bottom" className="h-[90%] bg-comic-card border-t-white/10 text-white p-0 flex flex-col"><BookCommunityChannel comic={comic} /></SheetContent></Sheet>
+                ) : <div className="h-[80vh]"><Card className="bg-comic-card border-white/10 h-full"><BookCommunityChannel comic={comic} /></Card></div>}
             </motion.div>
           </motion.div>
         </div>
