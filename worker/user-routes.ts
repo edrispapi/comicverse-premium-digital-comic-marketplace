@@ -44,9 +44,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     }
     if (sort === 'newest') {
       filteredComics.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
-    } else if (sort === 'popular' || sort === 'rating') {
-      filteredComics.sort((a, b) => b.ratings.avg - a.ratings.avg);
-    }
+} else if (sort === 'popular' || sort === 'rating') {
+      filteredComics.sort((a, b) => (b.ratings?.avg ?? 0) - (a.ratings?.avg ?? 0));
+}
     return ok(c, filteredComics);
   });
   app.get('/api/comics/:id', async (c) => {
@@ -60,8 +60,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const id = c.req.param('id');
     const comic = new ComicEntity(c.env, id);
     if (!await comic.exists()) return notFound(c, 'comic not found');
-    const state = await comic.getState();
-    return ok(c, state.comments.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
+const state = await comic.getState();
+return ok(c, (state.comments ?? []).sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
   });
   app.post('/api/comics/:id/comments', async (c) => {
     const id = c.req.param('id');
@@ -77,7 +77,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     await comic.mutate(state => ({
       ...state,
-      comments: [newComment, ...state.comments],
+      comments: [newComment, ...(state.comments ?? [])],
     }));
     return ok(c, newComment);
   });
@@ -89,18 +89,19 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const comic = new ComicEntity(c.env, id);
     if (!await comic.exists()) return notFound(c, 'comic not found');
     const updatedState = await comic.mutate(state => {
-      const oldAvg = state.ratings.avg;
-      const oldVotes = state.ratings.votes;
+      const currentRatings = state.ratings ?? { avg: 0, votes: 0, up: 0, down: 0 };
+      const oldAvg = currentRatings.avg;
+      const oldVotes = currentRatings.votes;
       const newVotes = oldVotes + 1;
       const newAvg = (oldAvg * oldVotes + rating) / newVotes;
       return {
         ...state,
         ratings: {
-          ...state.ratings,
+          ...currentRatings,
           avg: parseFloat(newAvg.toFixed(1)),
           votes: newVotes,
-          up: state.ratings.up + (rating >= 3 ? 1 : 0),
-          down: state.ratings.down + (rating < 3 ? 1 : 0),
+          up: currentRatings.up + (rating >= 3 ? 1 : 0),
+          down: currentRatings.down + (rating < 3 ? 1 : 0),
         },
       };
     });

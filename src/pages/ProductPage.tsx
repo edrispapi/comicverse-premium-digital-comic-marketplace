@@ -128,9 +128,9 @@ export function ProductPage() {
   const getAwards = (comic: any) => {
     const awards = [];
     const daysSinceRelease = (new Date().getTime() - new Date(comic.releaseDate).getTime()) / (1000 * 3600 * 24);
-    if (comic.ratings.avg >= 4.5 && comic.ratings.votes >= 50) awards.push({ type: 'Top Rated', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' });
-    if (daysSinceRelease < 7 && comic.ratings.votes >= 10) awards.push({ type: 'New & Hot', color: 'bg-red-500/20 text-red-400 border-red-500/30' });
-    if (comic.ratings.votes > 200) awards.push({ type: 'Bestseller', color: 'bg-green-500/20 text-green-400 border-green-500/30' });
+    if ((comic.ratings?.avg ?? 0) >= 4.5 && (comic.ratings?.votes ?? 0) >= 50) awards.push({ type: 'Top Rated', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' });
+    if (daysSinceRelease < 7 && (comic.ratings?.votes ?? 0) >= 10) awards.push({ type: 'New & Hot', color: 'bg-red-500/20 text-red-400 border-red-500/30' });
+    if ((comic.ratings?.votes ?? 0) > 200) awards.push({ type: 'Bestseller', color: 'bg-green-500/20 text-green-400 border-green-500/30' });
     return awards;
   };
   if (isLoading) {
@@ -164,8 +164,10 @@ export function ProductPage() {
   }
   const comicAuthors = comic.authorIds.map(authorId => allAuthors?.find(a => a.id === authorId)).filter(Boolean);
   const comicGenres = comic.genreIds.map(genreId => allGenres.find(g => g.id === genreId)).filter(Boolean);
-  const relatedComics = allComicsData.filter(c => c.genreIds.some(g => comic.genreIds.includes(g)) && c.id !== comic.id).slice(0, 4);
+  const relatedComics = allComicsData.filter(c => c.genreIds?.some(g => comic.genreIds?.includes(g)) && c.id !== comic.id).slice(0, 4);
   const awards = getAwards(comic);
+  // Ensure rating data is always defined
+  const safeRatings = comic.ratings ?? { avg: 0, votes: 0 };
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
@@ -179,7 +181,7 @@ export function ProductPage() {
               <motion.div variants={containerVariants} className="space-y-6">
                 <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl font-bold tracking-tight">{comic.title}</motion.h1>
                 <motion.div variants={itemVariants} className="flex items-center flex-wrap gap-4 text-neutral-300">
-                  <StarRating comicId={comic.id} initialRating={comic.ratings.avg} votes={comic.ratings.votes} />
+                  <StarRating comicId={comic.id} initialRating={safeRatings.avg} votes={safeRatings.votes} />
                   <span className="text-neutral-500">|</span><div>{comic.pages} pages</div>
                 </motion.div>
                 <motion.div variants={itemVariants} className="flex flex-wrap gap-2">
@@ -194,10 +196,10 @@ export function ProductPage() {
                 </motion.div>
                 <motion.div variants={itemVariants} className="flex items-center flex-wrap gap-4">
                   <Dialog>
-                    <DialogTrigger asChild><Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Look Inside ({comic.previewImageUrls.length})</Button></DialogTrigger>
+                    <DialogTrigger asChild><Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Look Inside ({comic.previewImageUrls?.length ?? 0})</Button></DialogTrigger>
                     <DialogContent className="max-w-4xl bg-comic-card border-white/10 text-white">
                       <DialogHeader><DialogTitle>Preview: {comic.title}</DialogTitle><DialogDescription className='text-muted-foreground'>Swipe or use arrows to navigate pages.</DialogDescription></DialogHeader>
-                      <Carousel className="w-full"><CarouselContent>{comic.previewImageUrls.map((url, index) => (<CarouselItem key={index}><img src={url} alt={`Preview page ${index + 1}`} className="w-full h-auto object-contain rounded-md aspect-video" loading="lazy" /></CarouselItem>))}</CarouselContent><CarouselPrevious /><CarouselNext /></Carousel>
+                      <Carousel className="w-full"><CarouselContent>{comic.previewImageUrls?.map((url, index) => (<CarouselItem key={index}><img src={url} alt={`Preview page ${index + 1}`} className="w-full h-auto object-contain rounded-md aspect-video" loading="lazy" /></CarouselItem>))}</CarouselContent><CarouselPrevious /><CarouselNext /></Carousel>
                     </DialogContent>
                   </Dialog>
                   {comic.audioUrl && (
