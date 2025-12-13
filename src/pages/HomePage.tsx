@@ -23,9 +23,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import useEmblaCarousel from 'embla-carousel-react';
 import { RecommendedCarousel } from '@/components/recommendations/RecommendedCarousel';
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+  },
+};
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } },
+};
 function HeroSlider() {
   const { data: allComicsData, isLoading } = useComics();
-  const allComics = useMemo(() => allComicsData || [], [allComicsData]);
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -34,11 +44,11 @@ function HeroSlider() {
   const startTimeRef = useRef<number>(Date.now());
   const isHovering = useRef(false);
   const featuredComics = useMemo(() => {
-    if (!allComics) return [];
-    return [...allComics]
+    if (!allComicsData) return [];
+    return [...allComicsData]
       .sort((a, b) => (b.ratings?.avg || 0) - (a.ratings?.avg || 0))
       .slice(0, 5);
-  }, [allComics]);
+  }, [allComicsData]);
   const startAutoplay = useCallback(() => {
     if (autoplayRef.current) clearInterval(autoplayRef.current);
     startTimeRef.current = Date.now();
@@ -115,28 +125,19 @@ function HeroSlider() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
                   >
-                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-glow">
+                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight animate-text-glow-pulse">
                       {comic.title}
                     </h1>
                     <p className="mt-4 text-lg text-neutral-300 max-w-prose line-clamp-3">
                       {comic.description}
                     </p>
                     <div className="mt-8 flex items-center gap-4">
-                      <Button
-                        asChild
-                        size="lg"
-                        className="btn-accent rounded-full px-8 py-6 text-base font-semibold"
-                      >
+                      <Button asChild size="lg" className="btn-accent rounded-full px-8 py-6 text-base font-semibold">
                         <Link to={`/comic/${comic.id}`}>
                           Read Now <ArrowRight className="ml-2 h-5 w-5" />
                         </Link>
                       </Button>
-                      <Button
-                        asChild
-                        size="lg"
-                        variant="outline"
-                        className="rounded-full px-8 py-6 text-base font-semibold border-2 border-white/50 hover:bg-white/10 hover:text-white"
-                      >
+                      <Button asChild size="lg" variant="outline" className="rounded-full px-8 py-6 text-base font-semibold border-2 border-white/50 hover:bg-white/10 hover:text-white">
                         <Link to="/catalog">Explore Catalog</Link>
                       </Button>
                     </div>
@@ -155,9 +156,7 @@ function HeroSlider() {
             <button
               key={index}
               onClick={() => onDotClick(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                current === index ? 'w-6 bg-red-500' : 'w-2 bg-red-500/30'
-              }`}
+              className={`h-2 rounded-full transition-all duration-300 ${current === index ? 'w-6 bg-red-500' : 'w-2 bg-red-500/30'}`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
@@ -166,15 +165,8 @@ function HeroSlider() {
           <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
             <circle cx="18" cy="18" r="16" fill="none" stroke="white/20" strokeWidth="2" />
             <motion.circle
-              cx="18"
-              cy="18"
-              r="16"
-              fill="none"
-              stroke="hsl(var(--primary))"
-              strokeWidth="2"
-              strokeDasharray="100.53"
-              strokeDashoffset={100.53 - (progress / 100) * 100.53}
-              strokeLinecap="round"
+              cx="18" cy="18" r="16" fill="none" stroke="hsl(var(--primary))" strokeWidth="2"
+              strokeDasharray="100.53" strokeDashoffset={100.53 - (progress / 100) * 100.53} strokeLinecap="round"
             />
           </svg>
         </div>
@@ -221,7 +213,7 @@ function AudiobookCarousel() {
   return (
     <div className="relative group">
       <div className="overflow-hidden" ref={emblaRef} style={{ perspective: '1000px' }}>
-        <div className="flex">
+        <div className="flex -ml-4">
           {audiobooks?.map((comic, index) => (
             <div key={comic.id} className="flex-shrink-0 flex-grow-0 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 min-w-0 pl-4">
               <motion.div
@@ -269,70 +261,70 @@ export function HomePage() {
         <HeroSlider />
         <section className="py-16 md:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold tracking-tight mb-8">Audiobooks Spotlight</h2>
+            <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8">Audiobooks Spotlight</motion.h2>
           </div>
           <AudiobookCarousel />
         </section>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <section className="py-16 md:py-24">
-            <h2 className="text-3xl font-bold tracking-tight mb-8">Trending Now</h2>
+            <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8">Trending Now</motion.h2>
             {isLoading && trendingComics.length === 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
               </div>
-            ) : trendingComics.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {trendingComics.map((comic, index) => (
-                  <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }}>
+            ) : (
+              <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {trendingComics.map((comic) => (
+                  <motion.div key={comic.id} variants={itemVariants}>
                     <ComicCard comic={comic} />
                   </motion.div>
                 ))}
-              </div>
-            ) : null}
+              </motion.div>
+            )}
           </section>
           <section className="py-16 md:py-24 bg-comic-card -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
-              <h2 className="text-3xl font-bold tracking-tight mb-8">New Releases</h2>
+              <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8">New Releases</motion.h2>
               {isLoading && newReleases.length === 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                   {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
                 </div>
-              ) : newReleases.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                  {newReleases.map((comic, index) => (
-                    <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }}>
+              ) : (
+                <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                  {newReleases.map((comic) => (
+                    <motion.div key={comic.id} variants={itemVariants}>
                       <ComicCard comic={comic} />
                     </motion.div>
                   ))}
-                </div>
-              ) : null}
+                </motion.div>
+              )}
             </div>
           </section>
           <section className="py-16 md:py-24">
-            <h2 className="text-3xl font-bold tracking-tight mb-8 text-center">What Our Readers Say</h2>
+            <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8 text-center">What Our Readers Say</motion.h2>
             {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full h-56 rounded-lg" />)}
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full h-56 rounded-lg" />)}
+              </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {testimonials.map((testimonial, index) => (
-                    <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }}>
+              <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {testimonials.map((testimonial) => (
+                  <motion.div key={testimonial.name} variants={itemVariants}>
                     <Card className="bg-comic-card border border-white/10 h-full flex flex-col p-6 hover:border-red-500/50 hover:shadow-red-glow transition-all duration-300">
-                        <CardContent className="flex flex-col flex-1 p-0">
+                      <CardContent className="flex flex-col flex-1 p-0">
                         <div className="flex items-center mb-4">
-                            <Avatar className="h-12 w-12 mr-4"><AvatarImage src={testimonial.avatar} alt={testimonial.name} /><AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback></Avatar>
-                            <div>
+                          <Avatar className="h-12 w-12 mr-4"><AvatarImage src={testimonial.avatar} alt={testimonial.name} /><AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback></Avatar>
+                          <div>
                             <p className="font-semibold text-white">{testimonial.name}</p>
                             <div className="flex text-red-400">{[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}</div>
-                            </div>
+                          </div>
                         </div>
                         <p className="text-neutral-300 text-sm flex-1">"{testimonial.quote}"</p>
-                        </CardContent>
+                      </CardContent>
                     </Card>
-                    </motion.div>
+                  </motion.div>
                 ))}
-                </div>
+              </motion.div>
             )}
           </section>
           <section className="py-16 md:py-24">

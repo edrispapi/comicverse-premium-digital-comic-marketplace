@@ -152,6 +152,7 @@ export default {
   			glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
             'accent-glow': '0 0 20px rgba(239, 68, 68, 0.3)',
             'red-glow': '0 0 20px rgba(239, 68, 68, 0.3)',
+            'red-lift-glow': '0 10px 30px rgba(239,68,68,0.2)',
   		},
   		keyframes: {
   			'fade-in': {
@@ -218,6 +219,10 @@ export default {
                     boxShadow: '0 0 30px rgba(239, 68, 68, 0.5)'
                 }
             },
+            'text-glow-pulse': {
+                '0%, 100%': { textShadow: '0 0 8px hsl(var(--primary)/0.3)' },
+                '50%': { textShadow: '0 0 16px hsl(var(--primary)/0.6)' }
+            },
   			float: {
   				'0%, 100%': {
   					transform: 'translateY(0px)'
@@ -251,6 +256,7 @@ export default {
   			shimmer: 'shimmer 2s infinite',
   			glow: 'glow 2s ease-in-out infinite',
             'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+            'text-glow-pulse': 'text-glow-pulse 3s ease-in-out infinite',
   			float: 'float 3s ease-in-out infinite',
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
@@ -258,7 +264,8 @@ export default {
   		backgroundImage: {
   			'gradient-rainbow': 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)',
   			'gradient-primary': 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))',
-  			'gradient-mesh': 'radial-gradient(at 40% 20%, hsla(28,100%,74%,1) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%), radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%), radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%), radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%), radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%)'
+  			'gradient-mesh': 'radial-gradient(at 40% 20%, hsla(28,100%,74%,1) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%), radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%), radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%), radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%), radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%)',
+            'hero-gradient': 'linear-gradient(135deg, hsl(var(--primary)/0.1), hsl(var(--primary)/0.3))',
   		}
   	}
   },
