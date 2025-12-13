@@ -17,7 +17,7 @@ export function RecommendedCarousel({ type, className }: RecommendedCarouselProp
   const { data: allComics, isLoading: comicsLoading } = useComics();
   const { data: allAudiobooks, isLoading: audiobooksLoading } = useAudiobooks();
   const recommendations = useMemo(() => {
-    const sourceData = type === 'comics' ? (allComics ?? []) : (allAudiobooks ?? []);
+    const sourceData = type === 'comics' ? allComics : allAudiobooks;
     if (!sourceData || sourceData.length === 0 || reading.length === 0) {
       return [];
     }

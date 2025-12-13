@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { Comic, User, Notification, UserStats, Award } from '@shared/types';
 import { useShallow } from 'zustand/react/shallow';
 import { v4 as uuidv4 } from 'uuid';
+import { useMemo } from 'react';
 interface CartItem extends Comic {
   quantity: number;
 }

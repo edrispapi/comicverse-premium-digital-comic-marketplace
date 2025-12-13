@@ -9,6 +9,7 @@ import { ComicCard } from '@/components/ui/comic-card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { BookOpenCheck, CheckCircle, Heart } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -17,7 +18,16 @@ const itemVariants = {
   hidden: { y: 20, opacity: 0 },
   visible: { y: 0, opacity: 1 },
 };
-function Shelf({ comics, emptyTitle, emptyMessage }: { comics: any[], emptyTitle: string, emptyMessage: string }) {
+function Shelf({ comics, emptyTitle, emptyMessage, isLoading }: { comics: any[], emptyTitle: string, emptyMessage: string, isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />
+        ))}
+      </div>
+    );
+  }
   if (comics.length === 0) {
     return (
       <div className="text-center py-16">
@@ -39,7 +49,7 @@ function Shelf({ comics, emptyTitle, emptyMessage }: { comics: any[], emptyTitle
 }
 export function LibraryPage() {
   const { reading, completed, wishlist, updateLibrary } = useLibraryShelves();
-  const { data: allComicsData = [] } = useComics();
+  const { data: allComicsData = [], isLoading } = useComics();
   useEffect(() => {
     if (allComicsData) {
       updateLibrary(allComicsData);
@@ -58,13 +68,13 @@ export function LibraryPage() {
               <TabsTrigger value="wishlist"><Heart className="mr-2 h-4 w-4" /> Wishlist</TabsTrigger>
             </TabsList>
             <TabsContent value="reading" className="mt-8">
-              <Shelf comics={reading} emptyTitle="Nothing here yet!" emptyMessage="Start reading a comic to see it here." />
+              <Shelf comics={reading} isLoading={isLoading} emptyTitle="Nothing here yet!" emptyMessage="Start reading a comic to see it here." />
             </TabsContent>
             <TabsContent value="completed" className="mt-8">
-              <Shelf comics={completed} emptyTitle="No finished comics" emptyMessage="Complete a comic to add it to this shelf." />
+              <Shelf comics={completed} isLoading={isLoading} emptyTitle="No finished comics" emptyMessage="Complete a comic to add it to this shelf." />
             </TabsContent>
             <TabsContent value="wishlist" className="mt-8">
-              <Shelf comics={wishlist} emptyTitle="Your wishlist is empty" emptyMessage="Add some comics you want to read later." />
+              <Shelf comics={wishlist} isLoading={isLoading} emptyTitle="Your wishlist is empty" emptyMessage="Add some comics you want to read later." />
             </TabsContent>
           </Tabs>
         </motion.div>

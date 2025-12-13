@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppStore } from '@/store/use-store';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RecommendedCarousel } from '@/components/recommendations/RecommendedCarousel';
 function FilterSidebar({
   filters,
   setFilters,
@@ -47,7 +48,7 @@ function FilterSidebar({
                 checked={filters.genres.includes(genre.id)}
                 onCheckedChange={(checked) => handleGenreChange(!!checked, genre.id)}
               />
-              <Label htmlFor={`genre-${genre.id}`} className="font-normal text-neutral-300">{genre.name}</Label>
+              <Label htmlFor={`genre-${genre.id}`} className="font-normal text-neutral-300 hover:text-red-400 cursor-pointer">{genre.name}</Label>
             </div>
           ))}
         </div>
@@ -63,7 +64,7 @@ function FilterSidebar({
                   checked={filters.authors.includes(author.id)}
                   onCheckedChange={(checked) => handleAuthorChange(!!checked, author.id)}
                 />
-                <Label htmlFor={`author-${author.id}`} className="font-normal text-neutral-300">{author.name}</Label>
+                <Label htmlFor={`author-${author.id}`} className="font-normal text-neutral-300 hover:text-red-400 cursor-pointer">{author.name}</Label>
               </div>
             ))}
           </div>
@@ -92,7 +93,7 @@ export function CatalogPage() {
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold tracking-tight">Full Catalog</h1>
           <div className="flex items-center gap-2">
@@ -116,12 +117,15 @@ export function CatalogPage() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="hidden lg:block lg:col-span-1">
-            <FilterSidebar
-              filters={filters}
-              setFilters={setFilters}
-              genres={genresData}
-              authors={authorsData}
-            />
+            <div className="sticky top-24 space-y-12">
+              <FilterSidebar
+                filters={filters}
+                setFilters={setFilters}
+                genres={genresData}
+                authors={authorsData}
+              />
+              <RecommendedCarousel type="comics" />
+            </div>
           </div>
           <div className="lg:col-span-3">
             {isLoading ? (

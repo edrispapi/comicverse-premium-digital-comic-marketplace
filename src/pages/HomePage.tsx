@@ -22,6 +22,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import useEmblaCarousel from 'embla-carousel-react';
+import { RecommendedCarousel } from '@/components/recommendations/RecommendedCarousel';
 function HeroSlider() {
   const { data: allComicsData, isLoading } = useComics();
   const allComics = useMemo(() => allComicsData || [], [allComicsData]);
@@ -182,7 +183,7 @@ function HeroSlider() {
   );
 }
 function AudiobookCarousel() {
-  const { data: audiobooksData } = useAudiobooks();
+  const { data: audiobooksData, isLoading } = useAudiobooks();
   const audiobooks = audiobooksData || [];
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
   const [scaleValues, setScaleValues] = useState<number[]>([]);
@@ -214,7 +215,7 @@ function AudiobookCarousel() {
     const interval = setInterval(() => emblaApi.scrollNext(), 4000);
     return () => clearInterval(interval);
   }, [emblaApi, onSelect]);
-  if (audiobooks.length === 0) {
+  if (isLoading && audiobooks.length === 0) {
     return <Skeleton className="w-full h-96" />;
   }
   return (
@@ -309,24 +310,33 @@ export function HomePage() {
           </section>
           <section className="py-16 md:py-24">
             <h2 className="text-3xl font-bold tracking-tight mb-8 text-center">What Our Readers Say</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {testimonials.map((testimonial, index) => (
-                <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }}>
-                  <Card className="bg-comic-card border border-white/10 h-full flex flex-col p-6 hover:border-red-500/50 hover:shadow-red-glow transition-all duration-300">
-                    <CardContent className="flex flex-col flex-1 p-0">
-                      <div className="flex items-center mb-4">
-                        <Avatar className="h-12 w-12 mr-4"><AvatarImage src={testimonial.avatar} alt={testimonial.name} /><AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback></Avatar>
-                        <div>
-                          <p className="font-semibold text-white">{testimonial.name}</p>
-                          <div className="flex text-red-400">{[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}</div>
+            {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full h-56 rounded-lg" />)}
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {testimonials.map((testimonial, index) => (
+                    <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }}>
+                    <Card className="bg-comic-card border border-white/10 h-full flex flex-col p-6 hover:border-red-500/50 hover:shadow-red-glow transition-all duration-300">
+                        <CardContent className="flex flex-col flex-1 p-0">
+                        <div className="flex items-center mb-4">
+                            <Avatar className="h-12 w-12 mr-4"><AvatarImage src={testimonial.avatar} alt={testimonial.name} /><AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback></Avatar>
+                            <div>
+                            <p className="font-semibold text-white">{testimonial.name}</p>
+                            <div className="flex text-red-400">{[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}</div>
+                            </div>
                         </div>
-                      </div>
-                      <p className="text-neutral-300 text-sm flex-1">"{testimonial.quote}"</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                        <p className="text-neutral-300 text-sm flex-1">"{testimonial.quote}"</p>
+                        </CardContent>
+                    </Card>
+                    </motion.div>
+                ))}
+                </div>
+            )}
+          </section>
+          <section className="py-16 md:py-24">
+            <RecommendedCarousel type="comics" />
           </section>
         </div>
       </main>

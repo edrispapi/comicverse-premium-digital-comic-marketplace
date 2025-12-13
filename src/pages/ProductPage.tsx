@@ -98,7 +98,7 @@ function StarRating({ comicId, initialRating, votes }: { comicId: string, initia
 export function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const { data: comic, isLoading, error } = useComic(id);
-  const { data: allComicsData = [] } = useComics();
+  const { data: allComicsData = [], isLoading: comicsLoading } = useComics();
   const { data: allAuthors } = useAuthors();
   const { data: allGenres = [] } = useGenres();
   const { data: comments } = useComicComments(id);
@@ -136,7 +136,7 @@ export function ProductPage() {
   if (isLoading) {
     return (
       <div className="bg-comic-black min-h-screen text-white"><Navbar />
-        <main className="py-16 md:py-24"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             <Skeleton className="w-full aspect-[2/3] rounded-lg" />
             <div className="space-y-6">
@@ -144,7 +144,8 @@ export function ProductPage() {
               <div className="flex gap-4"><Skeleton className="h-12 w-48" /><Skeleton className="h-12 w-32" /></div>
             </div>
           </div>
-        </div></main><Footer />
+          <div className="mt-16"><Skeleton className="h-64 w-full" /></div>
+        </main><Footer />
       </div>
     );
   }
@@ -173,7 +174,7 @@ export function ProductPage() {
           <motion.div variants={containerVariants} initial="hidden" animate="visible">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
               <motion.div style={{ y }} variants={itemVariants} className="aspect-[2/3] rounded-lg overflow-hidden shadow-2xl shadow-red-500/10">
-                <img src={comic.coverUrl} alt={comic.title} className="w-full h-full object-cover" />
+                <img src={comic.coverUrl} alt={comic.title} className="w-full h-full object-cover" loading="lazy" />
               </motion.div>
               <motion.div variants={containerVariants} className="space-y-6">
                 <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl font-bold tracking-tight">{comic.title}</motion.h1>
@@ -196,7 +197,7 @@ export function ProductPage() {
                     <DialogTrigger asChild><Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Look Inside ({comic.previewImageUrls.length})</Button></DialogTrigger>
                     <DialogContent className="max-w-4xl bg-comic-card border-white/10 text-white">
                       <DialogHeader><DialogTitle>Preview: {comic.title}</DialogTitle><DialogDescription className='text-muted-foreground'>Swipe or use arrows to navigate pages.</DialogDescription></DialogHeader>
-                      <Carousel className="w-full"><CarouselContent>{comic.previewImageUrls.map((url, index) => (<CarouselItem key={index}><img src={url} alt={`Preview page ${index + 1}`} className="w-full h-auto object-contain rounded-md aspect-video" /></CarouselItem>))}</CarouselContent><CarouselPrevious /><CarouselNext /></Carousel>
+                      <Carousel className="w-full"><CarouselContent>{comic.previewImageUrls.map((url, index) => (<CarouselItem key={index}><img src={url} alt={`Preview page ${index + 1}`} className="w-full h-auto object-contain rounded-md aspect-video" loading="lazy" /></CarouselItem>))}</CarouselContent><CarouselPrevious /><CarouselNext /></Carousel>
                     </DialogContent>
                   </Dialog>
                   {comic.audioUrl && (
@@ -208,7 +209,7 @@ export function ProductPage() {
               </motion.div>
             </div>
             <motion.div variants={itemVariants} className="mt-16">
-              <Card className="bg-comic-card border-white/10 relative">
+              <Card className="bg-comic-card border-white/10 relative" role="log">
                 <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
                 <CardHeader><CardTitle>Comments ({comments?.length || 0})</CardTitle></CardHeader>
                 <CardContent>
@@ -248,16 +249,20 @@ export function ProductPage() {
           </motion.div>
         </div>
       </main>
-      {relatedComics.length > 0 && (
-        <section className="py-16 md:py-24 bg-comic-card">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold tracking-tight mb-8">You Might Also Like</h2>
+      <section className="py-16 md:py-24 bg-comic-card">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold tracking-tight mb-8">You Might Also Like</h2>
+          {comicsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
+            </div>
+          ) : relatedComics.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedComics.map(relatedComic => (<ComicCard key={relatedComic.id} comic={relatedComic} />))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : null}
+        </div>
+      </section>
       <Footer />
     </div>
   );
