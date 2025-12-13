@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, ComicEntity, AuthorEntity, GenreEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
-import type { User, Notification, Comic } from '@shared/types';
+import type { User, Notification, Comic, Comment } from '@shared/types';
+import { v4 as uuidv4 } from 'uuid';
 const mockHash = (password: string) => btoa(password);
 const mockGenerateToken = (user: User) => JSON.stringify({ sub: user.id, name: user.name, iat: Date.now() });
 const parseDuration = (durationStr: string | undefined): number => {
@@ -44,7 +45,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (sort === 'newest') {
       filteredComics.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
     } else if (sort === 'popular' || sort === 'rating') {
-      filteredComics.sort((a, b) => b.rating - a.rating);
+      filteredComics.sort((a, b) => b.ratings.avg - a.ratings.avg);
     }
     return ok(c, filteredComics);
   });
@@ -54,28 +55,65 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!await comic.exists()) return notFound(c, 'comic not found');
     return ok(c, await comic.getState());
   });
+  // COMIC COMMENTS
+  app.get('/api/comics/:id/comments', async (c) => {
+    const id = c.req.param('id');
+    const comic = new ComicEntity(c.env, id);
+    if (!await comic.exists()) return notFound(c, 'comic not found');
+    const state = await comic.getState();
+    return ok(c, state.comments.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()));
+  });
+  app.post('/api/comics/:id/comments', async (c) => {
+    const id = c.req.param('id');
+    const { message } = (await c.req.json()) as { message?: string };
+    if (!isStr(message)) return bad(c, 'Message is required');
+    const comic = new ComicEntity(c.env, id);
+    if (!await comic.exists()) return notFound(c, 'comic not found');
+    const newComment: Comment = {
+      id: uuidv4(),
+      user: { name: 'MockUser', avatar: 'https://i.pravatar.cc/150?u=current-user' },
+      message,
+      time: new Date().toISOString(),
+    };
+    await comic.mutate(state => ({
+      ...state,
+      comments: [newComment, ...state.comments],
+    }));
+    return ok(c, newComment);
+  });
+  // COMIC RATING
+  app.patch('/api/comics/:id/rating', async (c) => {
+    const id = c.req.param('id');
+    const { rating } = (await c.req.json()) as { rating?: number };
+    if (typeof rating !== 'number' || rating < 1 || rating > 5) return bad(c, 'Valid rating (1-5) is required');
+    const comic = new ComicEntity(c.env, id);
+    if (!await comic.exists()) return notFound(c, 'comic not found');
+    const updatedState = await comic.mutate(state => {
+      const oldAvg = state.ratings.avg;
+      const oldVotes = state.ratings.votes;
+      const newVotes = oldVotes + 1;
+      const newAvg = (oldAvg * oldVotes + rating) / newVotes;
+      return {
+        ...state,
+        ratings: {
+          ...state.ratings,
+          avg: parseFloat(newAvg.toFixed(1)),
+          votes: newVotes,
+          up: state.ratings.up + (rating >= 3 ? 1 : 0),
+          down: state.ratings.down + (rating < 3 ? 1 : 0),
+        },
+      };
+    });
+    return ok(c, updatedState.ratings);
+  });
   // AUDIOBOOKS
   app.get('/api/audiobooks', async (c) => {
     await ComicEntity.ensureSeed(c.env);
     const { items: allComics } = await ComicEntity.list(c.env, null, 100);
     let audiobooks = allComics.filter(comic => comic.audioUrl);
-    // Filtering
     const search = c.req.query('search');
-    const genres = c.req.query('genres');
-    const priceMax = c.req.query('priceMax');
-    const durationMax = c.req.query('durationMax');
     if (search) {
       audiobooks = audiobooks.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
-    }
-    if (genres) {
-      const genreIds = genres.split(',');
-      audiobooks = audiobooks.filter(a => a.genreIds.some(gid => genreIds.includes(gid)));
-    }
-    if (priceMax) {
-      audiobooks = audiobooks.filter(a => a.price <= parseFloat(priceMax));
-    }
-    if (durationMax) {
-      audiobooks = audiobooks.filter(a => parseDuration(a.duration) <= parseFloat(durationMax));
     }
     return ok(c, audiobooks);
   });
@@ -96,42 +134,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!data.audioUrl) return notFound(c, 'audiobook not found');
     return ok(c, data);
   });
-  // AUTHORS
-  app.get('/api/authors', async (c) => {
-    await AuthorEntity.ensureSeed(c.env);
-    const { items } = await AuthorEntity.list(c.env, null, 50);
-    return ok(c, items);
-  });
-  app.get('/api/authors/:id', async (c) => {
-    const id = c.req.param('id');
-    const author = new AuthorEntity(c.env, id);
-    if (!await author.exists()) return notFound(c, 'author not found');
-    return ok(c, await author.getState());
-  });
-  // GENRES
-  app.get('/api/genres', async (c) => {
-    await GenreEntity.ensureSeed(c.env);
-    const { items } = await GenreEntity.list(c.env, null, 50);
-    return ok(c, items);
-  });
+  // AUTHORS & GENRES
+  app.get('/api/authors', async (c) => { await AuthorEntity.ensureSeed(c.env); const { items } = await AuthorEntity.list(c.env, null, 50); return ok(c, items); });
+  app.get('/api/authors/:id', async (c) => { const id = c.req.param('id'); const author = new AuthorEntity(c.env, id); if (!await author.exists()) return notFound(c, 'author not found'); return ok(c, await author.getState()); });
+  app.get('/api/genres', async (c) => { await GenreEntity.ensureSeed(c.env); const { items } = await GenreEntity.list(c.env, null, 50); return ok(c, items); });
   // USER STATS & NOTIFICATIONS
-  app.get('/api/user/stats', async (c) => {
-    const stats = {
-      reads: Math.floor(20 + Math.random() * 30),
-      hours: Math.floor(40 + Math.random() * 60),
-      spent: parseFloat((120 + Math.random() * 400).toFixed(2)),
-    };
-    return ok(c, stats);
-  });
-  app.get('/api/notifications', async (c) => {
-    const notifications: Notification[] = [
-      { id: crypto.randomUUID(), type: 'release', title: 'New Release: Cosmic Odyssey Vol. 2!', date: new Date(Date.now() - 86400000).toISOString(), read: false },
-      { id: crypto.randomUUID(), type: 'promo', title: 'Weekend Sale: 20% off all Superhero comics!', date: new Date(Date.now() - 2 * 86400000).toISOString(), read: false },
-      { id: crypto.randomUUID(), type: 'system', title: 'Welcome to the new dashboard!', date: new Date(Date.now() - 3 * 86400000).toISOString(), read: true },
-      { id: crypto.randomUUID(), type: 'release', title: 'The Sandman: Act III is now available as an audiobook.', date: new Date(Date.now() - 5 * 86400000).toISOString(), read: true },
-    ];
-    return ok(c, notifications);
-  });
+  app.get('/api/user/stats', async (c) => { const stats = { reads: Math.floor(20 + Math.random() * 30), hours: Math.floor(40 + Math.random() * 60), spent: parseFloat((120 + Math.random() * 400).toFixed(2)), }; return ok(c, stats); });
+  app.get('/api/notifications', async (c) => { const notifications: Notification[] = [ { id: uuidv4(), type: 'release', title: 'New Release: Cosmic Odyssey Vol. 2!', date: new Date(Date.now() - 86400000).toISOString(), read: false }, { id: uuidv4(), type: 'promo', title: 'Weekend Sale: 20% off all Superhero comics!', date: new Date(Date.now() - 2 * 86400000).toISOString(), read: false }, ]; return ok(c, notifications); });
   // AUTH
   app.post('/api/auth/login', async (c) => {
     const { email, password } = (await c.req.json()) as { email?: string, password?: string };
@@ -151,25 +160,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     if (!isStr(name) || !isStr(email) || !isStr(password)) return bad(c, 'Name, email, and password required');
     await UserEntity.ensureSeed(c.env);
     const { items: allUsers } = await UserEntity.list(c.env, null, 1000);
-    const existingUser = allUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existingUser) {
+    if (allUsers.find(u => u.email.toLowerCase() === email.toLowerCase())) {
       return c.json({ success: false, error: 'An account with this email already exists' }, 409);
     }
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      passwordHash: mockHash(password),
-    };
+    const newUser: User = { id: uuidv4(), name: name.trim(), email: email.trim().toLowerCase(), passwordHash: mockHash(password), pts: 0, awards: [] };
     await UserEntity.create(c.env, newUser);
     const token = mockGenerateToken(newUser);
     const { passwordHash, ...userResponse } = newUser;
     return ok(c, { user: userResponse, token });
-  });
-  // USERS (for potential admin use, keeping simple)
-  app.get('/api/users', async (c) => {
-    await UserEntity.ensureSeed(c.env);
-    const { items } = await UserEntity.list(c.env, null, 50);
-    return ok(c, items);
   });
 }

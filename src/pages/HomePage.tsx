@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import useEmblaCarousel from 'embla-carousel-react';
 function HeroSlider() {
   const { data: allComicsData, isLoading } = useComics();
-  const allComics = allComicsData || [];
+  const allComics = useMemo(() => allComicsData || [], [allComicsData]);
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -35,7 +35,7 @@ function HeroSlider() {
   const featuredComics = useMemo(() => {
     if (!allComics) return [];
     return [...allComics]
-      .sort((a, b) => b.rating - a.rating)
+      .sort((a, b) => b.ratings.avg - a.ratings.avg)
       .slice(0, 5);
   }, [allComics]);
   const startAutoplay = useCallback(() => {
@@ -250,7 +250,7 @@ const testimonials = [
 export function HomePage() {
   const searchTerm = useAppStore((s) => s.searchTerm);
   const { data: allComicsData, isLoading } = useComics();
-  const allComics = allComicsData || [];
+  const allComics = useMemo(() => allComicsData || [], [allComicsData]);
   const filteredComics = useMemo(() => {
     if (!allComics) return [];
     if (!searchTerm) return allComics;

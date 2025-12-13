@@ -1,7 +1,8 @@
-import type { User, Comic, Author, Genre } from './types';
+import type { User, Comic, Author, Genre, Comment } from './types';
+import { v4 as uuidv4 } from 'uuid';
 export const MOCK_USERS: User[] = [
-  { id: 'u1', name: 'User A', email: 'user.a@example.com', passwordHash: 'cGFzc3dvcmQxMjM=' }, // password123
-  { id: 'u2', name: 'User B', email: 'user.b@example.com', passwordHash: 'cGFzc3dvcmQ0NTY=' }  // password456
+  { id: 'u1', name: 'User A', email: 'user.a@example.com', passwordHash: 'cGFzc3dvcmQxMjM=', pts: 250, awards: [{id: uuidv4(), type: 'top-rated', earnedAt: new Date().toISOString()}] }, // password123
+  { id: 'u2', name: 'User B', email: 'user.b@example.com', passwordHash: 'cGFzc3dvcmQ0NTY=', pts: 120, awards: [] }  // password456
 ];
 export const AUTHORS: Author[] = [
   { id: 'author-1', name: 'Stan Lee', avatarUrl: 'https://i.pravatar.cc/150?u=author-1', bio: 'An American comic book writer, editor, and publisher, widely regarded as one of the pioneers of the modern comic book industry.' },
@@ -29,6 +30,36 @@ const generateChapters = (comicId: string) => {
     progress: Math.floor(Math.random() * 101),
   }));
 };
+const mockCommenters = [
+    { name: 'ComicFan82', avatar: 'https://i.pravatar.cc/150?u=fan1' },
+    { name: 'ArtLover', avatar: 'https://i.pravatar.cc/150?u=fan2' },
+    { name: 'StorySeeker', avatar: 'https://i.pravatar.cc/150?u=fan3' },
+    { name: 'MangaManiac', avatar: 'https://i.pravatar.cc/150?u=fan4' },
+    { name: 'GeekVerse', avatar: 'https://i.pravatar.cc/150?u=fan5' },
+];
+const mockMessages = [
+    "Absolutely stunning artwork! The story is captivating.",
+    "A must-read for any fan of the genre. I couldn't put it down.",
+    "The character development is top-notch. Highly recommended.",
+    "A bit slow to start, but the ending is mind-blowing!",
+    "I've read this three times already. It's a masterpiece."
+];
+const generateComments = (): Comment[] => {
+    const numComments = 3 + Math.floor(Math.random() * 6);
+    return Array.from({ length: numComments }).map((_, i) => ({
+        id: uuidv4(),
+        user: mockCommenters[i % mockCommenters.length],
+        message: mockMessages[i % mockMessages.length],
+        time: new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 7).toISOString(),
+    }));
+};
+const generateRatings = () => {
+    const votes = 50 + Math.floor(Math.random() * 450);
+    const up = Math.floor(votes * (0.6 + Math.random() * 0.35));
+    const down = votes - up;
+    const avg = 1 + (up / votes) * 4;
+    return { avg: parseFloat(avg.toFixed(1)), votes, up, down };
+};
 export const COMICS: Comic[] = [
   {
     id: 'comic-1',
@@ -39,6 +70,7 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-1', 'genre-2'],
     price: 19.99,
     rating: 4.8,
+    ratings: generateRatings(),
     pages: 256,
     releaseDate: '2024-05-20',
     previewImageUrls: [
@@ -47,6 +79,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1573149760704-2ca0e3e26a5c?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-1'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3',
     duration: '3h 45m',
   },
@@ -59,6 +92,7 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-1', 'genre-6'],
     price: 24.99,
     rating: 4.9,
+    ratings: generateRatings(),
     pages: 416,
     releaseDate: '1987-09-01',
     previewImageUrls: [
@@ -66,9 +100,11 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1602080859398-9feefe2603e2?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-2'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/misc/sounds/dream-harp-01.mp3',
     duration: '5h 12m',
   },
+  // ... (other comics with ratings and comments)
   {
     id: 'comic-3',
     title: 'Attack on Titan Vol. 1',
@@ -78,6 +114,7 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-5', 'genre-4', 'genre-3'],
     price: 12.99,
     rating: 4.7,
+    ratings: generateRatings(),
     pages: 192,
     releaseDate: '2010-03-17',
     previewImageUrls: [
@@ -85,6 +122,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1601001518984-fbc4f25e9e8d?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-3'),
+    comments: generateComments(),
   },
   {
     id: 'comic-4',
@@ -95,6 +133,7 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-1', 'genre-6', 'genre-7'],
     price: 21.50,
     rating: 4.9,
+    ratings: generateRatings(),
     pages: 224,
     releaseDate: '1986-02-01',
     previewImageUrls: [
@@ -102,6 +141,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1570525054547-96792e75bfe9?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-4'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-1.mp3',
     duration: '2h 55m',
   },
@@ -114,12 +154,14 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-2', 'genre-7'],
     price: 15.99,
     rating: 4.5,
+    ratings: generateRatings(),
     pages: 180,
     releaseDate: '2024-04-15',
     previewImageUrls: [
         'https://images.unsplash.com/photo-1518709268805-4e9042af2176?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-5'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/misc/sounds/magic-chime-01.mp3',
     duration: '2h 10m',
   },
@@ -132,6 +174,7 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-3'],
     price: 29.99,
     rating: 4.6,
+    ratings: generateRatings(),
     pages: 350,
     releaseDate: '2022-08-20',
     previewImageUrls: [
@@ -139,6 +182,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1507842217343-583bb7278b66?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-6'),
+    comments: generateComments(),
   },
   {
     id: 'comic-7',
@@ -149,6 +193,7 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-4', 'genre-2'],
     price: 18.00,
     rating: 4.7,
+    ratings: generateRatings(),
     pages: 210,
     releaseDate: '2023-05-11',
     previewImageUrls: [
@@ -156,6 +201,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1602080859398-9feefe2603e2?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-7'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-2.mp3',
     duration: '1h 58m',
   },
@@ -168,12 +214,14 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-5'],
     price: 14.99,
     rating: 4.8,
+    ratings: generateRatings(),
     pages: 200,
     releaseDate: '2021-11-30',
     previewImageUrls: [
         'https://images.unsplash.com/photo-1601001518984-fbc4f25e9e8d?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-8'),
+    comments: generateComments(),
   },
   {
     id: 'comic-9',
@@ -184,6 +232,7 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-3', 'genre-6', 'genre-4'],
     price: 22.99,
     rating: 4.9,
+    ratings: generateRatings(),
     pages: 240,
     releaseDate: '2024-05-01',
     previewImageUrls: [
@@ -191,6 +240,7 @@ export const COMICS: Comic[] = [
         'https://images.unsplash.com/photo-1583305911787-57d1699511d0?q=80&w=400&auto=format&fit=crop',
     ],
     chapters: generateChapters('comic-9'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-3.mp3',
     duration: '4h 30m',
   },
@@ -203,10 +253,12 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-2'],
     price: 17.99,
     rating: 4.6,
+    ratings: generateRatings(),
     pages: 220,
     releaseDate: '2024-03-10',
     previewImageUrls: [],
     chapters: generateChapters('comic-10'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-1.mp3',
     duration: '3h 15m',
   },
@@ -219,10 +271,12 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-7'],
     price: 14.50,
     rating: 4.8,
+    ratings: generateRatings(),
     pages: 190,
     releaseDate: '2023-09-05',
     previewImageUrls: [],
     chapters: generateChapters('comic-11'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-2.mp3',
     duration: '2h 40m',
   },
@@ -235,10 +289,12 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-3'],
     price: 20.99,
     rating: 4.7,
+    ratings: generateRatings(),
     pages: 310,
     releaseDate: '2024-04-22',
     previewImageUrls: [],
     chapters: generateChapters('comic-12'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-3.mp3',
     duration: '4h 05m',
   },
@@ -251,10 +307,12 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-2'],
     price: 16.99,
     rating: 4.5,
+    ratings: generateRatings(),
     pages: 200,
     releaseDate: '2024-05-15',
     previewImageUrls: [],
     chapters: generateChapters('comic-13'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-4.mp3',
     duration: '2h 20m',
   },
@@ -267,10 +325,12 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-4'],
     price: 13.99,
     rating: 4.4,
+    ratings: generateRatings(),
     pages: 180,
     releaseDate: '2023-11-18',
     previewImageUrls: [],
     chapters: generateChapters('comic-14'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-5.mp3',
     duration: '1h 55m',
   },
@@ -283,10 +343,12 @@ export const COMICS: Comic[] = [
     genreIds: ['genre-5'],
     price: 11.99,
     rating: 4.6,
+    ratings: generateRatings(),
     pages: 170,
     releaseDate: '2024-02-28',
     previewImageUrls: [],
     chapters: generateChapters('comic-15'),
+    comments: generateComments(),
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-6.mp3',
     duration: '2h 00m',
   },

@@ -3,12 +3,27 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
-// Minimal real-world chat example types (shared by frontend and worker)
+export interface Comment {
+  id: string;
+  user: {
+    name: string;
+    avatar: string;
+  };
+  message: string;
+  time: string;
+}
+export interface Award {
+  id: string;
+  type: 'top-rated' | 'new-hot' | 'bestseller';
+  earnedAt: string;
+}
 export interface User {
   id: string;
   name: string;
   email: string;
   passwordHash?: string;
+  pts: number;
+  awards: Award[];
 }
 export interface AuthResponse {
   user: User;
@@ -37,11 +52,18 @@ export interface Comic {
   authorIds: string[];
   genreIds: string[];
   price: number;
-  rating: number; // 1-5
+  rating: number; // DEPRECATED, use ratings.avg
+  ratings: {
+    avg: number;
+    votes: number;
+    up: number;
+    down: number;
+  };
   pages: number;
   releaseDate: string;
   previewImageUrls: string[];
   chapters: Chapter[];
+  comments: Comment[];
   audioUrl?: string;
   duration?: string; // e.g., '2h 15m'
 }

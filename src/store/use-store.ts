@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Comic, User, Notification, UserStats } from '@shared/types';
+import { Comic, User, Notification, UserStats, Award } from '@shared/types';
 import { useShallow } from 'zustand/react/shallow';
+import { v4 as uuidv4 } from 'uuid';
 interface CartItem extends Comic {
   quantity: number;
 }
@@ -10,10 +11,14 @@ interface AppState {
   userId: string | null;
   authToken: string | null;
   rememberMe: boolean;
+  pts: number;
+  awards: Award[];
   setUserId: (userId: string) => void;
   setAuthToken: (token: string | null) => void;
   setRememberMe: (remember: boolean) => void;
   clearAuth: () => void;
+  updatePts: (delta: number) => void;
+  earnAward: (type: Award['type']) => void;
   // UI state
   isCartOpen: boolean;
   isWishlistOpen: boolean;
@@ -32,21 +37,6 @@ interface AppState {
   clearCart: () => void;
   toggleWishlist: (comic: Comic) => void;
   isInWishlist: (comicId: string) => boolean;
-  // Checkout state
-  promoCode: string;
-  discountPercent: number;
-  shippingOption: 'standard' | 'express';
-  shippingCost: number;
-  setPromoCode: (code: string) => void;
-  applyPromoCode: () => boolean;
-  setShippingOption: (option: 'standard' | 'express') => void;
-  // Audio Player State
-  audioQueue: Comic[];
-  currentAudioId: string | null;
-  playAudio: (comic: Comic) => void;
-  playNext: () => void;
-  playPrev: () => void;
-  clearAudioQueue: () => void;
   // Notifications
   notifications: Notification[];
   unreadCount: number;
@@ -59,10 +49,6 @@ interface AppState {
   setStats: (stats: UserStats) => void;
   updateLibrary: (allComics: Comic[]) => void;
 }
-const PROMO_CODES: { [key: string]: number } = {
-  COMICVERSE10: 0.10, // 10% off
-  CLOUDFLARE20: 0.20, // 20% off
-};
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -70,10 +56,16 @@ export const useAppStore = create<AppState>()(
       userId: null,
       authToken: null,
       rememberMe: false,
+      pts: 0,
+      awards: [],
       setUserId: (userId) => set({ userId }),
       setAuthToken: (token) => set({ authToken: token }),
       setRememberMe: (remember) => set({ rememberMe: remember }),
-      clearAuth: () => set({ userId: null, authToken: null }),
+      clearAuth: () => set({ userId: null, authToken: null, pts: 0, awards: [] }),
+      updatePts: (delta) => set((state) => ({ pts: state.pts + delta })),
+      earnAward: (type) => set((state) => ({
+        awards: [...state.awards, { id: uuidv4(), type, earnedAt: new Date().toISOString() }],
+      })),
       // UI state
       isCartOpen: false,
       isWishlistOpen: false,
@@ -108,7 +100,7 @@ export const useAppStore = create<AppState>()(
             item.id === comicId ? { ...item, quantity: Math.max(0, quantity) } : item
           ).filter(item => item.quantity > 0),
         })),
-      clearCart: () => set({ cart: [], promoCode: '', discountPercent: 0 }),
+      clearCart: () => set({ cart: [] }),
       toggleWishlist: (comic) =>
         set((state) => {
           const isInWishlist = state.wishlist.some((item) => item.id === comic.id);
@@ -119,52 +111,6 @@ export const useAppStore = create<AppState>()(
           }
         }),
       isInWishlist: (comicId) => get().wishlist.some((item) => item.id === comicId),
-      // Checkout state
-      promoCode: '',
-      discountPercent: 0,
-      shippingOption: 'standard',
-      shippingCost: 5.00,
-      setPromoCode: (code) => set({ promoCode: code }),
-      applyPromoCode: () => {
-        const code = get().promoCode.toUpperCase();
-        if (PROMO_CODES[code]) {
-          set({ discountPercent: PROMO_CODES[code] });
-          return true;
-        }
-        set({ discountPercent: 0 });
-        return false;
-      },
-      setShippingOption: (option) => {
-        if (option === 'standard') {
-          set({ shippingOption: 'standard', shippingCost: 5.00 });
-        } else if (option === 'express') {
-          set({ shippingOption: 'express', shippingCost: 15.00 });
-        }
-      },
-      // Audio Player State
-      audioQueue: [],
-      currentAudioId: null,
-      playAudio: (comic) => set((state) => {
-        const queue = state.audioQueue;
-        const isAlreadyInQueue = queue.some(item => item.id === comic.id);
-        const newQueue = isAlreadyInQueue ? queue : [...queue, comic];
-        return { audioQueue: newQueue, currentAudioId: comic.id };
-      }),
-      playNext: () => set((state) => {
-        const { audioQueue, currentAudioId } = state;
-        if (audioQueue.length === 0) return {};
-        const currentIndex = audioQueue.findIndex(item => item.id === currentAudioId);
-        const nextIndex = (currentIndex + 1) % audioQueue.length;
-        return { currentAudioId: audioQueue[nextIndex].id };
-      }),
-      playPrev: () => set((state) => {
-        const { audioQueue, currentAudioId } = state;
-        if (audioQueue.length === 0) return {};
-        const currentIndex = audioQueue.findIndex(item => item.id === currentAudioId);
-        const prevIndex = (currentIndex - 1 + audioQueue.length) % audioQueue.length;
-        return { currentAudioId: audioQueue[prevIndex].id };
-      }),
-      clearAudioQueue: () => set({ audioQueue: [], currentAudioId: null }),
       // Notifications
       notifications: [],
       unreadCount: 0,
@@ -179,7 +125,6 @@ export const useAppStore = create<AppState>()(
       completed: [],
       setStats: (stats) => set({ stats }),
       updateLibrary: (allComics) => set(state => {
-        // This is a mock implementation. In a real app, this would be based on user data.
         if (!allComics || !Array.isArray(allComics)) {
           return { reading: [], completed: [] };
         }
@@ -201,40 +146,18 @@ export const useAppStore = create<AppState>()(
         rememberMe: state.rememberMe,
         cart: state.cart,
         wishlist: state.wishlist,
-        promoCode: state.promoCode,
-        discountPercent: state.discountPercent,
-        shippingOption: state.shippingOption,
-        shippingCost: state.shippingCost,
-        audioQueue: state.audioQueue,
-        currentAudioId: state.currentAudioId,
         notifications: state.notifications,
         unreadCount: state.unreadCount,
         stats: state.stats,
+        pts: state.pts,
+        awards: state.awards,
       }),
     }
   )
 );
 // Selectors
-export const useCartTotals = () => {
-  const cart = useAppStore(state => state.cart);
-  const shippingCost = useAppStore(state => state.shippingCost);
-  const discountPercent = useAppStore(state => state.discountPercent);
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const discount = subtotal * discountPercent;
-  const tax = (subtotal - discount) * 0.08; // Tax calculated on discounted price
-  const total = subtotal - discount + tax + shippingCost;
-  return { subtotal, discount, tax, total, shippingCost };
-};
 export const useCart = () => useAppStore(useShallow(state => state.cart));
 export const useWishlist = () => useAppStore(useShallow(state => state.wishlist));
-export const useAudioQueue = () => {
-  const queue = useAppStore(state => state.audioQueue);
-  const currentId = useAppStore(state => state.currentAudioId);
-  const playAudio = useAppStore(state => state.playAudio);
-  const playNext = useAppStore(state => state.playNext);
-  const playPrev = useAppStore(state => state.playPrev);
-  return { queue, currentId, playAudio, playNext, playPrev };
-};
 export const useNotifications = () => {
   const notifications = useAppStore(state => state.notifications);
   const unreadCount = useAppStore(state => state.unreadCount);

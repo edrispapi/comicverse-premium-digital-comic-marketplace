@@ -43,7 +43,6 @@ export function Navbar() {
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const wishlistCount = wishlist.length;
   const newAudiobooksCount = newAudiobooks?.length || 0;
-  const totalComics = comicsData?.length || 0;
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `relative transition-colors hover:text-red-400 ${isActive ? 'text-red-500' : 'text-neutral-300'} after:content-[''] after:absolute after:left-0 after:bottom-[-2px] after:h-[2px] after:w-full after:bg-red-400 after:scale-x-0 after:origin-left after:transition-transform ${isActive ? 'after:scale-x-100' : 'group-hover:after:scale-x-100'}`;
   const navLinks = (
@@ -56,14 +55,6 @@ export function Navbar() {
         {newAudiobooksCount > 0 && (
           <Badge variant="secondary" className="ml-2 h-4 px-1.5 text-xs leading-none bg-red-500/20 text-red-400 border-red-500/30">
             {newAudiobooksCount}
-          </Badge>
-        )}
-      </NavLink>
-      <NavLink to="/cards" className={navLinkClass + " flex items-center"}>
-        Cards
-        {totalComics > 0 && (
-          <Badge variant="secondary" className="ml-2 h-4 px-1.5 text-xs leading-none bg-red-500/20 text-red-400 border-red-500/30">
-            {totalComics}
           </Badge>
         )}
       </NavLink>
