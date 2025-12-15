@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 import { CheckoutStepper } from '@/components/checkout/CheckoutStepper';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageWrapper } from '@/components/layout/PageWrapper';
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
@@ -136,8 +136,7 @@ export function CheckoutPage() {
           </AnimatePresence>
         </div>
       )}
-      <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+      <PageWrapper navbar={<Navbar />} footer={<Footer />}>
         <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-bold tracking-tight text-center mb-12">Checkout</motion.h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <Card className="bg-comic-card border-white/10"><CardContent className="p-6 sm:p-8">
@@ -155,7 +154,7 @@ export function CheckoutPage() {
                 <div className="mt-8 flex justify-between">
                   {currentStep > 0 && <Button type="button" variant="outline" onClick={() => setCurrentStep(s => s - 1)}>Back</Button>}
                   {currentStep < steps.length - 1 && <Button type="button" className="btn-accent ml-auto" onClick={handleNextStep}>Next</Button>}
-                  {currentStep === steps.length - 1 && <Button type="submit" size="lg" className="btn-accent w-full" disabled={isPending}>{isPending ? 'Placing Order...' : `Place Order for $${total.toFixed(2)}`}</Button>}
+                  {currentStep === steps.length - 1 && <Button type="submit" size="lg" className="btn-accent w-full" disabled={isPending}>{isPending ? 'Placing Order...' : `Place Order for ${total.toFixed(2)}`}</Button>}
                 </div>
               </form>
             </Form>
@@ -183,7 +182,7 @@ export function CheckoutPage() {
             </Card>
           </div>
         </div>
-      </main><Footer />
+      </PageWrapper>
     </div>
   );
 }

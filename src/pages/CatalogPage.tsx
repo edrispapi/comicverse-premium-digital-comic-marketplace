@@ -22,6 +22,7 @@ import {
 import { MultiSelectField, MultiSelectOption } from '@/components/ui/multi-select';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PageWrapper } from '@/components/layout/PageWrapper';
 type StatusFilter = 'newHot' | 'bestseller' | 'topRated';
 interface FiltersState {
   genres: string[];
@@ -137,85 +138,79 @@ export function CatalogPage() {
     );
   };
   return (
-    <div className="bg-comic-black min-h-screen text-white">
-      <Navbar />
-      <main>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-          <Breadcrumb className="mb-8">
-            <BreadcrumbList>
-              <BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem><BreadcrumbPage>Catalog</BreadcrumbPage></BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <h1 className="text-4xl font-bold tracking-tight">Full Catalog</h1>
-          <div className="sticky top-16 z-40 bg-comic-black/80 backdrop-blur-lg py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 my-8">
-            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-              <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" className="hover:shadow-red-glow transition-shadow">
-                    <Filter className="mr-2 h-4 w-4" />
-                    Filters
-                    {activeFilterCount > 0 && <Badge variant="secondary" className="ml-2 bg-red-500/20 text-red-400">{activeFilterCount}</Badge>}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="bg-comic-card border-l-white/10 text-white flex flex-col">
-                  <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
-                  <div className="flex-1 overflow-y-auto pr-4 -mr-6 pl-1">
-                    <FilterControls inSheet />
-                  </div>
-                  <div className="flex gap-4 mt-4">
-                    <Button variant="outline" className="flex-1" onClick={handleCancelFilters}>Cancel</Button>
-                    <Button className="btn-accent flex-1" onClick={handleSaveFilters}>Save</Button>
-                  </div>
-                </SheetContent>
-              </Sheet>
-              <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-2 -mb-2">
-                {filters.genres.map(id => {
-                  const genre = genresData.find(g => g.id === id);
-                  return genre && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30 flex-shrink-0">{genre.name} <button onClick={() => removeFilter('genre', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
-                })}
-                {filters.authors.map(id => {
-                  const author = authorsData.find(a => a.id === id);
-                  return author && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30 flex-shrink-0">{author.name} <button onClick={() => removeFilter('author', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
-                })}
-                {filters.status.map(id => {
-                  const status = statusOptions.find(s => s.id === id);
-                  return status && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30 flex-shrink-0">{status.label} <button onClick={() => removeFilter('status', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
-                })}
+    <PageWrapper navbar={<Navbar />} footer={<Footer />}>
+      <Breadcrumb className="mb-8">
+        <BreadcrumbList>
+          <BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem><BreadcrumbPage>Catalog</BreadcrumbPage></BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <h1 className="text-4xl font-bold tracking-tight">Full Catalog</h1>
+      <div className="sticky top-16 z-40 bg-comic-black/80 backdrop-blur-lg py-4 my-8 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="hover:shadow-red-glow transition-shadow">
+                <Filter className="mr-2 h-4 w-4" />
+                Filters
+                {activeFilterCount > 0 && <Badge variant="secondary" className="ml-2 bg-red-500/20 text-red-400">{activeFilterCount}</Badge>}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="bg-comic-card border-l-white/10 text-white flex flex-col">
+              <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
+              <div className="flex-1 overflow-y-auto pr-4 -mr-6 pl-1">
+                <FilterControls inSheet />
               </div>
-              <Select value={filters.sort} onValueChange={(value) => setFilters(f => ({ ...f, sort: value }))}>
-                <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sort by..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="popular">Most Popular</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="flex gap-4 mt-4">
+                <Button variant="outline" className="flex-1" onClick={handleCancelFilters}>Cancel</Button>
+                <Button className="btn-accent flex-1" onClick={handleSaveFilters}>Save</Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+          <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-2 -mb-2">
+            {filters.genres.map(id => {
+              const genre = genresData.find(g => g.id === id);
+              return genre && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30 flex-shrink-0">{genre.name} <button onClick={() => removeFilter('genre', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
+            })}
+            {filters.authors.map(id => {
+              const author = authorsData.find(a => a.id === id);
+              return author && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30 flex-shrink-0">{author.name} <button onClick={() => removeFilter('author', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
+            })}
+            {filters.status.map(id => {
+              const status = statusOptions.find(s => s.id === id);
+              return status && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30 flex-shrink-0">{status.label} <button onClick={() => removeFilter('status', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
+            })}
           </div>
-          {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
-            </div>
-          ) : error ? (
-            <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load comics.</h2></div>
-          ) : filteredComics.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredComics.map((comic, index) => (
-                <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }}>
-                  <ComicCard comic={comic} />
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <h2 className="text-2xl font-semibold">No Results Found</h2>
-              <p className="mt-2 text-neutral-400">Try adjusting your filters.</p>
-            </div>
-          )}
+          <Select value={filters.sort} onValueChange={(value) => setFilters(f => ({ ...f, sort: value }))}>
+            <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sort by..." /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="popular">Most Popular</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
+        </div>
+      ) : error ? (
+        <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load comics.</h2></div>
+      ) : filteredComics.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredComics.map((comic, index) => (
+            <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }}>
+              <ComicCard comic={comic} />
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-semibold">No Results Found</h2>
+          <p className="mt-2 text-neutral-400">Try adjusting your filters.</p>
+        </div>
+      )}
+    </PageWrapper>
   );
 }

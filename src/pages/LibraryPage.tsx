@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { BookOpenCheck, CheckCircle, Heart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageWrapper } from '@/components/layout/PageWrapper';
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -56,30 +57,26 @@ export function LibraryPage() {
     }
   }, [allComicsData, updateLibrary]);
   return (
-    <div className="bg-comic-black min-h-screen text-white">
-      <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className="text-4xl font-bold tracking-tight mb-8">My Library</h1>
-          <Tabs defaultValue="reading" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-comic-card">
-              <TabsTrigger value="reading"><BookOpenCheck className="mr-2 h-4 w-4" /> Reading</TabsTrigger>
-              <TabsTrigger value="completed"><CheckCircle className="mr-2 h-4 w-4" /> Completed</TabsTrigger>
-              <TabsTrigger value="wishlist"><Heart className="mr-2 h-4 w-4" /> Wishlist</TabsTrigger>
-            </TabsList>
-            <TabsContent value="reading" className="mt-8">
-              <Shelf comics={reading} isLoading={isLoading} emptyTitle="Nothing here yet!" emptyMessage="Start reading a comic to see it here." />
-            </TabsContent>
-            <TabsContent value="completed" className="mt-8">
-              <Shelf comics={completed} isLoading={isLoading} emptyTitle="No finished comics" emptyMessage="Complete a comic to add it to this shelf." />
-            </TabsContent>
-            <TabsContent value="wishlist" className="mt-8">
-              <Shelf comics={wishlist} isLoading={isLoading} emptyTitle="Your wishlist is empty" emptyMessage="Add some comics you want to read later." />
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-      </main>
-      <Footer />
-    </div>
+    <PageWrapper navbar={<Navbar />} footer={<Footer />}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <h1 className="text-4xl font-bold tracking-tight mb-8">My Library</h1>
+        <Tabs defaultValue="reading" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-comic-card">
+            <TabsTrigger value="reading"><BookOpenCheck className="mr-2 h-4 w-4" /> Reading</TabsTrigger>
+            <TabsTrigger value="completed"><CheckCircle className="mr-2 h-4 w-4" /> Completed</TabsTrigger>
+            <TabsTrigger value="wishlist"><Heart className="mr-2 h-4 w-4" /> Wishlist</TabsTrigger>
+          </TabsList>
+          <TabsContent value="reading" className="mt-8">
+            <Shelf comics={reading} isLoading={isLoading} emptyTitle="Nothing here yet!" emptyMessage="Start reading a comic to see it here." />
+          </TabsContent>
+          <TabsContent value="completed" className="mt-8">
+            <Shelf comics={completed} isLoading={isLoading} emptyTitle="No finished comics" emptyMessage="Complete a comic to add it to this shelf." />
+          </TabsContent>
+          <TabsContent value="wishlist" className="mt-8">
+            <Shelf comics={wishlist} isLoading={isLoading} emptyTitle="Your wishlist is empty" emptyMessage="Add some comics you want to read later." />
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+    </PageWrapper>
   );
 }

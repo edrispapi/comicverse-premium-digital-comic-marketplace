@@ -25,6 +25,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { PageWrapper } from '@/components/layout/PageWrapper';
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
@@ -88,88 +89,82 @@ export function AudiobooksPage() {
     return audiobooks;
   }, [audiobooksData, searchTerm, filters]);
   return (
-    <div className="bg-comic-black min-h-screen text-white">
-      <Navbar />
-      <main>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-          <Breadcrumb className="mb-8">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Audiobooks</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-glow">Audiobooks</h1>
-            <p className="mt-4 text-lg text-neutral-300 max-w-3xl mx-auto">Immerse yourself in captivating stories, brought to life by talented narrators.</p>
-            <div className="mt-8 flex justify-center items-center gap-6 text-lg">
-              <span><strong className="text-red-400">{totalTitles}</strong> Titles</span>
-              <span className="text-neutral-600">|</span>
-              <span><strong className="text-red-400">{totalHours}</strong>+ Hours of Content</span>
-            </div>
-          </motion.div>
-          <section className="mb-16">
-            <RecommendedCarousel type="audiobooks" />
-          </section>
-          <div className="sticky top-16 z-40 bg-comic-black/80 backdrop-blur-lg py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mb-8">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline"><Filter className="mr-2 h-4 w-4" /> Genres</Button>
-                  </SheetTrigger>
-                  <SheetContent className="bg-comic-card border-l-white/10 text-white">
-                    <SheetHeader><SheetTitle>Filter by Genre</SheetTitle></SheetHeader>
-                    <Filters filters={filters} setFilters={setFilters} genres={genresData} />
-                  </SheetContent>
-                </Sheet>
-                <div className="hidden sm:block">
-                  <Select value={filters.sort} onValueChange={(value) => setFilters(prev => ({ ...prev, sort: value }))}>
-                    <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sort by..." /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">Newest</SelectItem>
-                      <SelectItem value="popular">Most Popular</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {filters.genres.map(gid => {
-                  const genre = genresData.find(g => g.id === gid);
-                  return genre ? <Badge key={gid} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30">{genre.name} <Button variant="ghost" size="icon" className="h-4 w-4 ml-1" onClick={() => setFilters(prev => ({...prev, genres: prev.genres.filter(g => g !== gid)}))}><X className="h-3 w-3"/></Button></Badge> : null;
-                })}
-              </div>
+    <PageWrapper navbar={<Navbar />} footer={<Footer />}>
+      <Breadcrumb className="mb-8">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Audiobooks</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-12">
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-glow">Audiobooks</h1>
+        <p className="mt-4 text-lg text-neutral-300 max-w-3xl mx-auto">Immerse yourself in captivating stories, brought to life by talented narrators.</p>
+        <div className="mt-8 flex justify-center items-center gap-6 text-lg">
+          <span><strong className="text-red-400">{totalTitles}</strong> Titles</span>
+          <span className="text-neutral-600">|</span>
+          <span><strong className="text-red-400">{totalHours}</strong>+ Hours of Content</span>
+        </div>
+      </motion.div>
+      <section className="mb-16">
+        <RecommendedCarousel type="audiobooks" />
+      </section>
+      <div className="sticky top-16 z-40 bg-comic-black/80 backdrop-blur-lg py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline"><Filter className="mr-2 h-4 w-4" /> Genres</Button>
+              </SheetTrigger>
+              <SheetContent className="bg-comic-card border-l-white/10 text-white">
+                <SheetHeader><SheetTitle>Filter by Genre</SheetTitle></SheetHeader>
+                <Filters filters={filters} setFilters={setFilters} genres={genresData} />
+              </SheetContent>
+            </Sheet>
+            <div className="hidden sm:block">
+              <Select value={filters.sort} onValueChange={(value) => setFilters(prev => ({ ...prev, sort: value }))}>
+                <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sort by..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="popular">Most Popular</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full h-64 rounded-lg" />)}
-            </div>
-          ) : error ? (
-            <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load audiobooks.</h2></div>
-          ) : filteredAndSortedAudiobooks.length > 0 ? (
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {filteredAndSortedAudiobooks.map((comic) => (
-                <motion.div key={comic.id} variants={itemVariants}>
-                  <AudiobookCard comic={comic} authorName={authorsData.find(a => comic.authorIds.includes(a.id))?.name} />
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <div className="text-center py-16">
-              <h2 className="text-2xl font-semibold">No Results Found</h2>
-              <p className="mt-2 text-neutral-400">Try adjusting your search or filters.</p>
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {filters.genres.map(gid => {
+              const genre = genresData.find(g => g.id === gid);
+              return genre ? <Badge key={gid} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30">{genre.name} <Button variant="ghost" size="icon" className="h-4 w-4 ml-1" onClick={() => setFilters(prev => ({...prev, genres: prev.genres.filter(g => g !== gid)}))}><X className="h-3 w-3"/></Button></Badge> : null;
+            })}
+          </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full h-64 rounded-lg" />)}
+        </div>
+      ) : error ? (
+        <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load audiobooks.</h2></div>
+      ) : filteredAndSortedAudiobooks.length > 0 ? (
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {filteredAndSortedAudiobooks.map((comic) => (
+            <motion.div key={comic.id} variants={itemVariants}>
+              <AudiobookCard comic={comic} authorName={authorsData.find(a => comic.authorIds.includes(a.id))?.name} />
+            </motion.div>
+          ))}
+        </motion.div>
+      ) : (
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-semibold">No Results Found</h2>
+          <p className="mt-2 text-neutral-400">Try adjusting your search or filters.</p>
+        </div>
+      )}
+    </PageWrapper>
   );
 }

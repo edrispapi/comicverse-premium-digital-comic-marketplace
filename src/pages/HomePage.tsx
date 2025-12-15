@@ -260,13 +260,11 @@ export function HomePage() {
         <section className="py-16 md:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8">Audiobooks Spotlight</motion.h2>
-          </div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <AudiobookCarousel />
           </div>
         </section>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8">Trending Now</motion.h2>
             {isLoading && trendingComics.length === 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
@@ -281,8 +279,8 @@ export function HomePage() {
                 ))}
               </motion.div>
             )}
-          </section>
-        </div>
+          </div>
+        </section>
         <section className="py-16 md:py-24 bg-comic-card">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.h2 variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-3xl font-bold tracking-tight mb-8">New Releases</motion.h2>
