@@ -31,7 +31,7 @@ interface CommandPaletteProps {
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { data: comics, isLoading: comicsLoading } = useComics();
+  const { data: comicsData, isLoading: comicsLoading } = useComics();
   const { data: authors, isLoading: authorsLoading } = useAuthors();
   const { reading, completed, wishlist } = useLibraryShelves();
   const { notifications, unreadCount } = useNotifications();
@@ -92,7 +92,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
           <CommandGroup heading="Search Comics">
             {comicsLoading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full my-1" />) :
-              (comics ?? []).slice(0, 5).map(comic => (
+              (comicsData ?? []).slice(0, 5).map(comic => (
                 <motion.div key={comic.id} variants={itemVariants}>
                   <CommandItem onSelect={() => runCommand(() => navigate(`/comic/${comic.id}`))} className="cursor-pointer hover:!bg-red-500/10 hover:!text-red-400">
                     <Avatar className="h-9 w-9 mr-3"><AvatarImage src={comic.coverUrl} /><AvatarFallback>{comic.title.charAt(0)}</AvatarFallback></Avatar>
@@ -170,7 +170,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   return (
     <Wrapper open={open} onOpenChange={onOpenChange}>
       <Content
-        side={isMobile ? "bottom" : undefined}
+        {...(isMobile ? { side: "bottom" } : {})}
         className={cn(
           "p-0 overflow-hidden glass-dark backdrop-blur-xl shadow-red-glow border-white/10",
           isMobile ? "h-[80vh] border-none" : "sm:max-w-2xl"
