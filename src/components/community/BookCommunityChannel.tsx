@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { Crown, Heart, MessageSquare, Award, Send, Smile, Image as ImageIcon, Video, Mic, File as FileIcon, X, ClipboardCopy, Download, Edit2, Trash2 } from 'lucide-react';
+import { Crown, Heart, MessageSquare, Award, Send, Smile, Image as ImageIcon, Video, Mic, File as FileIcon, X, ClipboardCopy, Download, Edit2, Trash2, Filter } from 'lucide-react';
 import type { Comic, Post, Comment } from '@shared/types';
-import { useComicPosts, usePostReply, useHeartPost, useAwardComic, useReactToPost } from '@/lib/queries';
+import { useComicPosts, usePostReply, useHeartPost, useAwardComic, useReactToPost, useAuthors, useGenres } from '@/lib/queries';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +21,10 @@ import { useLocalStorage } from 'react-use';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAppStore } from '@/store/use-store';
+import { MultiSelectField, MultiSelectOption } from '@/components/ui/multi-select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
@@ -31,15 +35,25 @@ const itemVariants = {
 };
 const replySchema = z.object({ message: z.string().min(1, 'Reply cannot be empty').max(500) });
 type ReplyFormData = z.infer<typeof replySchema>;
-const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
+const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '��', '🙌'];
 const AWARDS = [
-    { emoji: '🥉', name: 'Silver', type: '🥉-silver-medal' },
+    { emoji: '���', name: 'Silver', type: '🥉-silver-medal' },
     { emoji: '🥈', name: 'Bronze', type: '🥈-bronze-medal' },
     { emoji: '🥇', name: 'Gold', type: '🥇-gold-medal' },
     { emoji: '📚', name: 'Bookworm', type: '📚-bookworm' },
     { emoji: '💎', name: 'Diamond', type: '💎-diamond' },
     { emoji: '🎖️', name: 'Medal', type: '🎖️-medal' },
 ];
+const statusOptions: { id: PostStatusFilter; label: string }[] = [
+  { id: 'highReactions', label: 'High Reactions' },
+  { id: 'popular', label: 'Popular' },
+  { id: 'recent', label: 'Recent' },
+];
+type PostStatusFilter = 'highReactions' | 'popular' | 'recent';
+interface PostFiltersState {
+  authors: string[];
+  status: PostStatusFilter[];
+}
 const ConfettiBurst = () => (
   <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
     {Array.from({ length: 20 }).map((_, i) => (
@@ -182,16 +196,51 @@ const PostCard = ({ post, comicId }: { post: Post; comicId: string; }) => {
 export function BookCommunityChannel({ comic }: { comic: Comic }) {
   const [isJoined, setIsJoined] = useLocalStorage(`comic-joined-${comic.id}`, false);
   const { data: posts, isLoading } = useComicPosts(comic.id);
+  const { data: allAuthors } = useAuthors();
   const userId = useAppStore(s => s.userId);
   const toggleAuth = useAppStore(s => s.toggleAuth);
   const hasAccess = !!userId && !!isJoined;
+  const [filters, setFilters] = useState<PostFiltersState>({ authors: [], status: [] });
+  const authorOptions: MultiSelectOption[] = useMemo(() => {
+    if (!allAuthors) return [];
+    return comic.authorIds
+      .map(id => allAuthors.find(a => a.id === id))
+      .filter(Boolean)
+      .map(a => ({ value: a!.id, label: a!.name }));
+  }, [allAuthors, comic.authorIds]);
+  const filteredPosts = useMemo(() => {
+    if (!posts) return [];
+    let filtered = [...posts];
+    if (filters.authors.length > 0) {
+      filtered = filtered.filter(post => post.user.isCreator && filters.authors.some(aid => comic.authorIds.includes(aid)));
+    }
+    if (filters.status.length > 0) {
+      filtered = filtered.filter(post => {
+        return filters.status.every(status => {
+          if (status === 'highReactions') return (post.reactions.heart || 0) > 10;
+          if (status === 'popular') return (post.reactions.votes || 0) > 20;
+          if (status === 'recent') {
+            const postDate = new Date(post.time);
+            const oneDayAgo = new Date();
+            oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+            return postDate > oneDayAgo;
+          }
+          return true;
+        });
+      });
+    }
+    return filtered;
+  }, [posts, filters, comic.authorIds]);
   const handleJoinClick = () => {
-    if (userId) {
-      setIsJoined(!isJoined);
-    } else {
+    if (userId) setIsJoined(!isJoined);
+    else {
       toggleAuth(true);
       toast.info("Please log in to join the community.");
     }
+  };
+  const removeFilter = (type: 'author' | 'status', value: string) => {
+    if (type === 'author') setFilters(f => ({ ...f, authors: f.authors.filter(a => a !== value) }));
+    if (type === 'status') setFilters(f => ({ ...f, status: f.status.filter(s => s !== value) as PostStatusFilter[] }));
   };
   return (
     <Card className="bg-comic-card border-white/10 flex flex-col h-full" role="log" aria-label={`Community channel for ${comic.title}`}>
@@ -213,29 +262,48 @@ export function BookCommunityChannel({ comic }: { comic: Comic }) {
                 </Avatar>
               ))}
             </div>
-            <Button className="btn-accent" onClick={handleJoinClick}>
-              {isJoined ? 'Leave' : 'Join'}
-            </Button>
+            <Button className="btn-accent" onClick={handleJoinClick}>{isJoined ? 'Leave' : 'Join'}</Button>
+          </div>
+        </div>
+        <div className="p-2 border-b border-white/10 flex flex-col sm:flex-row gap-2">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <MultiSelectField options={authorOptions} selected={filters.authors} onChange={(s) => setFilters(f => ({...f, authors: s}))} placeholder="Filter by Creator" />
+            <div className="flex items-center space-x-2 p-2 rounded-md border border-input">
+              {statusOptions.map(opt => (
+                <div key={opt.id} className="flex items-center space-x-1">
+                  <Checkbox id={`post-filter-${opt.id}`} checked={filters.status.includes(opt.id)} onCheckedChange={c => setFilters(f => ({...f, status: c ? [...f.status, opt.id] : f.status.filter(s => s !== opt.id)}))} />
+                  <Label htmlFor={`post-filter-${opt.id}`} className="text-xs">{opt.label}</Label>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1 items-center">
+            {filters.authors.map(id => {
+              const author = allAuthors?.find(a => a.id === id);
+              return author && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400">{author.name} <button onClick={() => removeFilter('author', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
+            })}
+            {filters.status.map(id => {
+              const status = statusOptions.find(s => s.id === id);
+              return status && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400">{status.label} <button onClick={() => removeFilter('status', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
+            })}
           </div>
         </div>
         <div className="flex-1 relative overflow-hidden">
           <ScrollArea className="absolute inset-0 p-4">
             <div className={`transition-all duration-300 ${!hasAccess ? 'blur-sm opacity-60' : ''}`}>
               {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full my-3" />)
-                : posts && posts.length > 0 ? (
+                : filteredPosts && filteredPosts.length > 0 ? (
                   <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                    {posts.map(post => <PostCard key={post.id} post={post} comicId={comic.id} />)}
+                    {filteredPosts.map(post => <PostCard key={post.id} post={post} comicId={comic.id} />)}
                   </motion.div>
                 )
-                : <div className="text-center text-neutral-400 pt-16">Be the first to post!</div>}
+                : <div className="text-center text-neutral-400 pt-16">No posts match your filters.</div>}
             </div>
           </ScrollArea>
           {!hasAccess && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-10 p-4 text-center">
               <p className="text-lg font-semibold text-white">Join the community to view and post</p>
-              <Button className="mt-4 btn-accent" onClick={handleJoinClick}>
-                {userId ? 'Join Community' : 'Log In to Join'}
-              </Button>
+              <Button className="mt-4 btn-accent" onClick={handleJoinClick}>{userId ? 'Join Community' : 'Log In to Join'}</Button>
             </div>
           )}
         </div>
