@@ -42,7 +42,7 @@ const AWARDS = [
     { emoji: '🥇', name: 'Gold', type: '🥇-gold-medal' },
     { emoji: '📚', name: 'Bookworm', type: '📚-bookworm' },
     { emoji: '💎', name: 'Diamond', type: '💎-diamond' },
-    { emoji: '🎖️', name: 'Medal', type: '🎖️-medal' },
+    { emoji: '🎖️', name: 'Medal', type: '��️-medal' },
 ];
 const statusOptions: { id: PostStatusFilter; label: string }[] = [
   { id: 'highReactions', label: 'High Reactions' },
@@ -187,10 +187,10 @@ const PostCard = ({ post, comicId }: { post: Post; comicId: string; }) => {
             </DropdownMenuContent>
           </DropdownMenu>
           <div className="flex items-center gap-0.5 border-l border-neutral-600/50 pl-2 ml-2">
-            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={handleCopy}><ClipboardCopy className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Copy Link</p></TooltipContent></TooltipProvider>
-            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock download started.")}><Download className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Download</p></TooltipContent></TooltipProvider>
-            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock edit action.")}><Edit2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Edit</p></TooltipContent></TooltipProvider>
-            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.warning("Mock delete action.")}><Trash2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Delete</p></TooltipContent></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={handleCopy}><ClipboardCopy className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Copy Link</p></TooltipContent></Tooltip></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock download started.")}><Download className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Download</p></TooltipContent></Tooltip></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock edit action.")}><Edit2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Edit</p></TooltipContent></Tooltip></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.warning("Mock delete action.")}><Trash2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Delete</p></TooltipContent></Tooltip></TooltipProvider>
           </div>
         </div>
       </div>
