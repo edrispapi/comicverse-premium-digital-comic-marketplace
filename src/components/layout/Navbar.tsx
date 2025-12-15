@@ -59,6 +59,7 @@ export function Navbar() {
           </Badge>
         )}
       </NavLink>
+      <NavLink to="/plans" className={navLinkClass}>Plans</NavLink>
     </>
   );
   const handleNotificationClick = (id: string, title: string) => {

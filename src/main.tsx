@@ -30,6 +30,7 @@ const DashboardPage = React.lazy(() => import('@/pages/DashboardPage').then(modu
 const SearchPage = React.lazy(() => import('@/pages/SearchPage').then(module => ({ default: module.SearchPage })));
 const LibraryPage = React.lazy(() => import('@/pages/LibraryPage').then(module => ({ default: module.LibraryPage })));
 const CardsPage = React.lazy(() => import('@/pages/CardsPage').then(module => ({ default: module.CardsPage })));
+const PlansPage = React.lazy(() => import('@/pages/PlansPage').then(module => ({ default: module.PlansPage })));
 const queryClient = new QueryClient();
 const rootLoader = async () => {
   await Promise.all([
@@ -137,6 +138,11 @@ const router = createBrowserRouter([
   {
     path: "/terms",
     element: <Navigate to="/profile" replace />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/plans",
+    element: <PlansPage />,
     errorElement: <RouteErrorBoundary />,
   },
 ]);

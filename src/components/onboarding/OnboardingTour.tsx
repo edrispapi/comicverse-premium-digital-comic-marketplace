@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle, Gift, MessageCircle, Sparkles, Crown } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/use-store';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -88,6 +89,7 @@ function TourContent() {
   const [direction, setDirection] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const toggleTour = useAppStore(s => s.toggleTour);
+  const navigate = useNavigate();
   const completeTour = useAppStore(s => s.completeTour);
   const handleNext = () => {
     setDirection(1);
@@ -95,7 +97,7 @@ function TourContent() {
     else {
       setIsFinished(true);
       completeTour();
-      setTimeout(() => toggleTour(false), 1500);
+      setTimeout(() => { navigate('/plans'); toggleTour(false); }, 1500);
     }
   };
   const handleBack = () => {
@@ -163,7 +165,7 @@ function TourContent() {
           <div className="flex gap-2">
             {step > 0 && <Button variant="outline" onClick={handleBack}><ArrowLeft className="mr-2 h-4 w-4" /> Back</Button>}
             <Button className="btn-accent hover:shadow-red-glow hover:scale-105 transition-all active:scale-95 animate-pulse-glow" onClick={handleNext}>
-              {step === steps.length - 1 ? <>Finish <CheckCircle className="ml-2 h-4 w-4" /></> : <>Next <ArrowRight className="ml-2 h-4 w-4" /></>}
+              {step === steps.length - 1 ? <>View Plans <CheckCircle className="ml-2 h-4 w-4" /></> : <>Next <ArrowRight className="ml-2 h-4 w-4" /></>}
             </Button>
           </div>
         </div>
