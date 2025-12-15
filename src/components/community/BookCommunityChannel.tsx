@@ -5,11 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { Crown, Heart, MessageSquare, Award, Send, ThumbsUp, Smile, Image as ImageIcon, Video, Mic, File as FileIcon, X } from 'lucide-react';
+import { Crown, Heart, MessageSquare, Award, Send, Smile, Image as ImageIcon, Video, Mic, File as FileIcon, X, ClipboardCopy, Download, Edit2, Trash2 } from 'lucide-react';
 import type { Comic, Post, Comment } from '@shared/types';
 import { useComicPosts, usePostReply, useHeartPost, useAwardComic, useReactToPost } from '@/lib/queries';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,6 +18,9 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useLocalStorage } from 'react-use';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAppStore } from '@/store/use-store';
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
@@ -29,7 +31,15 @@ const itemVariants = {
 };
 const replySchema = z.object({ message: z.string().min(1, 'Reply cannot be empty').max(500) });
 type ReplyFormData = z.infer<typeof replySchema>;
-const STICKERS = ['👍', '���️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
+const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '���', '🎉', '🙌'];
+const AWARDS = [
+    { emoji: '🥉', name: 'Silver', type: '🥉-silver-medal' },
+    { emoji: '🥈', name: 'Bronze', type: '🥈-bronze-medal' },
+    { emoji: '🥇', name: 'Gold', type: '🥇-gold-medal' },
+    { emoji: '📚', name: 'Bookworm', type: '📚-bookworm' },
+    { emoji: '💎', name: 'Diamond', type: '💎-diamond' },
+    { emoji: '🎖️', name: 'Medal', type: '🎖️-medal' },
+];
 const ConfettiBurst = () => (
   <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
     {Array.from({ length: 20 }).map((_, i) => (
@@ -113,11 +123,13 @@ const PostCard = ({ post, comicId, isJoined }: { post: Post; comicId: string; is
   const { mutate: heartPost } = useHeartPost(comicId);
   const { mutate: awardComic } = useAwardComic(comicId);
   const { mutate: reactToPost } = useReactToPost(comicId);
+  const updatePts = useAppStore(s => s.updatePts);
   const [showConfetti, setShowConfetti] = useState(false);
-  const handleAward = () => {
-    awardComic({ award: 'top-fan' }, {
+  const handleAward = (awardType: string) => {
+    awardComic({ award: awardType }, {
       onSuccess: () => {
-        toast.success("You awarded this comic 'Top Fan'!");
+        toast.success(`You awarded this comic '${awardType.split('-')[1]}'! +10 points`);
+        updatePts(10);
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 1500);
       },
@@ -134,6 +146,10 @@ const PostCard = ({ post, comicId, isJoined }: { post: Post; comicId: string; is
       onError: () => toast.error("Failed to react."),
     });
   };
+  const handleCopy = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/comic/${comicId}#post-${post.id}`);
+    toast.success("Post link copied to clipboard!");
+  };
   return (
     <motion.div variants={itemVariants} className="flex items-start gap-3 py-3">
       <Avatar className="mt-1"><AvatarImage src={post.user.avatar} /><AvatarFallback>👤</AvatarFallback></Avatar>
@@ -142,7 +158,7 @@ const PostCard = ({ post, comicId, isJoined }: { post: Post; comicId: string; is
           <div className="flex items-center justify-between"><p className="font-semibold text-white flex items-center gap-2">{post.user.name} {post.user.isCreator && <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />}</p><p className="text-xs text-neutral-400">{formatDistanceToNow(new Date(post.time), { addSuffix: true })}</p></div>
           <div className="mt-2 text-neutral-300 text-sm"><PostContent post={post} isJoined={isJoined} /></div>
         </div>
-        <div className="flex items-center gap-1 text-xs text-neutral-400 pl-2 relative">
+        <div className="flex flex-wrap items-center gap-1 text-xs text-neutral-400 pl-2 relative">
           <AnimatePresence>{showConfetti && <ConfettiBurst />}</AnimatePresence>
           <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10 text-red-400" onClick={() => heartPost({ postId: post.id })}><Heart className="w-4 h-4" /> {post.reactions.heart}</Button>
           <Dialog><DialogTrigger asChild><Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10"><MessageSquare className="w-4 h-4" /> {post.replies?.length || 0}</Button></DialogTrigger><ReplyModal post={post} comicId={comicId} /></Dialog>
@@ -152,7 +168,22 @@ const PostCard = ({ post, comicId, isJoined }: { post: Post; comicId: string; is
               {STICKERS.map(sticker => <Button key={sticker} variant="ghost" size="icon" className="h-8 w-8 text-xl" onClick={() => handleReact(sticker)}>{sticker}</Button>)}
             </PopoverContent>
           </Popover>
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10" onClick={handleAward}><Award className="w-4 h-4" /></Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="flex items-center gap-1 h-7 px-2 hover:bg-red-500/10"><Award className="w-4 h-4" /> Award</Button></DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 p-1 bg-comic-card border-red-500/20 grid grid-cols-2 gap-1">
+              {AWARDS.map(award => (
+                <Button key={award.type} variant="ghost" size="sm" className="h-10 justify-start gap-2" onClick={() => handleAward(award.type)}>
+                  <span className="text-lg">{award.emoji}</span>{award.name}
+                </Button>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <div className="flex items-center gap-0.5 border-l border-neutral-600/50 pl-2 ml-2">
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={handleCopy}><ClipboardCopy className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Copy Link</p></TooltipContent></Tooltip></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock download started.")}><Download className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Download</p></TooltipContent></Tooltip></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock edit action.")}><Edit2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Edit</p></TooltipContent></Tooltip></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.warning("Mock delete action.")}><Trash2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Delete</p></TooltipContent></Tooltip></TooltipProvider>
+          </div>
         </div>
       </div>
     </motion.div>
