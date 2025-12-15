@@ -19,7 +19,14 @@ export function CartSheet() {
   const navigate = useNavigate();
   const handleCopyLink = (comicId: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/comic/${comicId}`);
-    toast.success('Link copied to clipboard!');
+    toast.success('Link copied!', { duration: 2000, position: "top-right" });
+  };
+  const handleUpdateQuantity = (comicId: string, currentQuantity: number, change: number) => {
+    const newQuantity = currentQuantity + change;
+    if (newQuantity === 0) {
+      toast.success("Item removed from cart.");
+    }
+    updateQuantity(comicId, newQuantity);
   };
   return (
     <Sheet open={isCartOpen} onOpenChange={toggleCart}>
@@ -61,7 +68,7 @@ export function CartSheet() {
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 hover:text-red-400"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              onClick={() => handleUpdateQuantity(item.id, item.quantity, -1)}
                             >
                               <Minus className="w-4 h-4" />
                             </Button>
@@ -70,14 +77,14 @@ export function CartSheet() {
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 hover:text-red-400"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              onClick={() => handleUpdateQuantity(item.id, item.quantity, 1)}
                             >
                               <Plus className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-end gap-2 p-2 rounded-md bg-black/20">
+                      <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-2 p-2 rounded-md bg-black/20">
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
