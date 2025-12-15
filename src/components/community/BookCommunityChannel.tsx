@@ -35,9 +35,9 @@ const itemVariants = {
 };
 const replySchema = z.object({ message: z.string().min(1, 'Reply cannot be empty').max(500) });
 type ReplyFormData = z.infer<typeof replySchema>;
-const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '��', '🙌'];
+const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
 const AWARDS = [
-    { emoji: '���', name: 'Silver', type: '🥉-silver-medal' },
+    { emoji: '🥉', name: 'Silver', type: '🥉-silver-medal' },
     { emoji: '🥈', name: 'Bronze', type: '🥈-bronze-medal' },
     { emoji: '🥇', name: 'Gold', type: '🥇-gold-medal' },
     { emoji: '📚', name: 'Bookworm', type: '📚-bookworm' },
@@ -212,7 +212,7 @@ export function BookCommunityChannel({ comic }: { comic: Comic }) {
     if (!posts) return [];
     let filtered = [...posts];
     if (filters.authors.length > 0) {
-      filtered = filtered.filter(post => post.user.isCreator && filters.authors.some(aid => comic.authorIds.includes(aid)));
+      filtered = filtered.filter(post => post.user.isCreator && comic.authorIds.some(aid => filters.authors.includes(aid)));
     }
     if (filters.status.length > 0) {
       filtered = filtered.filter(post => {
@@ -265,10 +265,10 @@ export function BookCommunityChannel({ comic }: { comic: Comic }) {
             <Button className="btn-accent" onClick={handleJoinClick}>{isJoined ? 'Leave' : 'Join'}</Button>
           </div>
         </div>
-        <div className="p-2 border-b border-white/10 flex flex-col sm:flex-row gap-2">
+        <div className="p-2 border-b border-white/10 flex flex-col sm:flex-row gap-2 bg-red-500/5">
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
             <MultiSelectField options={authorOptions} selected={filters.authors} onChange={(s) => setFilters(f => ({...f, authors: s}))} placeholder="Filter by Creator" />
-            <div className="flex items-center space-x-2 p-2 rounded-md border border-input">
+            <div className="flex items-center space-x-2 p-2 rounded-md border border-input bg-comic-card">
               {statusOptions.map(opt => (
                 <div key={opt.id} className="flex items-center space-x-1">
                   <Checkbox id={`post-filter-${opt.id}`} checked={filters.status.includes(opt.id)} onCheckedChange={c => setFilters(f => ({...f, status: c ? [...f.status, opt.id] : f.status.filter(s => s !== opt.id)}))} />

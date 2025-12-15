@@ -153,7 +153,7 @@ export function CatalogPage() {
             <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
               <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="outline" className="hover:shadow-red-glow transition-shadow">
                     <Filter className="mr-2 h-4 w-4" />
                     Filters
                     {activeFilterCount > 0 && <Badge variant="secondary" className="ml-2 bg-red-500/20 text-red-400">{activeFilterCount}</Badge>}
@@ -170,7 +170,7 @@ export function CatalogPage() {
                   </div>
                 </SheetContent>
               </Sheet>
-              <div className="flex-1 flex items-center gap-2 overflow-x-auto">
+              <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-2 -mb-2">
                 {filters.genres.map(id => {
                   const genre = genresData.find(g => g.id === id);
                   return genre && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30 flex-shrink-0">{genre.name} <button onClick={() => removeFilter('genre', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
