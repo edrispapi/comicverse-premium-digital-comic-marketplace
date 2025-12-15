@@ -37,10 +37,8 @@ export function AudiobookCard({ comic, authorName }: AudiobookCardProps) {
         </Link>
         {comic.bannerText && (
           <motion.div
-            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2 text-white text-xs font-bold animate-text-glow-pulse z-10"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.3 }}
+            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent backdrop-blur-sm p-2 text-xs md:text-sm font-bold animate-text-glow-pulse shadow-red-glow/50 z-10"
+            whileHover={{ y: -1, scale: 1.02 }}
           >
             <p className="line-clamp-2">{comic.bannerText}</p>
           </motion.div>
@@ -82,12 +80,12 @@ export function AudiobookCard({ comic, authorName }: AudiobookCardProps) {
           <div>
             <div className="flex items-center gap-1 text-red-400">
               <Star className="w-4 h-4 fill-current" />
-              <span>{comic.rating.toFixed(1)}</span>
+              <span>{(comic.ratings?.avg || comic.rating).toFixed(1)}</span>
             </div>
             <div className="flex items-center gap-2 mt-2">
               <span className="font-bold text-xl text-white">${comic.price.toFixed(2)}</span>
               {comic.duration && (
-                <Badge className="bg-red-500/70 backdrop-blur-sm text-white">{comic.duration}</Badge>
+                <Badge className="text-xs bg-neutral-800 text-neutral-300">{comic.duration}</Badge>
               )}
             </div>
           </div>

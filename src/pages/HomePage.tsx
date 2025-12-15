@@ -118,44 +118,32 @@ function HeroSlider() {
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-comic-black via-comic-black/80 to-transparent" />
-              <div className="relative h-full flex items-end md:items-center text-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-16 md:pb-0">
-                  <motion.div
-                    className="max-w-xl"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                  >
-                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight animate-text-glow-pulse">
-                      {comic.title}
-                    </h1>
-                    <p className="mt-4 text-lg text-neutral-300 max-w-prose line-clamp-3">
-                      {comic.description}
-                    </p>
-                    <div className="mt-8 flex items-center gap-4">
-                      <Button asChild size="lg" className="btn-accent rounded-full px-8 py-6 text-base font-semibold">
-                        <Link to={`/comic/${comic.id}`}>
-                          Read Now <ArrowRight className="ml-2 h-5 w-5" />
-                        </Link>
-                      </Button>
-                      <Button asChild size="lg" variant="outline" className="rounded-full px-8 py-6 text-base font-semibold border-2 border-white/50 hover:bg-white/10 hover:text-white">
-                        <Link to="/catalog">Explore Catalog</Link>
-                      </Button>
-                    </div>
-                  </motion.div>
-                </div>
-              </div>
-              {comic.bannerText && (
+              <div className="relative h-full text-white">
                 <motion.div
-                  className="absolute bottom-8 left-4 right-4 md:left-12 md:right-auto bg-black/70 backdrop-blur-lg rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-left text-sm sm:text-base font-bold animate-text-glow-pulse shadow-2xl shadow-red-glow/50 z-20 max-w-sm lg:max-w-md"
+                  className="absolute bottom-4 left-4 right-4 md:bottom-8 md:left-8 lg:bottom-12 lg:left-12 md:right-auto max-w-sm lg:max-w-md bg-black/70 backdrop-blur-lg rounded-xl px-4 sm:px-6 py-3 text-left z-20 shadow-2xl shadow-red-glow/50"
                   style={{ y }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                  {comic.bannerText}
+                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight animate-text-glow-pulse">
+                    {comic.title}
+                  </h1>
+                  <p className="mt-2 text-sm md:text-base text-neutral-300 max-w-prose line-clamp-3 md:line-clamp-2">
+                    {comic.description}
+                  </p>
+                  <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <Button asChild size="md" className="btn-accent rounded-full px-6 py-2 text-sm font-semibold w-full sm:w-auto">
+                      <Link to={`/comic/${comic.id}`}>
+                        Read Now <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button asChild size="md" variant="outline" className="rounded-full px-6 py-2 text-sm font-semibold border-2 border-white/50 hover:bg-white/10 hover:text-white w-full sm:w-auto">
+                      <Link to="/catalog">Explore Catalog</Link>
+                    </Button>
+                  </div>
                 </motion.div>
-              )}
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>

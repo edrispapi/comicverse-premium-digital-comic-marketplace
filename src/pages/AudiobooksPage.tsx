@@ -85,7 +85,7 @@ export function AudiobooksPage() {
     if (searchTerm) audiobooks = audiobooks.filter(a => a.title.toLowerCase().includes(searchTerm.toLowerCase()));
     if (filters.genres.length > 0) audiobooks = audiobooks.filter(a => a.genreIds.some(gid => filters.genres.includes(gid)));
     if (filters.sort === 'newest') audiobooks.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
-    else if (filters.sort === 'popular') audiobooks.sort((a, b) => b.rating - a.rating);
+    else if (filters.sort === 'popular') audiobooks.sort((a, b) => (b.ratings?.avg || b.rating) - (a.ratings?.avg || a.rating));
     return audiobooks;
   }, [audiobooksData, searchTerm, filters]);
   return (
