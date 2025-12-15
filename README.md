@@ -4,6 +4,53 @@
 ![Lighthouse Accessibility](https://img.shields.io/badge/Lighthouse%20Accessibility-100-blueviolet)
 ![Lighthouse Best Practices](https://img.shields.io/badge/Lighthouse%20Best%20Practices-100-blueviolet)
 ![Lighthouse SEO](https://img.shields.io/badge/Lighthouse%20SEO-100-blueviolet)
+📘 ComicVerse – Premium Digital Comic Marketplace
+
+این پروژه یک اپلیکیشن وب تک‌صفحه‌ای (SPA) برای یک بازار دیجیتال کمیک، مانگا و رمان گرافیکی است. هدفش این است که تجربه‌ی کاربری پرمیوم و جذاب مشابه پلتفرم‌های استریم (مثل نتفلیکس) را در حوزه‌ی فروش و نمایش کمیک‌ها ارائه دهد. 
+
+🔹 کارکرد اصلی پروژه
+
+نمایش و جستجوی کمیک‌ها در یک فروشگاه دیجیتال
+
+صفحه‌های جزئیات محصول با پیش‌نمایش
+
+پروفایل کاربر، کتابخانه‌ی شخصی، سبد خرید و علاقه‌مندی‌ها
+
+فید اجتماعی برای هر کمیک (کامنت‌ها، واکنش‌ها)
+
+خرید، افزودن به سبد و تجربه‌ی کامل خرید اینترنتی
+
+ویژگی‌های سرگرمی مثل پخش‌کننده‌ی صوتی و پیشنهادات شخصی‌سازی‌شده 
+
+
+⚙️ فناوری‌ها و ابزارهای استفاده‌شده
+
+Frontend:
+
+React 18 + TypeScript
+
+Tailwind CSS
+
+Zustand (مدیریت حالت)
+
+TanStack Query (کش و دریافت داده)
+
+Framer Motion (انیمیشن‌ها) 
+
+
+Backend:
+
+Hono (فریم‌ورک سبک)
+
+Cloudflare Workers + Durable Objects برای کارایی بالا روی لبه (edge) 
+
+
+ابزارهای توسعه و استقرار:
+
+Vite و Bun برای ساخت پروژه
+
+Wrangler برای استقرار روی Cloudflare 
+
 ## Overview
 ComicVerse is a high-performance, visually immersive Single Page Application (SPA) designed to be the premier destination for digital comics, manga, and graphic novels. Built on Cloudflare Workers for edge-speed performance, the application mimics the 'cinematic' feel of premium streaming platforms (like Netflix) but adapted for e-commerce.
 The core experience revolves around a 'Dark Mode First' aesthetic, utilizing deep blacks, charcoal grays, and a vibrant red accent (#EF4444) to make cover art pop.
