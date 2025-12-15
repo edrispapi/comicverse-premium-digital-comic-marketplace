@@ -69,9 +69,24 @@ const PostContent = ({ post, isJoined, hasAccess }: { post: Post; isJoined: bool
     file: <div className="flex items-center gap-2 p-2 bg-neutral-700/50 rounded-md"><FileIcon className="w-5 h-5" /><span className="truncate">{post.content}</span></div>,
     text: <p className="whitespace-pre-wrap">{post.content}</p>,
   };
+  const content = contentMap[post.type];
+  if (shouldBlur) {
+    return (
+      <div className="relative">
+        <div className="relative blur-lg opacity-60 overflow-hidden rounded-md">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 backdrop-blur-sm flex items-center justify-center z-10">
+            <p className="text-white/90 text-center px-6 py-4 text-sm font-medium bg-black/20 rounded">
+              Join community to view content
+            </p>
+          </div>
+          {content}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="relative">
-      {contentMap[post.type]}
+      {content}
     </div>
   );
 };
@@ -201,7 +216,7 @@ export function BookCommunityChannel({ comic }: { comic: Comic }) {
   return (
     <Card className="bg-comic-card border-white/10 flex flex-col h-full" role="log" aria-label={`Community channel for ${comic.title}`}>
       <CardContent className="p-0 flex flex-col h-full">
-        <div className="glass-dark p-4 border-b border-red-500/20 flex justify-between items-center gap-4 shadow-red-glow/[0.1]">
+        <div className="glass-dark backdrop-blur-md p-4 border-b border-red-500/20 flex justify-between items-center gap-4 shadow-red-glow">
           <div className="flex items-center gap-4 flex-shrink min-w-0">
             <img src={comic.coverUrl} alt={comic.title} className="w-12 h-16 object-cover rounded-md shadow-lg" />
             <div className="flex-1 min-w-0">
@@ -210,22 +225,27 @@ export function BookCommunityChannel({ comic }: { comic: Comic }) {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex -space-x-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Avatar key={i} className="w-10 h-10 border-2 border-comic-card hover:z-10 transition-transform hover:scale-110">
-                  <AvatarImage src={`https://i.pravatar.cc/150?u=community-${i}`} />
-                  <AvatarFallback>{String.fromCharCode(65 + i)}</AvatarFallback>
-                </Avatar>
-              ))}
-            </div>
+<div className="flex-shrink-0 px-3 py-2 bg-gradient-to-r from-red-400/20 via-rose-500/10 to-orange-400/20 rounded-xl border border-red-500/30 shadow-red-glow mx-auto max-w-full">
+  <div className="flex overflow-x-auto flex-nowrap pb-2 gap-0 -ml-3 w-[calc(100%+1.5rem)] scrollbar-thin scrollbar-thumb-red-500/50 scrollbar-track-transparent snap-x snap-mandatory">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <Avatar
+        key={i}
+        className="w-10 h-10 border-3 border-white/20 shadow-md hover:border-red-400 hover:shadow-red-glow transition-all hover:scale-110 hover:z-10"
+      >
+        <AvatarImage src={`https://i.pravatar.cc/150?u=community-${i}`} />
+        <AvatarFallback>{String.fromCharCode(65 + i)}</AvatarFallback>
+      </Avatar>
+    ))}
+  </div>
+</div>
             <Button className="btn-accent" onClick={handleJoinClick}>
               {isJoined ? 'Leave' : 'Join'}
             </Button>
           </div>
         </div>
-        <div className="flex-1 relative">
-          <ScrollArea className="absolute inset-0 p-4">
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className={`transition-all duration-300 ${!hasAccess ? 'blur-sm opacity-70' : ''}`}>
+<div className="flex-1 min-h-[60vh] h-[90vh] md:h-[96vh] relative overflow-hidden">
+  <ScrollArea className="h-full w-full p-4 [&_.scroll-area]:scrollbar-thin [&_.scroll-area]:scrollbar-thumb-neutral-600/50 [&_.scroll-area]:scrollbar-track-transparent py-2 -mx-1">
+            <motion.div variants={containerVariants} initial="hidden" animate="visible" className={`transition-all duration-300 ${!hasAccess ? 'blur-md opacity-60 pointer-events-none select-none' : ''}`}>
               {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full my-3" />)
                 : posts && posts.length > 0 ? posts.map(post => <PostCard key={post.id} post={post} comicId={comic.id} isJoined={!!isJoined} hasAccess={hasAccess} />)
                 : <div className="text-center text-neutral-400 pt-16">Be the first to post!</div>}
