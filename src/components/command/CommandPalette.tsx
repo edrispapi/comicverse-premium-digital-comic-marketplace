@@ -35,6 +35,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
@@ -291,15 +292,15 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           'p-0 overflow-hidden glass-dark backdrop-blur-xl shadow-red-glow border-white/10',
           isMobile ? 'h-[80vh] border-none' : 'sm:max-w-2xl'
         )}
-        aria-labelledby="cmd-title"
-        aria-describedby="cmd-desc"
       >
-        <DialogTitle id="cmd-title" className="sr-only">
-          Command Palette
-        </DialogTitle>
-        <DialogDescription id="cmd-desc" className="sr-only">
-          Search for comics, authors, or navigate to pages and actions.
-        </DialogDescription>
+        <DialogHeader className='px-6 py-4 border-b border-white/10 p-0 md:p-4'>
+          <DialogTitle className='text-xl md:text-2xl font-bold bg-gradient-to-r from-red-400 via-red-500/90 to-pink-5
+            Command Palette
+          </DialogTitle>
+          <DialogDescription className='text-xs md:text-sm text-muted-foreground mt-1 max-w-md'>
+            Search comics & authors, jump to recent reading, pages, notifications, or quick actions (↑↓ navigate, ↵ select, Esc close)
+          </DialogDescription>
+        </DialogHeader>
         {content}
       </Content>
     </Wrapper>
