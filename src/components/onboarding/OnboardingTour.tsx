@@ -127,14 +127,20 @@ function TourContent() {
                 <motion.div className="mb-6 bg-red-500/20 p-3 rounded-full animate-pulse-glow">
                   <CurrentIcon className="w-8 h-8 text-red-400" />
                 </motion.div>
-                <DialogHeader className='text-center mb-6'>
-                  <DialogTitle id={`onboarding-tour-title-step-${step}`} className='text-2xl sm:text-3xl font-bold mb-2 text-glow'>
+                <div className='text-center mb-6'>
+                  <h2
+                    id={`onboarding-tour-title-step-${step}`}
+                    className='text-2xl sm:text-3xl font-bold mb-2 text-glow'
+                  >
                     {steps[step].title}
-                  </DialogTitle>
-                  <DialogDescription id={`onboarding-tour-desc-step-${step}`} className='text-neutral-400 max-w-md mx-auto'>
+                  </h2>
+                  <p
+                    id={`onboarding-tour-desc-step-${step}`}
+                    className='text-neutral-400 max-w-md mx-auto'
+                  >
                     {steps[step].description}
-                  </DialogDescription>
-                </DialogHeader>
+                  </p>
+                </div>
                 {steps[step].content}
               </motion.div>
             </motion.div>
@@ -189,7 +195,7 @@ export function OnboardingTour() {
             ? "h-[90vh] p-0 bg-comic-card/80 backdrop-blur-xl border-none text-white"
             : "sm:max-w-lg p-0 bg-comic-card/80 backdrop-blur-xl border-white/10 glass-dark"
           }
-          side={isMobile ? "bottom" : undefined}
+          {...(isMobile ? { side: "bottom" } : {})}
           aria-labelledby="onboarding-tour-title"
           aria-describedby="onboarding-tour-desc"
         >
