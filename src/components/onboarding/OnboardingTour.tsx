@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, CheckCircle, Gift, MessageCircle, Sparkles } fro
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAppStore } from '@/store/use-store';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
@@ -104,8 +104,14 @@ function TourContent() {
               <div className="mb-6 bg-red-500/20 p-3 rounded-full animate-pulse-glow">
                 <CurrentIcon className="w-8 h-8 text-red-400" />
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2">{steps[step].title}</h2>
-              <p className="text-neutral-400 max-w-md mx-auto mb-6">{steps[step].description}</p>
+<DialogHeader className='text-center mb-6'>
+  <DialogTitle id='onboarding-tour-title' className='text-2xl sm:text-3xl font-bold mb-2'>
+    {steps[step].title}
+  </DialogTitle>
+  <DialogDescription id='onboarding-tour-description' className='text-neutral-400 max-w-md mx-auto'>
+    {steps[step].description}
+  </DialogDescription>
+</DialogHeader>
               {steps[step].content}
             </motion.div>
           </AnimatePresence>
@@ -155,7 +161,11 @@ export function OnboardingTour() {
   }
   return (
     <Dialog open={isTourOpen} onOpenChange={toggleTour}>
-      <DialogContent className="sm:max-w-lg p-0 bg-comic-card border-white/10 glass-dark">
+      <DialogContent
+  className="sm:max-w-lg p-0 bg-comic-card border-white/10 glass-dark"
+  aria-labelledby="onboarding-tour-title"
+  aria-describedby="onboarding-tour-description"
+>
         <TourContent />
       </DialogContent>
     </Dialog>
