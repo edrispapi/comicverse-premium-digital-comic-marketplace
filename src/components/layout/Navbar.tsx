@@ -148,8 +148,9 @@ export function Navbar() {
               <div className="md:hidden">
                 <Sheet>
                   <SheetTrigger asChild><Button variant="ghost" size="icon"><Menu /></Button></SheetTrigger>
-                  <SheetContent className="bg-comic-card border-l-red-500/20 text-white w-full border-none overflow-y-auto flex flex-col max-w-none p-0">
-                    <nav className="min-h-0 flex-1 flex flex-col space-y-6 p-8 pt-20 overflow-y-auto items-start text-lg">{navLinks}
+                  <SheetContent className="bg-comic-card border-l-red-500/20 text-white w-full max-w-none border-none p-0 flex flex-col">
+                    <nav className="min-h-0 flex-1 flex flex-col space-y-6 p-8 pt-20 overflow-y-auto items-start text-lg">
+                      {navLinks}
                       {!userId && <Button onClick={() => toggleAuth(true)} className="w-full mt-4">Login</Button>}
                     </nav>
                   </SheetContent>

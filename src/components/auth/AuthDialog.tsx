@@ -168,7 +168,7 @@ export function AuthDialog() {
   if (isMobile) {
     return (
       <Sheet open={isAuthOpen} onOpenChange={toggleAuth}>
-        <SheetContent side="bottom" className="h-full p-0 bg-comic-card border-none text-white">
+        <SheetContent side="bottom" className="h-[90vh] p-0 bg-comic-card border-none text-white">
           <AuthForm />
         </SheetContent>
       </Sheet>
@@ -177,10 +177,10 @@ export function AuthDialog() {
   return (
     <Dialog open={isAuthOpen} onOpenChange={toggleAuth}>
       <DialogContent
-  className="sm:max-w-md bg-comic-card border-white/10 p-0"
-  aria-labelledby="auth-title"
-  aria-describedby="auth-desc"
->
+        className="sm:max-w-md bg-comic-card border-white/10 p-0"
+        aria-labelledby="auth-title"
+        aria-describedby="auth-desc"
+      >
         <AuthForm />
       </DialogContent>
     </Dialog>
