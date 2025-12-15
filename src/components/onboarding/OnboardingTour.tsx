@@ -110,7 +110,7 @@ function TourContent() {
   };
   const CurrentIcon = steps[step].icon;
   return (
-    <div className="flex flex-col h-full text-white p-6 sm:p-8 relative overflow-hidden">
+    <div className="flex flex-col h-full text-white pt-0 p-4 sm:p-6 sm:pt-0 relative overflow-hidden">
       <AnimatePresence>{isFinished && <ConfettiBurst />}</AnimatePresence>
       <div className="flex-1 flex flex-col justify-center">
         <div className="relative h-80 sm:h-96 overflow-hidden">
@@ -201,9 +201,9 @@ export function OnboardingTour() {
           aria-labelledby="onboarding-tour-title"
           aria-describedby="onboarding-tour-desc"
         >
-          <DialogHeader className="sr-only">
-            <DialogTitle id="onboarding-tour-title">Welcome to ComicVerse!</DialogTitle>
-            <DialogDescription id="onboarding-tour-desc">A quick tour of the main features.</DialogDescription>
+          <DialogHeader className="flex flex-col space-y-1 p-6 sm:p-8 pb-4 pt-2 border-b border-white/20 bg-comic-black/70 backdrop-blur-2xl rounded-t-2xl shadow-2xl shadow-red-500/30 text-center mb-0">
+            <DialogTitle id="onboarding-tour-title" className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-400 to-red-600 animate-pulse-glow drop-shadow-2xl">Welcome to ComicVerse!</DialogTitle>
+            <DialogDescription id="onboarding-tour-desc" className="text-base sm:text-lg text-neutral-300/90 max-w-sm mx-auto leading-relaxed">A quick tour of the main features.</DialogDescription>
           </DialogHeader>
           <TourContent />
         </TourInner>
