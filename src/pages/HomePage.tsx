@@ -46,9 +46,12 @@ function HeroSlider() {
   const isHovering = useRef(false);
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 0.8], [0, 30]);
+  // Store the animation frame ID so we can cancel it on unmount
+  const animationFrameRef = useRef<number | null>(null);
   const toggleTour = useAppStore(s => s.toggleTour);
   const featuredComics = useMemo(() => {
-    if (!allComicsData) return [];
+    // Ensure the data is an array before spreading/sorting
+    if (!allComicsData || !Array.isArray(allComicsData)) return [];
     return [...allComicsData]
       .sort((a, b) => (b.ratings?.avg || 0) - (a.ratings?.avg || 0))
       .slice(0, 5);
@@ -186,7 +189,8 @@ function HeroSlider() {
 }
 function AudiobookCarousel() {
   const { data: audiobooksData, isLoading } = useAudiobooks();
-  const audiobooks = audiobooksData || [];
+  // Protect against undefined or non‑array responses from the query
+  const audiobooks = Array.isArray(audiobooksData) ? audiobooksData : [];
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
   const [scaleValues, setScaleValues] = useState<number[]>([]);
   const onSelect = useCallback(() => {
@@ -253,7 +257,8 @@ const testimonials = [
 export function HomePage() {
   const searchTerm = useAppStore((s) => s.searchTerm);
   const { data: allComicsData, isLoading } = useComics();
-  const allComics = useMemo(() => allComicsData ?? [], [allComicsData]);
+  // Guarantee we always work with an array – protects against undefined or non‑array responses
+  const allComics = useMemo(() => Array.isArray(allComicsData) ? allComicsData : [], [allComicsData]);
   const filteredComics = useMemo(() => {
     if (!searchTerm) return allComics;
     return allComics.filter((comic) =>
