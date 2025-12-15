@@ -220,7 +220,13 @@ export const useAuthSignup = () => {
         }
     });
 };
-// User Stats & Notifications
+// User Data
+export const useUsers = () => {
+    return useQuery<{id: string, name: string}[]>({
+        queryKey: ['users'],
+        queryFn: () => api('/api/users'),
+    });
+};
 export const useUserStats = () => {
     return useQuery<UserStats>({
         queryKey: ['userStats'],
@@ -234,7 +240,7 @@ export const useUserNotifications = () => {
         queryFn: () => api<Notification[]>('/api/notifications'),
     });
 };
-// Checkout
+// Checkout & Gifting
 export const usePlaceOrder = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -243,9 +249,17 @@ export const usePlaceOrder = () => {
             body: JSON.stringify({ items, total }),
         }),
         onSuccess: () => {
-            // In a real app, this might invalidate user orders, etc.
-            // For now, client-side cart is cleared separately.
             queryClient.invalidateQueries({ queryKey: ['cart'] });
         },
     });
+};
+export const useGiftComic = (comicId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({toUserId}: {toUserId: string}) => api(`/api/comics/${comicId}/gift`, { method: 'PATCH', body: JSON.stringify({toUserId}) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comic', comicId] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    }
+  });
 };

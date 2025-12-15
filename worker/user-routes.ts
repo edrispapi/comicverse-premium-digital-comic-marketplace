@@ -40,6 +40,12 @@ async function getFilteredComics(c: any) {
   return filteredComics;
 }
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
+  // USERS
+  app.get('/api/users', async (c) => {
+    await UserEntity.ensureSeed(c.env);
+    const { items: users } = await UserEntity.list(c.env, null, 50);
+    return ok(c, users.map(u => ({id: u.id, name: u.name})));
+  });
   // COMICS
   app.get('/api/comics', async (c) => {
     await ComicEntity.ensureSeed(c.env);
@@ -55,6 +61,21 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const comic = new ComicEntity(c.env, id);
     if (!await comic.exists()) return notFound(c, 'comic not found');
     return ok(c, await comic.getState());
+  });
+  app.patch('/api/comics/:id/gift', async (c) => {
+    const id = c.req.param('id');
+    const { toUserId } = await c.req.json<{toUserId: string}>();
+    if (!isStr(toUserId)) return bad(c, 'toUserId required');
+    const comic = new ComicEntity(c.env, id); if (!await comic.exists()) return notFound(c);
+    const targetUser = new UserEntity(c.env, toUserId); if (!await targetUser.exists()) return bad(c, 'Target user not found');
+    await targetUser.mutate(state => ({
+      ...state,
+      libraryUnlocked: {
+        ...state.libraryUnlocked,
+        [id]: true,
+      }
+    }));
+    return ok(c, { success: true, message: `Gifted ${id} to ${toUserId}` });
   });
   // COMIC COMMENTS
   app.get('/api/comics/:id/comments', async (c) => {
@@ -235,7 +256,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/orders', async (c) => {
     const { items, total } = (await c.req.json()) as { items: any[], total: number };
     const orderId = crypto.randomUUID();
-    console.log(`[MOCK] Order received: ${orderId} for $${total.toFixed(2)} with ${items.length} items.`);
+    console.log(`[MOCK] Order received: ${orderId} for ${total.toFixed(2)} with ${items.length} items.`);
     return ok(c, { id: orderId, total });
   });
 }

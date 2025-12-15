@@ -18,16 +18,14 @@ import {
 import { PageWrapper } from '@/components/layout/PageWrapper';
 export function SearchPage() {
   const [searchParams] = useSearchParams();
-  const q = searchParams.get('q') ?? '';
-  const genres = searchParams.get('genres')?.split(',') ?? [];
-  const authorIds = searchParams.get('authorIds')?.split(',') ?? [];
-  const priceMax = Number(searchParams.get('priceMax')) || 100;
-  const sort = searchParams.get('sort') ?? 'rating';
-
-  const queryParams = useMemo(
-    () => ({ q, genres, authorIds, priceMax, sort }),
-    [q, genres, authorIds, priceMax, sort]
-  );
+  const queryParams = useMemo(() => {
+    const q = searchParams.get('q') ?? '';
+    const genres = searchParams.get('genres')?.split(',') ?? [];
+    const authorIds = searchParams.get('authorIds')?.split(',') ?? [];
+    const priceMax = Number(searchParams.get('priceMax')) || 100;
+    const sort = searchParams.get('sort') ?? 'rating';
+    return { q, genres, authorIds, priceMax, sort };
+  }, [searchParams]);
   const { data: comics, isLoading, error } = useSearchResults(queryParams, true);
   return (
     <PageWrapper navbar={<Navbar />} footer={<Footer />}>

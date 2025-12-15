@@ -3,18 +3,24 @@ import { useAppStore, useCartTotals } from '@/store/use-store';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Plus, Minus, ShoppingCart, Trash2 } from 'lucide-react';
+import { Plus, Minus, ShoppingCart, ClipboardCopy } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { GiftCombobox } from './CartCombobox';
 export function CartSheet() {
   const isCartOpen = useAppStore(s => s.isCartOpen);
   const toggleCart = useAppStore(s => s.toggleCart);
   const cart = useAppStore(s => s.cart);
-  const removeFromCart = useAppStore(s => s.removeFromCart);
   const updateQuantity = useAppStore(s => s.updateQuantity);
   const { subtotal, shippingCost, tax, discount, total } = useCartTotals();
   const navigate = useNavigate();
+  const handleCopyLink = (comicId: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/comic/${comicId}`);
+    toast.success('Link copied to clipboard!');
+  };
   return (
     <Sheet open={isCartOpen} onOpenChange={toggleCart}>
       <SheetContent className="bg-comic-card border-l-red-500/20 text-white flex flex-col w-full sm:max-w-md">
@@ -39,44 +45,51 @@ export function CartSheet() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
-                      className="flex items-start gap-4"
+                      className="flex flex-col gap-4 p-3 rounded-lg glass-dark"
                     >
-                      <img
-                        src={item.coverUrl}
-                        alt={item.title}
-                        className="w-20 h-auto object-cover rounded-md aspect-[2/3]"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-white">{item.title}</h4>
-                        <p className="text-sm text-neutral-400">${(Number(item.price) || 0).toFixed(2)}</p>
-                        <div className="flex items-center mt-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 hover:text-red-400"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 hover:text-red-400"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
+                      <div className="flex items-start gap-4">
+                        <img
+                          src={item.coverUrl}
+                          alt={item.title}
+                          className="w-20 h-auto object-cover rounded-md aspect-[2/3]"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-white">{item.title}</h4>
+                          <p className="text-sm text-neutral-400">${(Number(item.price) || 0).toFixed(2)}</p>
+                          <div className="flex items-center mt-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 hover:text-red-400"
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                            <span className="w-8 text-center">{item.quantity}</span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 hover:text-red-400"
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-neutral-400 hover:text-red-500 h-8 w-8"
-                        onClick={() => removeFromCart(item.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-2 p-2 rounded-md bg-black/20">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-7 px-2 hover:bg-red-500/10 text-red-400" onClick={() => handleCopyLink(item.id)}>
+                                <ClipboardCopy className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Copy Link</p></TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <GiftCombobox comic={item} />
+                      </div>
                     </motion.li>
                   ))}
                 </AnimatePresence>
