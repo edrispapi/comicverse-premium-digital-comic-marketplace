@@ -92,7 +92,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         <motion.div variants={containerVariants} initial="hidden" animate="visible">
           <CommandGroup heading="Search Comics">
             {comicsLoading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full my-1" />) :
-              (comicsData ?? []).slice(0, 5).map(comic => (
+              (Array.isArray(comicsData) ? comicsData : []).slice(0, 5).map(comic => (
                 <motion.div key={comic.id} variants={itemVariants}>
                   <CommandItem onSelect={() => runCommand(() => navigate(`/comic/${comic.id}`))} className="cursor-pointer hover:!bg-red-500/10 hover:!text-red-400">
                     <Avatar className="h-9 w-9 mr-3"><AvatarImage src={comic.coverUrl} /><AvatarFallback>{comic.title.charAt(0)}</AvatarFallback></Avatar>
@@ -103,7 +103,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           </CommandGroup>
           <CommandGroup heading="Search Authors">
             {authorsLoading ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full my-1" />) :
-              (authors ?? []).slice(0, 3).map(author => (
+              (Array.isArray(authors) ? authors : []).slice(0, 3).map(author => (
                 <motion.div key={author.id} variants={itemVariants}>
                   <CommandItem onSelect={() => runCommand(() => navigate(`/authors/${author.id}`))} className="cursor-pointer hover:!bg-red-500/10 hover:!text-red-400">
                     <Avatar className="h-9 w-9 mr-3"><AvatarImage src={author.avatarUrl} /><AvatarFallback>{author.name.charAt(0)}</AvatarFallback></Avatar>
