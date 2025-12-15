@@ -17,10 +17,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AuthDialog } from '@/components/auth/AuthDialog';
-import { useNewAudiobooks, useComics, useUserNotifications } from '@/lib/queries';
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { useNewAudiobooks, useUserNotifications } from '@/lib/queries';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import { CommandPalette } from '@/components/command/CommandPalette';
 export function Navbar() {
   const cart = useCart();
   const wishlist = useWishlist();
@@ -31,11 +31,20 @@ export function Navbar() {
   const toggleAuth = useAppStore(s => s.toggleAuth);
   const toggleTour = useToggleTour();
   const { data: newAudiobooks } = useNewAudiobooks();
-  const { data: comicsData } = useComics();
   const { data: notificationsData } = useUserNotifications();
   const { notifications, unreadCount, setNotifications, markAsRead } = useNotifications();
-  const [openSearch, setOpenSearch] = useState(false);
-  const navigate = useNavigate();
+  const [openPalette, setOpenPalette] = useState(false);
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setOpenPalette(true);
+        toast.success('Opened Command Palette', { description: '↑↓→ to navigate, Esc to close' });
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
   useEffect(() => {
     if (notificationsData) {
       setNotifications(notificationsData);
@@ -66,10 +75,6 @@ export function Navbar() {
     markAsRead(id);
     toast.info(title, { description: 'Check out the latest updates!' });
   };
-  const runCommand = (command: () => unknown) => {
-    setOpenSearch(false);
-    command();
-  };
   return (
     <>
       <header className="sticky top-0 z-50 w-full glass-dark shadow-md">
@@ -85,13 +90,14 @@ export function Navbar() {
               </nav>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <Button variant="outline" onClick={() => setOpenSearch(true)} className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-white bg-neutral-800/50 border-neutral-700">
+              <Button variant="outline" onClick={() => setOpenPalette(true)} className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-white bg-neutral-800/50 border-neutral-700">
                 <Search className="h-4 w-4" /> Search...
+                <kbd className="ml-4 px-2 py-0.5 text-xs font-semibold text-neutral-400 bg-neutral-900 border border-neutral-700 rounded-md">⌘K</kbd>
               </Button>
               <Button variant="outline" onClick={() => toggleTour(true)} className="hidden sm:flex items-center gap-2 text-red-400 border-red-500/50 hover:text-white hover:bg-red-500/20 bg-red-500/10">
                 <Sparkles className="h-4 w-4" /> Get Started
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => setOpenSearch(true)} className="sm:hidden"><Search /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setOpenPalette(true)} className="sm:hidden"><Search /></Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative text-neutral-300 hover:text-white">
@@ -156,20 +162,7 @@ export function Navbar() {
       <CartSheet />
       <WishlistSheet />
       <AuthDialog />
-      <CommandDialog open={openSearch} onOpenChange={setOpenSearch}>
-        <CommandInput placeholder="Type a command or search..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
-            {(Array.isArray(comicsData) ? comicsData : []).slice(0, 3).map(comic => (
-              <CommandItem key={comic.id} onSelect={() => runCommand(() => navigate(`/comic/${comic.id}`))}>
-                <img src={comic.coverUrl} alt={comic.title} className="w-8 h-12 object-cover mr-4 rounded" />
-                {comic.title}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+      <CommandPalette open={openPalette} onOpenChange={setOpenPalette} />
     </>
   );
 }

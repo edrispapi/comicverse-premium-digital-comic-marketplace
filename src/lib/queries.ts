@@ -86,8 +86,10 @@ export const useAuthors = () => {
   return useQuery<Author[]>({
     queryKey: ['authors'],
     queryFn: async () => {
-        const data = await api<PaginatedResponse<Author>>('/api/authors?limit=500');
-        return Array.isArray(data?.items) ? data.items : [];
+        // Backend returns a plain array of Author objects
+        const data = await api<Author[]>('/api/authors?limit=500');
+        // Ensure we always return an array
+        return Array.isArray(data) ? data : [];
     }
   });
 };
