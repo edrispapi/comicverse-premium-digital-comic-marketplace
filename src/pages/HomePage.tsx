@@ -107,7 +107,12 @@ function HeroSlider() {
     >
       <Carousel setApi={setApi} opts={{ loop: true }} className="w-full h-full">
         <CarouselContent>
-          {featuredComics.map((comic) => (
+          {featuredComics.map((comic) => {
+            if (!comic) {
+              console.warn("Featured comic data is null or undefined.");
+              return null;
+            }
+            return (
             <CarouselItem key={comic.id} className="relative w-full h-full">
               <div className="absolute inset-0 overflow-hidden">
                 <motion.div
@@ -134,20 +139,22 @@ function HeroSlider() {
                   </p>
                   <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <Button asChild size="lg" className="btn-accent rounded-full px-6 py-2 text-sm font-semibold w-full sm:w-auto">
-```
                       <Link to={`/comic/${comic.id}`}>
-                        Read Now <ArrowRight className="ml-2 h-4 w-4" />
+                        <span className="flex items-center justify-center">
+                          Read Now <ArrowRight className="ml-2 h-4 w-4" />
+                        </span>
                       </Link>
                     </Button>
                     <Button asChild size="lg" variant="outline" className="rounded-full px-6 py-2 text-sm font-semibold border-2 border-white/50 hover:bg-white/10 hover:text-white w-full sm:w-auto">
-```
-                      <Link to="/catalog">Explore Catalog</Link>
+                      <Link to="/catalog">
+                        <span>Explore Catalog</span>
+                      </Link>
                     </Button>
                   </div>
                 </motion.div>
               </div>
             </CarouselItem>
-          ))}
+          )})}
         </CarouselContent>
         <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:shadow-red-glow" />
         <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:shadow-red-glow" />

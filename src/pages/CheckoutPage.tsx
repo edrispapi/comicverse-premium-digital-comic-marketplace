@@ -22,9 +22,6 @@ import { PageWrapper } from '@/components/layout/PageWrapper';
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  address: z.string().min(5, 'Address is too short'),
-  city: z.string().min(2, 'City is required'),
-  zip: z.string().regex(/^\d{5}$/, 'Invalid ZIP code'),
   cardName: z.string().min(2, 'Name on card is required'),
   cardNumber: z.string().regex(/^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/, 'Invalid card number'),
   expiryDate: z.string().regex(/^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$/, 'Invalid expiry date (MM/YY)'),
@@ -43,7 +40,7 @@ export function CheckoutPage() {
   const { mutate: placeOrder, isPending } = usePlaceOrder();
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { name: '', email: '', address: '', city: '', zip: '', cardName: '', cardNumber: '', expiryDate: '', cvc: '' },
+    defaultValues: { name: '', email: '', cardName: '', cardNumber: '', expiryDate: '', cvc: '' },
   });
   const handleApplyPromo = () => {
     if (applyPromoCode()) toast.success(`Promo code "${promoCode}" applied!`);
@@ -51,7 +48,7 @@ export function CheckoutPage() {
   };
   const handleNextStep = async () => {
     let fieldsToValidate: (keyof z.infer<typeof checkoutSchema>)[] = [];
-    if (currentStep === 0) fieldsToValidate = ['name', 'email', 'address', 'city', 'zip'];
+    if (currentStep === 0) fieldsToValidate = ['name', 'email'];
     if (currentStep === 1) fieldsToValidate = ['cardName', 'cardNumber', 'expiryDate', 'cvc'];
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) setCurrentStep(s => s + 1);
@@ -69,15 +66,10 @@ export function CheckoutPage() {
     });
   };
   const steps = [
-    { title: 'Shipping', content: (
+    { title: 'Contact & Shipping', content: (
       <div className="space-y-4">
         <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
         <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <FormField control={form.control} name="address" render={({ field }) => (<FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="city" render={({ field }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="zip" render={({ field }) => (<FormItem><FormLabel>ZIP Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-        </div>
         <h3 className="font-semibold pt-4">Shipping Method</h3>
         <RadioGroup defaultValue={shippingOption} onValueChange={(val: 'standard' | 'express') => setShippingOption(val)} className="space-y-2">
           <FormItem className="flex items-center space-x-3 space-y-0 rounded-md border p-4 hover:bg-white/5 transition-colors"><FormControl><RadioGroupItem value="standard" /></FormControl><FormLabel className="font-normal flex-1">Standard Shipping ($5.00)</FormLabel></FormItem>
@@ -101,7 +93,7 @@ export function CheckoutPage() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Review your order</h3>
         <p>Please check your information below before placing your order.</p>
-        <Card className="bg-comic-card border-white/10"><CardContent className="p-4 text-sm"><p><strong>Name:</strong> {form.watch('name')}</p><p><strong>Email:</strong> {form.watch('email')}</p><p><strong>Address:</strong> {form.watch('address')}, {form.watch('city')}, {form.watch('zip')}</p></CardContent></Card>
+        <Card className="bg-comic-card border-white/10"><CardContent className="p-4 text-sm"><p><strong>Name:</strong> {form.watch('name')}</p><p><strong>Email:</strong> {form.watch('email')}</p><p><strong>Shipping:</strong> {shippingOption}</p></CardContent></Card>
       </div>
     )},
   ];
