@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -47,7 +47,7 @@ export function DashboardPage() {
   const comicsItems = comicsData;
   const { data: genres } = useGenres();
   const { data: authors } = useAuthors();
-  const genreData = React.useMemo(() => {
+  const genreData = useMemo(() => {
     if (!comicsItems || !genres) return [];
     const genreCounts = comicsItems.reduce((acc, comic) => {
       comic.genreIds.forEach(gid => {
@@ -60,7 +60,7 @@ export function DashboardPage() {
       value: count,
     })).slice(0, 5);
   }, [comicsItems, genres]);
-  const authorData = React.useMemo(() => {
+  const authorData = useMemo(() => {
     if (!comicsItems || !authors) return [];
     const authorRatings = comicsItems.reduce((acc, comic) => {
       comic.authorIds.forEach(aid => {
@@ -101,7 +101,12 @@ export function DashboardPage() {
             <CardContent><Accordion type="single" collapsible className="w-full">
                 {mockActivity.map((item, i) => (
                   <AccordionItem key={i} value={`item-${i}`} className="border-b-white/10"><AccordionTrigger>{item.title}</AccordionTrigger>
-                    <AccordionContent className="flex justify-between items-center"><Badge variant={item.type === 'purchase' ? 'default' : 'secondary'}>{item.type}</Badge><span className="text-xs text-muted-foreground">{item.date}</span></AccordionContent>
+                    <AccordionContent>
+  <div className="flex justify-between items-center p-4 border-t border-white/10 rounded-b-lg">
+    <Badge variant={item.type === 'purchase' ? 'default' : 'secondary'}>{item.type}</Badge>
+    <span className="text-xs text-muted-foreground">{item.date}</span>
+  </div>
+</AccordionContent>
                   </AccordionItem>
                 ))}
             </Accordion></CardContent>

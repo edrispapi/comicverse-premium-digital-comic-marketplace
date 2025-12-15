@@ -133,12 +133,14 @@ function HeroSlider() {
                     {comic.description}
                   </p>
                   <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <Button asChild size="md" className="btn-accent rounded-full px-6 py-2 text-sm font-semibold w-full sm:w-auto">
+                    <Button asChild size="lg" className="btn-accent rounded-full px-6 py-2 text-sm font-semibold w-full sm:w-auto">
+```
                       <Link to={`/comic/${comic.id}`}>
                         Read Now <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button asChild size="md" variant="outline" className="rounded-full px-6 py-2 text-sm font-semibold border-2 border-white/50 hover:bg-white/10 hover:text-white w-full sm:w-auto">
+                    <Button asChild size="lg" variant="outline" className="rounded-full px-6 py-2 text-sm font-semibold border-2 border-white/50 hover:bg-white/10 hover:text-white w-full sm:w-auto">
+```
                       <Link to="/catalog">Explore Catalog</Link>
                     </Button>
                   </div>

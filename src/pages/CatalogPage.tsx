@@ -9,7 +9,7 @@ import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Breadcrumb,
@@ -158,7 +158,10 @@ export function CatalogPage() {
               </Button>
             </SheetTrigger>
             <SheetContent className="bg-comic-card border-l-white/10 text-white flex flex-col">
-              <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
+              <SheetHeader>
+  <SheetTitle>Filters</SheetTitle>
+  <SheetDescription>Apply filters to narrow down comics by genre, author, and status.</SheetDescription>
+</SheetHeader>
               <div className="flex-1 overflow-y-auto pr-4 -mr-6 pl-1">
                 <FilterControls inSheet />
               </div>
