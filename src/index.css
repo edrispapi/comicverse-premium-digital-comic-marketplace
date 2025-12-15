@@ -105,6 +105,12 @@
   .glass-dark {
     @apply bg-black/30 backdrop-blur-lg border border-white/10;
   }
+  .group-heading-neon {
+    @apply text-red-400 animate-text-glow-pulse font-semibold tracking-wide text-xs sm:text-sm transition-all duration-200;
+  }
+  .group-heading-neon:hover {
+    @apply text-red-300 underline underline-offset-4 decoration-red-400/50 decoration-2 origin-left scale-105;
+  }
 }
 @layer utilities {
   @keyframes hero-blob-float-1 {

@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, Github } from 'lucide-react';
 const loginSchema = z.object({
@@ -94,9 +94,13 @@ function AuthForm() {
   return (
     <div className="relative p-6 sm:p-8 text-white">
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
-      <DialogHeader className="text-center mb-8">
-        <DialogTitle id="auth-title" className="text-3xl font-bold text-glow">Join the Adventure</DialogTitle>
-        <DialogDescription id="auth-desc" className="text-neutral-400 mt-2">Unlock a universe of comics.</DialogDescription>
+      <SheetHeader className="text-center mb-8 sm:hidden">
+        <SheetTitle id="auth-title-mobile" className="text-3xl font-bold text-glow">Join the Adventure</SheetTitle>
+        <SheetDescription id="auth-desc-mobile" className="text-neutral-400 mt-2">Unlock a universe of comics.</SheetDescription>
+      </SheetHeader>
+      <DialogHeader className="text-center mb-8 hidden sm:block">
+        <DialogTitle id="auth-title-desktop" className="text-3xl font-bold text-glow">Join the Adventure</DialogTitle>
+        <DialogDescription id="auth-desc-desktop" className="text-neutral-400 mt-2">Unlock a universe of comics.</DialogDescription>
       </DialogHeader>
       <Tabs defaultValue="login" className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-red-500/20">
@@ -168,7 +172,12 @@ export function AuthDialog() {
   if (isMobile) {
     return (
       <Sheet open={isAuthOpen} onOpenChange={toggleAuth}>
-        <SheetContent side="bottom" className="h-[90vh] p-0 bg-comic-card border-none text-white">
+        <SheetContent
+          side="bottom"
+          className="h-[90vh] p-0 bg-comic-card border-none text-white"
+          aria-labelledby="auth-title-mobile"
+          aria-describedby="auth-desc-mobile"
+        >
           <AuthForm />
         </SheetContent>
       </Sheet>
@@ -178,8 +187,8 @@ export function AuthDialog() {
     <Dialog open={isAuthOpen} onOpenChange={toggleAuth}>
       <DialogContent
         className="sm:max-w-md bg-comic-card border-white/10 p-0"
-        aria-labelledby="auth-title"
-        aria-describedby="auth-desc"
+        aria-labelledby="auth-title-desktop"
+        aria-describedby="auth-desc-desktop"
       >
         <AuthForm />
       </DialogContent>

@@ -33,8 +33,11 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const navigate = useNavigate();
   const { data: comicsData, isLoading: comicsLoading } = useComics();
   const { data: authors, isLoading: authorsLoading } = useAuthors();
-  const { reading, completed, wishlist } = useLibraryShelves();
-  const { notifications, unreadCount } = useNotifications();
+  const reading = useLibraryShelves(state => state.reading);
+  const completed = useLibraryShelves(state => state.completed);
+  const wishlist = useLibraryShelves(state => state.wishlist);
+  const notifications = useNotifications(state => state.notifications);
+  const unreadCount = useNotifications(state => state.unreadCount);
   const { data: notificationsData } = useUserNotifications();
   const setNotifications = useAppStore(s => s.setNotifications);
   const toggleCart = useAppStore(s => s.toggleCart);
@@ -83,8 +86,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   ];
   const content = (
     <>
-      <DialogTitle id="cmd-title" className="sr-only">Command Palette</DialogTitle>
-      <DialogDescription id="cmd-desc" className="sr-only">Search for comics, authors, or jump to different pages and actions.</DialogDescription>
       <Command
         className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
         shouldFilter={false} // We handle filtering manually
@@ -93,7 +94,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <motion.div variants={containerVariants} initial="hidden" animate="visible">
-            <CommandGroup heading="Search Comics">
+            <CommandGroup heading={<span className="group-heading-neon">Search Comics</span>}>
               {comicsLoading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full my-1" />) :
                 (Array.isArray(comicsData) ? comicsData : []).slice(0, 5).map(comic => (
                   <motion.div key={comic.id} variants={itemVariants}>
@@ -104,7 +105,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                   </motion.div>
                 ))}
             </CommandGroup>
-            <CommandGroup heading="Search Authors">
+            <CommandGroup heading={<span className="group-heading-neon">Search Authors</span>}>
               {authorsLoading ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full my-1" />) :
                 (Array.isArray(authors) ? authors : []).slice(0, 3).map(author => (
                   <motion.div key={author.id} variants={itemVariants}>
@@ -115,7 +116,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                   </motion.div>
                 ))}
             </CommandGroup>
-            <CommandGroup heading="Jump To">
+            <CommandGroup heading={<span className="group-heading-neon">Jump To</span>}>
               {pageLinks.map(link => (
                 <motion.div key={link.path} variants={itemVariants}>
                   <CommandItem onSelect={() => runCommand(() => navigate(link.path))} className="cursor-pointer hover:!bg-red-500/10 hover:!text-red-400">
@@ -125,7 +126,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 </motion.div>
               ))}
             </CommandGroup>
-            <CommandGroup heading="Recent">
+            <CommandGroup heading={<span className="group-heading-neon">Recent</span>}>
               {recentItems.map(item => (
                 <motion.div key={item.id} variants={itemVariants}>
                   <CommandItem onSelect={() => runCommand(() => navigate(`/comic/${item.id}`))} className="cursor-pointer hover:!bg-red-500/10 hover:!text-red-400">
@@ -135,7 +136,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 </motion.div>
               ))}
             </CommandGroup>
-            <CommandGroup heading="Notifications">
+            <CommandGroup heading={<span className="group-heading-neon">Notifications</span>}>
               {notifications.slice(0, 2).map(notif => (
                 <motion.div key={notif.id} variants={itemVariants}>
                   <CommandItem onSelect={() => runCommand(() => {})} className="cursor-pointer hover:!bg-red-500/10 hover:!text-red-400">
@@ -146,7 +147,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 </motion.div>
               ))}
             </CommandGroup>
-            <CommandGroup heading="Actions">
+            <CommandGroup heading={<span className="group-heading-neon">Actions</span>}>
               {actions.map(action => (
                 <motion.div key={action.name} variants={itemVariants}>
                   <CommandItem onSelect={() => runCommand(action.action)} className="cursor-pointer hover:!bg-red-500/10 hover:!text-red-400">
@@ -182,6 +183,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         aria-labelledby="cmd-title"
         aria-describedby="cmd-desc"
       >
+        <DialogTitle id="cmd-title" className="sr-only">Command Palette</DialogTitle>
+        <DialogDescription id="cmd-desc" className="sr-only">Search for comics, authors, or jump to different pages and actions.</DialogDescription>
         {content}
       </Content>
     </Wrapper>
