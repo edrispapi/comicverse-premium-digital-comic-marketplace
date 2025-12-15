@@ -23,6 +23,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import useEmblaCarousel from 'embla-carousel-react';
 import { RecommendedCarousel } from '@/components/recommendations/RecommendedCarousel';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -45,6 +46,7 @@ function HeroSlider() {
   const isHovering = useRef(false);
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 0.8], [0, 30]);
+  const toggleTour = useAppStore(s => s.toggleTour);
   const featuredComics = useMemo(() => {
     if (!allComicsData) return [];
     return [...allComicsData]
@@ -101,10 +103,13 @@ function HeroSlider() {
   }
   return (
     <div
-      className="relative w-full h-[60vh] md:h-[80vh] group"
+      className="relative w-full h-[60vh] md:h-[80vh] group hero-blobs"
       onMouseEnter={() => isHovering.current = true}
       onMouseLeave={() => isHovering.current = false}
     >
+      <div className="hero-blob"></div>
+      <div className="hero-blob hero-blob-2"></div>
+      <div className="hero-blob hero-blob-3"></div>
       <Carousel setApi={setApi} opts={{ loop: true }} className="w-full h-full">
         <CarouselContent>
           {featuredComics.map((comic) => {
@@ -138,12 +143,8 @@ function HeroSlider() {
                     {comic.description}
                   </p>
                   <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <Button asChild size="lg" className="btn-accent rounded-full px-6 py-2 text-sm font-semibold w-full sm:w-auto">
-                      <Link to={`/comic/${comic.id}`}>
-                        <span className="flex items-center justify-center">
-                          Read Now <ArrowRight className="ml-2 h-4 w-4" />
-                        </span>
-                      </Link>
+                    <Button size="lg" className="btn-accent rounded-full px-6 py-2 text-sm font-semibold w-full sm:w-auto" onClick={() => toggleTour(true)}>
+                      Get Started
                     </Button>
                     <Button asChild size="lg" variant="outline" className="rounded-full px-6 py-2 text-sm font-semibold border-2 border-white/50 hover:bg-white/10 hover:text-white w-full sm:w-auto">
                       <Link to="/catalog">
@@ -345,6 +346,7 @@ export function HomePage() {
         </section>
       </main>
       <Footer />
+      <OnboardingTour />
     </div>
   );
 }

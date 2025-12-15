@@ -106,3 +106,54 @@
     @apply bg-black/30 backdrop-blur-lg border border-white/10;
   }
 }
+@layer utilities {
+  @keyframes hero-blob-float-1 {
+    0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    33% { transform: translate(20px, -10px) scale(1.05) rotate(120deg); }
+    66% { transform: translate(-10px, 20px) scale(0.95) rotate(240deg); }
+  }
+  @keyframes hero-blob-float-2 {
+    0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    33% { transform: translate(-15px, 15px) scale(1.1) rotate(-120deg); }
+    66% { transform: translate(10px, -20px) scale(0.9) rotate(-240deg); }
+  }
+  @keyframes pulse-red-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.6); }
+  }
+  .hero-blobs {
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-blob {
+    position: absolute;
+    border-radius: 9999px;
+    opacity: 0.3;
+    filter: blur(40px);
+  }
+  .hero-blob:nth-child(1) {
+    top: 10%;
+    left: 10%;
+    width: 30%;
+    height: 30%;
+    background: radial-gradient(circle at 30% 30%, hsl(var(--primary)/0.4), transparent 70%);
+    animation: hero-blob-float-1 20s infinite ease-in-out, pulse-red-glow 3s infinite;
+  }
+  .hero-blob:nth-child(2) {
+    top: 60%;
+    right: 10%;
+    width: 40%;
+    height: 40%;
+    background: radial-gradient(circle at 70% 70%, hsl(var(--primary)/0.3), transparent 70%);
+    animation: hero-blob-float-2 25s infinite ease-in-out reverse;
+  }
+  .hero-blob:nth-child(3) {
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 25%;
+    height: 25%;
+    background: radial-gradient(circle at 50% 50%, hsl(var(--primary)/0.5), transparent 70%);
+    animation: hero-blob-float-1 18s infinite ease-in-out 2s;
+  }
+}

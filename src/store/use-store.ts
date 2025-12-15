@@ -26,10 +26,13 @@ interface AppState {
   isCartOpen: boolean;
   isWishlistOpen: boolean;
   isAuthOpen: boolean;
+  isTourOpen: boolean;
   searchTerm: string;
   toggleCart: () => void;
   toggleWishlistSheet: () => void;
   toggleAuth: (isOpen?: boolean) => void;
+  toggleTour: (isOpen?: boolean) => void;
+  completeTour: () => void;
   setSearchTerm: (term: string) => void;
   // Cart & Wishlist
   cart: CartItem[];
@@ -90,10 +93,16 @@ export const useAppStore = create<AppState>()(
       isCartOpen: false,
       isWishlistOpen: false,
       isAuthOpen: false,
+      isTourOpen: false,
       searchTerm: '',
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
       toggleWishlistSheet: () => set((state) => ({ isWishlistOpen: !state.isWishlistOpen })),
       toggleAuth: (isOpen) => set((state) => ({ isAuthOpen: isOpen !== undefined ? isOpen : !state.isAuthOpen })),
+      toggleTour: (isOpen) => set((state) => ({ isTourOpen: isOpen !== undefined ? isOpen : !state.isTourOpen })),
+      completeTour: () => {
+        localStorage.setItem('tour-complete', 'true');
+        set({ isTourOpen: false });
+      },
       setSearchTerm: (term) => set({ searchTerm: term }),
       // Cart & Wishlist
       cart: [],
@@ -274,3 +283,7 @@ export const useCartTotals = () => {
 };
 export const useLibraryUnlocked = () => useAppStore(useShallow(state => state.libraryUnlocked));
 export const useToggleLibraryUnlock = () => useAppStore(state => state.toggleLibraryUnlock);
+// Onboarding Tour Selectors
+export const useTourOpen = () => useAppStore(useShallow(state => state.isTourOpen));
+export const useToggleTour = () => useAppStore(state => state.toggleTour);
+export const useCompleteTour = () => useAppStore(state => state.completeTour);
