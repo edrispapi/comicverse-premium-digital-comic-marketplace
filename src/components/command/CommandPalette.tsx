@@ -293,14 +293,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           isMobile ? 'h-[80vh] border-none' : 'sm:max-w-2xl'
         )}
       >
-        <DialogHeader className='px-6 py-4 border-b border-white/10 p-0 md:p-4'>
-          <DialogTitle className='text-xl md:text-2xl font-bold bg-gradient-to-r from-red-400 via-red-500/90 to-pink-5
-            Command Palette
-          </DialogTitle>
-          <DialogDescription className='text-xs md:text-sm text-muted-foreground mt-1 max-w-md'>
-            Search comics & authors, jump to recent reading, pages, notifications, or quick actions (↑↓ navigate, ↵ select, Esc close)
-          </DialogDescription>
-        </DialogHeader>
+        <DialogHeader className='px-6 py-4 border-b border-white/10'>
+  <DialogTitle className='text-xl font-bold text-red-400/95 shadow-[0_0_20px_rgba(239,68,68,0.5)]'>Command Palette</DialogTitle>
+  <DialogDescription className='text-sm text-muted-foreground mt-1'>Search comics, authors, recent items & actions</DialogDescription>
+</DialogHeader>
         {content}
       </Content>
     </Wrapper>
