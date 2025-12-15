@@ -21,10 +21,10 @@ import { PageWrapper } from '@/components/layout/PageWrapper';
 export function AuthorDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: author, isLoading: authorLoading, error: authorError } = useAuthor(id);
-  const { data: allComicsData = [], isLoading: comicsLoading } = useComics();
+  const { data: allComicsData, isLoading: comicsLoading } = useComics();
   const authorComics = React.useMemo(() => {
     if (!allComicsData || !id) return [];
-    return allComicsData.filter(comic => comic.authorIds.includes(id));
+    return (allComicsData ?? []).filter(comic => comic.authorIds.includes(id));
   }, [allComicsData, id]);
   if (authorLoading) {
     return (

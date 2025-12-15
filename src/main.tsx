@@ -29,7 +29,6 @@ const AudiobooksDetailPage = React.lazy(() => import('@/pages/AudiobooksDetailPa
 const DashboardPage = React.lazy(() => import('@/pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const SearchPage = React.lazy(() => import('@/pages/SearchPage').then(module => ({ default: module.SearchPage })));
 const LibraryPage = React.lazy(() => import('@/pages/LibraryPage').then(module => ({ default: module.LibraryPage })));
-const CardsPage = React.lazy(() => import('@/pages/CardsPage').then(module => ({ default: module.CardsPage })));
 const PlansPage = React.lazy(() => import('@/pages/PlansPage').then(module => ({ default: module.PlansPage })));
 const queryClient = new QueryClient();
 const rootLoader = async () => {
@@ -82,11 +81,6 @@ const router = createBrowserRouter([
   {
     path: "/audiobooks/:id",
     element: <AudiobooksDetailPage />,
-    errorElement: <RouteErrorBoundary />,
-  },
-  {
-    path: "/cards",
-    element: <CardsPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {

@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { api } from "@/lib/api-client";
 import { Comic, Author, User, Genre, AuthResponse, UserStats, Notification, Comment, Post, PaginatedResponse } from '@shared/types';
-// Fetch all comics (paginated)
+// Fetch all comics (flattened array)
 export const useComics = () => {
-  return useQuery<PaginatedResponse<Comic>>({
+  return useQuery<Comic[]>({
     queryKey: ['comics'],
-    queryFn: () => api<PaginatedResponse<Comic>>('/api/comics?limit=500'),
+    queryFn: async () => {
+      const data = await api<PaginatedResponse<Comic>>('/api/comics?limit=500');
+      return data.items ?? [];
+    },
   });
 };
 // Infinite scroll for comics
@@ -18,6 +21,10 @@ export const useInfiniteComics = (filters: object) => {
         params.set('cursor', pageParam as string);
       }
       params.set('limit', '8');
+      // This part is a placeholder for actual filter implementation on the backend
+      // For now, it just paginates through all comics.
+      // In a real app, you'd pass filter values here:
+      // Object.entries(filters).forEach(([key, value]) => params.set(key, String(value)));
       return api<PaginatedResponse<Comic>>(`/api/comics?${params.toString()}`);
     },
     initialPageParam: null,
@@ -49,11 +56,14 @@ export const useComic = (id: string | undefined) => {
     enabled: !!id, // Only run the query if the id is not undefined
   });
 };
-// Fetch all audiobooks
+// Fetch all audiobooks (flattened array)
 export const useAudiobooks = () => {
   return useQuery<Comic[]>({
     queryKey: ['audiobooks'],
-    queryFn: () => api<Comic[]>('/api/audiobooks'),
+    queryFn: async () => {
+        const data = await api<Comic[]>('/api/audiobooks');
+        return data ?? [];
+    }
   });
 };
 // Fetch a single audiobook by ID
@@ -71,11 +81,14 @@ export const useNewAudiobooks = () => {
     queryFn: () => api<Comic[]>('/api/audiobooks/new'),
   });
 };
-// Fetch all authors
+// Fetch all authors (flattened array)
 export const useAuthors = () => {
   return useQuery<Author[]>({
     queryKey: ['authors'],
-    queryFn: () => api<Author[]>('/api/authors'),
+    queryFn: async () => {
+        const data = await api<Author[]>('/api/authors');
+        return data ?? [];
+    }
   });
 };
 // Fetch a single author by ID
@@ -86,10 +99,14 @@ export const useAuthor = (id: string | undefined) => {
     enabled: !!id,
   });
 };
+// Fetch all genres (flattened array)
 export const useGenres = () => {
   return useQuery<Genre[]>({
     queryKey: ['genres'],
-    queryFn: () => api<Genre[]>('/api/genres'),
+    queryFn: async () => {
+        const data = await api<Genre[]>('/api/genres');
+        return data ?? [];
+    }
   });
 };
 // Comic Comments & Ratings

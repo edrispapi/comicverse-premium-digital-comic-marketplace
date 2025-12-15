@@ -9,7 +9,7 @@ import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Breadcrumb,
@@ -37,7 +37,7 @@ const statusOptions: { id: StatusFilter; label: string }[] = [
 ];
 export function CatalogPage() {
   const [filters, setFilters] = useState<FiltersState>({ genres: [], authors: [], status: [], sort: 'newest' });
-  const { data, error, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isLoading } = useInfiniteComics(filters);
+  const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteComics(filters);
   const { data: authorsData = [] } = useAuthors();
   const { data: genresData = [] } = useGenres();
   const [isSheetOpen, setSheetOpen] = useState(false);
@@ -55,17 +55,18 @@ export function CatalogPage() {
       },
       { threshold: 1.0 }
     );
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
+    const currentRef = observerRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
     return () => {
-      if (observerRef.current) {
-        observer.unobserve(observerRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-  const authorOptions: MultiSelectOption[] = useMemo(() => authorsData.map(a => ({ value: a.id, label: a.name })), [authorsData]);
-  const genreOptions: MultiSelectOption[] = useMemo(() => genresData.map(g => ({ value: g.id, label: g.name })), [genresData]);
+  const authorOptions: MultiSelectOption[] = useMemo(() => (authorsData ?? []).map(a => ({ value: a.id, label: a.name })), [authorsData]);
+  const genreOptions: MultiSelectOption[] = useMemo(() => (genresData ?? []).map(g => ({ value: g.id, label: g.name })), [genresData]);
   const flatComics = useMemo(() => data?.pages.flatMap(page => page.items) ?? [], [data]);
   const activeFilterCount = filters.genres.length + filters.authors.length + filters.status.length;
   const handleSaveFilters = () => {
@@ -165,11 +166,11 @@ export function CatalogPage() {
           </Sheet>
           <div className="flex-1 flex items-center gap-2 overflow-x-auto pb-2 -mb-2">
             {filters.genres.map(id => {
-              const genre = genresData.find(g => g.id === id);
+              const genre = (genresData ?? []).find(g => g.id === id);
               return genre && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30 flex-shrink-0">{genre.name} <button onClick={() => removeFilter('genre', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
             })}
             {filters.authors.map(id => {
-              const author = authorsData.find(a => a.id === id);
+              const author = (authorsData ?? []).find(a => a.id === id);
               return author && <Badge key={id} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30 flex-shrink-0">{author.name} <button onClick={() => removeFilter('author', id)} className="ml-1"><X className="h-3 w-3"/></button></Badge>
             })}
             {filters.status.map(id => {
@@ -186,7 +187,7 @@ export function CatalogPage() {
           </Select>
         </div>
       </div>
-      {isLoading ? (
+      {isLoading && flatComics.length === 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
         </div>

@@ -50,10 +50,10 @@ function Shelf({ comics, emptyTitle, emptyMessage, isLoading }: { comics: any[],
 }
 export function LibraryPage() {
   const { reading, completed, wishlist, updateLibrary } = useLibraryShelves();
-  const { data: allComicsData = [], isLoading } = useComics();
+  const { data: allComicsData, isLoading } = useComics();
   useEffect(() => {
     if (allComicsData) {
-      updateLibrary(allComicsData);
+      updateLibrary(allComicsData ?? []);
     }
   }, [allComicsData, updateLibrary]);
   return (

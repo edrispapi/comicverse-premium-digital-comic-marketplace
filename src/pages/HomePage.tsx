@@ -260,8 +260,8 @@ export function HomePage() {
       comic.title.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [allComics, searchTerm]);
-  const trendingComics = useMemo(() => filteredComics.slice(0, 5), [filteredComics]);
-  const newReleases = useMemo(() => filteredComics.slice(5, 10), [filteredComics]);
+  const trendingComics = useMemo(() => (filteredComics ?? []).slice(0, 5), [filteredComics]);
+  const newReleases = useMemo(() => (filteredComics ?? []).slice(5, 10), [filteredComics]);
   return (
     <div className="bg-comic-black min-h-screen text-white">
       <Toaster theme="dark" />

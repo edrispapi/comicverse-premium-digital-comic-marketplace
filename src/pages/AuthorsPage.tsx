@@ -10,8 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 export function AuthorsPage() {
   const { data: authors, isLoading: authorsLoading } = useAuthors();
-  const { data: comicsData = [], isLoading: comicsLoading } = useComics();
-  const comicsItems = comicsData;
+  const { data: comicsData, isLoading: comicsLoading } = useComics();
+  const comicsItems = comicsData ?? [];
   return (
     <PageWrapper navbar={<Navbar />} footer={<Footer />}>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">

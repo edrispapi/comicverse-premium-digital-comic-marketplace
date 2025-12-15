@@ -161,7 +161,7 @@ export function Navbar() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-            {comicsData?.slice(0, 3).map(comic => (
+            {(comicsData ?? []).slice(0, 3).map(comic => (
               <CommandItem key={comic.id} onSelect={() => runCommand(() => navigate(`/comic/${comic.id}`))}>
                 <img src={comic.coverUrl} alt={comic.title} className="w-8 h-12 object-cover mr-4 rounded" />
                 {comic.title}

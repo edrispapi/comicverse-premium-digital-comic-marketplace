@@ -43,8 +43,8 @@ const handleExport = () => {
 };
 export function DashboardPage() {
   const { data: stats, isLoading: statsLoading } = useUserStats();
-  const { data: comicsData = [] } = useComics();
-  const comicsItems = comicsData;
+  const { data: comicsData } = useComics();
+  const comicsItems = useMemo(() => comicsData ?? [], [comicsData]);
   const { data: genres } = useGenres();
   const { data: authors } = useAuthors();
   const genreData = useMemo(() => {
@@ -65,7 +65,7 @@ export function DashboardPage() {
     const authorRatings = comicsItems.reduce((acc, comic) => {
       comic.authorIds.forEach(aid => {
         if (!acc[aid]) acc[aid] = { total: 0, count: 0 };
-        acc[aid].total += comic.rating;
+        acc[aid].total += (comic.ratings?.avg ?? comic.rating);
         acc[aid].count += 1;
       });
       return acc;

@@ -8,8 +8,8 @@ import { useComics, useGenres } from '@/lib/queries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageWrapper } from '@/components/layout/PageWrapper';
 export function GenresPage() {
-  const { data: comicsData = [], isLoading: comicsLoading } = useComics();
-  const comicsItems = comicsData;
+  const { data: comicsData, isLoading: comicsLoading } = useComics();
+  const comicsItems = comicsData ?? [];
   const { data: genresData, isLoading: genresLoading } = useGenres();
   return (
     <PageWrapper navbar={<Navbar />} footer={<Footer />}>

@@ -37,6 +37,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Comic } from '@shared/types';
 import { BookCommunityChannel } from '@/components/community/BookCommunityChannel';
+import { PageWrapper } from '@/components/layout/PageWrapper';
 const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const itemVariants = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } };
 function StarRating({ comicId, initialRating, votes }: { comicId: string, initialRating: number, votes: number }) {
@@ -67,7 +68,7 @@ export function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const isMobile = useIsMobile();
   const { data: comic, isLoading, error } = useComic(id);
-  const { data: allComicsData = [], isLoading: comicsLoading } = useComics();
+  const { data: allComicsData, isLoading: comicsLoading } = useComics();
   const { data: allAuthors } = useAuthors();
   const { data: allGenres = [] } = useGenres();
   const addToCart = useAppStore(s => s.addToCart);
@@ -100,14 +101,14 @@ export function ProductPage() {
   if (error || !comic) return <div className="bg-comic-black min-h-screen text-white flex flex-col"><Navbar /><div className="flex-1 flex items-center justify-center text-center"><div><h1 className="text-4xl font-bold">Comic Not Found</h1><p className="mt-4 text-neutral-400">We couldn't find the comic you're looking for.</p><Button asChild className="mt-8 btn-accent"><Link to="/catalog">Back to Catalog</Link></Button></div></div><Footer /></div>;
   const comicAuthors = comic.authorIds.map(authorId => allAuthors?.find(a => a.id === authorId)).filter(Boolean);
   const comicGenres = comic.genreIds.map(genreId => allGenres?.find(g => g.id === genreId)).filter(Boolean);
-  const relatedComics = allComicsData.filter(c => c.genreIds?.some(g => comic.genreIds?.includes(g)) && c.id !== comic.id).slice(0, 4);
+  const relatedComics = (allComicsData ?? []).filter(c => c.genreIds?.some(g => comic.genreIds?.includes(g)) && c.id !== comic.id).slice(0, 4);
   const awards = getAwards(comic);
   const safeRatings = comic.ratings ?? { avg: 0, votes: 0, up: 0, down: 0 };
   return (
     <div className="bg-comic-black min-h-screen text-white relative overflow-hidden">
       <Navbar />
       <main className="relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        <PageWrapper navbar={<></>} footer={<></>}>
           <Breadcrumb className="mb-8">
             <BreadcrumbList>
               <BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem>
@@ -143,7 +144,7 @@ export function ProductPage() {
                 ) : <div className="h-[80vh]"><Card className="bg-comic-card border-white/10 h-full"><BookCommunityChannel comic={comic} /></Card></div>}
             </motion.div>
           </motion.div>
-        </div>
+        </PageWrapper>
       </main>
       <section className="py-16 md:py-24 bg-comic-card relative z-10"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><h2 className="text-3xl font-bold tracking-tight mb-8">You Might Also Like</h2>{comicsLoading ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}</div> : relatedComics.length > 0 ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{relatedComics.map(relatedComic => (<ComicCard key={relatedComic.id} comic={relatedComic} />))}</div> : null}</div></section>
       <Footer />
