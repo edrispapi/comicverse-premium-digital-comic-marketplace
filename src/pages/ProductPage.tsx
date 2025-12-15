@@ -130,7 +130,11 @@ export function ProductPage() {
                   <Button size="lg" className={cn("flex-1", comic.audioUrl ? "bg-white text-black hover:bg-neutral-200" : "btn-accent")} onClick={() => addToCart(comic)}><ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart</Button>
                   <Button size="lg" variant="outline" className="border-2" onClick={() => toggleWishlist(comic)}><Heart className={cn("mr-2 h-5 w-5", isInWishlist && "fill-red-500 text-red-500")} /> Wishlist</Button>
                 </motion.div>
-                <motion.div variants={itemVariants} className="flex items-center flex-wrap gap-4"><Dialog><DialogTrigger asChild><Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Look Inside ({comic.previewImageUrls?.length ?? 0})</Button></DialogTrigger><DialogContent className="max-w-4xl bg-comic-card border-white/10 text-white"><DialogHeader><DialogTitle>Preview: {comic.title}</DialogTitle><DialogDescription className='text-muted-foreground'>Swipe or use arrows to navigate pages.</DialogDescription></DialogHeader><Carousel className="w-full"><CarouselContent>{comic.previewImageUrls?.map((url, index) => (<CarouselItem key={index}><img src={url} alt={`Preview page ${index + 1}`} className="w-full h-auto object-contain rounded-md aspect-video" loading="lazy" /></CarouselItem>))}</CarouselContent><CarouselPrevious /><CarouselNext /></Carousel></DialogContent></Dialog></motion.div>
+                <motion.div variants={itemVariants} className="flex items-center flex-wrap gap-4"><Dialog><DialogTrigger asChild><Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Look Inside ({comic.previewImageUrls?.length ?? 0})</Button></DialogTrigger><DialogContent
+  className="max-w-4xl bg-comic-card border-white/10 text-white"
+  aria-labelledby="preview-title"
+  aria-describedby="preview-desc"
+><DialogHeader><DialogTitle id="preview-title">Preview: {comic.title}</DialogTitle><DialogDescription id="preview-desc" className='text-muted-foreground'>Swipe or use arrows to navigate pages.</DialogDescription></DialogHeader><Carousel className="w-full"><CarouselContent>{comic.previewImageUrls?.map((url, index) => (<CarouselItem key={index}><img src={url} alt={`Preview page ${index + 1}`} className="w-full h-auto object-contain rounded-md aspect-video" loading="lazy" /></CarouselItem>))}</CarouselContent><CarouselPrevious /><CarouselNext /></Carousel></DialogContent></Dialog></motion.div>
               </motion.div>
             </div>
             <motion.div variants={itemVariants} className="mt-16" id="community">
