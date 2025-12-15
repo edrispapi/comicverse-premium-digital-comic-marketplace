@@ -94,9 +94,13 @@ const ReplyModal = ({ post, comicId }: { post: Post; comicId: string }) => {
     });
   };
   return (
-    <DialogContent className="bg-comic-card border-white/10 text-white sm:max-w-[525px]">
+    <DialogContent
+  className="bg-comic-card border-white/10 text-white sm:max-w-[525px]"
+  aria-labelledby={`reply-title-${post.id}`}
+  aria-describedby={`reply-desc-${post.id}`}
+>
       <DialogHeader>
-        <DialogTitle>Replies to {post.user.name}</DialogTitle>
+        <DialogTitle id={`reply-title-${post.id}`}>Replies to {post.user.name}</DialogTitle>
         <DialogDescription id={`reply-desc-${post.id}`}>View and post replies for this message.</DialogDescription>
       </DialogHeader>
       <div className="flex flex-col h-[60vh]">

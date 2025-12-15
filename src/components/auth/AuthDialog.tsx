@@ -95,8 +95,8 @@ function AuthForm() {
     <div className="relative p-6 sm:p-8 text-white">
       <AnimatePresence>{showConfetti && <Confetti />}</AnimatePresence>
       <DialogHeader className="text-center mb-8">
-        <DialogTitle className="text-3xl font-bold text-glow">Join the Adventure</DialogTitle>
-        <DialogDescription className="text-neutral-400 mt-2">Unlock a universe of comics.</DialogDescription>
+        <DialogTitle id="auth-title" className="text-3xl font-bold text-glow">Join the Adventure</DialogTitle>
+        <DialogDescription id="auth-desc" className="text-neutral-400 mt-2">Unlock a universe of comics.</DialogDescription>
       </DialogHeader>
       <Tabs defaultValue="login" className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-red-500/20">
@@ -176,7 +176,11 @@ export function AuthDialog() {
   }
   return (
     <Dialog open={isAuthOpen} onOpenChange={toggleAuth}>
-      <DialogContent className="sm:max-w-md bg-comic-card border-white/10 p-0">
+      <DialogContent
+  className="sm:max-w-md bg-comic-card border-white/10 p-0"
+  aria-labelledby="auth-title"
+  aria-describedby="auth-desc"
+>
         <AuthForm />
       </DialogContent>
     </Dialog>
