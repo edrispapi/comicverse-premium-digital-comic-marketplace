@@ -7,7 +7,7 @@ export const useComics = () => {
     queryKey: ['comics'],
     queryFn: async () => {
       const data = await api<PaginatedResponse<Comic>>('/api/comics?limit=500');
-      return data.items ?? [];
+      return Array.isArray(data?.items) ? data.items : [];
     },
   });
 };
@@ -61,8 +61,8 @@ export const useAudiobooks = () => {
   return useQuery<Comic[]>({
     queryKey: ['audiobooks'],
     queryFn: async () => {
-        const data = await api<Comic[]>('/api/audiobooks');
-        return data ?? [];
+        const data = await api<PaginatedResponse<Comic>>('/api/audiobooks?limit=500');
+        return Array.isArray(data?.items) ? data.items : [];
     }
   });
 };
@@ -86,8 +86,8 @@ export const useAuthors = () => {
   return useQuery<Author[]>({
     queryKey: ['authors'],
     queryFn: async () => {
-        const data = await api<Author[]>('/api/authors');
-        return data ?? [];
+        const data = await api<PaginatedResponse<Author>>('/api/authors?limit=500');
+        return Array.isArray(data?.items) ? data.items : [];
     }
   });
 };
@@ -104,8 +104,8 @@ export const useGenres = () => {
   return useQuery<Genre[]>({
     queryKey: ['genres'],
     queryFn: async () => {
-        const data = await api<Genre[]>('/api/genres');
-        return data ?? [];
+        const data = await api<PaginatedResponse<Genre>>('/api/genres?limit=500');
+        return Array.isArray(data?.items) ? data.items : [];
     }
   });
 };
