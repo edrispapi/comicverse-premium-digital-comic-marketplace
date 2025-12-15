@@ -35,10 +35,20 @@ export function AudiobookCard({ comic, authorName }: AudiobookCardProps) {
             className="w-full h-full object-cover transition-transform duration-300 group-hover/cover:scale-105"
           />
         </Link>
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/cover:opacity-100 transition-opacity duration-300" />
+        {comic.bannerText && (
+          <motion.div
+            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2 text-white text-xs font-bold animate-text-glow-pulse z-10"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+          >
+            <p className="line-clamp-2">{comic.bannerText}</p>
+          </motion.div>
+        )}
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/cover:opacity-100 transition-opacity duration-300 z-10" />
         <Button
           size="icon"
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-16 text-white bg-red-500/80 hover:bg-red-600 rounded-full backdrop-blur-sm shadow-red-glow animate-pulse-glow opacity-0 group-hover/cover:opacity-100 transition-opacity"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-16 text-white bg-red-500/80 hover:bg-red-600 rounded-full backdrop-blur-sm shadow-red-glow animate-pulse-glow opacity-0 group-hover/cover:opacity-100 transition-opacity z-20"
           onClick={(e) => handleInteraction(e, () => playAudio(comic, true))}
         >
           <Play className="w-8 h-8" />

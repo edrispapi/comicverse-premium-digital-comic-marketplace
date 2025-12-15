@@ -38,6 +38,7 @@ export class ComicEntity extends IndexedEntity<Comic> {
     awards: [],
     audioUrl: '',
     duration: '',
+    bannerText: '',
   };
   static seedData = COMICS;
 }

@@ -91,6 +91,7 @@ export interface Comic {
   awards: string[];
   audioUrl?: string;
   duration?: string; // e.g., '2h 15m'
+  bannerText?: string;
 }
 export interface Notification {
     id: string;

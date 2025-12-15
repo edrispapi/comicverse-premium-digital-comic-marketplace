@@ -80,7 +80,7 @@ export const ComicCard = memo(function ComicCard({ comic }: ComicCardProps) {
             style={{ perspective: "1000px" }}
           >
             {/* Wishlist button – top‑right */}
-            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <Button
                 size="icon"
                 variant="ghost"
@@ -98,7 +98,7 @@ export const ComicCard = memo(function ComicCard({ comic }: ComicCardProps) {
               </Button>
             </div>
             {/* Comic cover */}
-            <div className="aspect-[2/3] overflow-hidden">
+            <div className="aspect-[2/3] overflow-hidden relative">
               <motion.img
                 src={comic.coverUrl}
                 alt={comic.title}
@@ -106,6 +106,16 @@ export const ComicCard = memo(function ComicCard({ comic }: ComicCardProps) {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               />
+              {comic.bannerText && (
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-2 text-white text-xs font-bold animate-text-glow-pulse z-10"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.1, duration: 0.3 }}
+                >
+                  <p className="line-clamp-2">{comic.bannerText}</p>
+                </motion.div>
+              )}
             </div>
             {/* Info section */}
             <div className="p-3 md:p-4">
@@ -138,7 +148,7 @@ export const ComicCard = memo(function ComicCard({ comic }: ComicCardProps) {
               </div>
             </div>
             {/* Add‑to‑cart button – bottom‑right */}
-            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <Button
                 size="icon"
                 className="btn-accent rounded-full h-10 w-10"

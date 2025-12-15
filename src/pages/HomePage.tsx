@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Star } from 'lucide-react';
 import { ComicCard } from '@/components/ui/comic-card';
 import { AudiobookCard } from '@/components/ui/audiobook-card';
@@ -43,6 +43,8 @@ function HeroSlider() {
   const progressRef = useRef<number>(0);
   const startTimeRef = useRef<number>(Date.now());
   const isHovering = useRef(false);
+  const { scrollYProgress } = useScroll();
+  const y = useTransform(scrollYProgress, [0, 0.8], [0, 30]);
   const featuredComics = useMemo(() => {
     if (!allComicsData) return [];
     return [...allComicsData]
@@ -143,6 +145,17 @@ function HeroSlider() {
                   </motion.div>
                 </div>
               </div>
+              {comic.bannerText && (
+                <motion.div
+                  className="absolute bottom-8 left-4 right-4 md:left-12 md:right-auto bg-black/70 backdrop-blur-lg rounded-xl px-4 py-3 sm:px-6 sm:py-4 text-left text-sm sm:text-base font-bold animate-text-glow-pulse shadow-2xl shadow-red-glow/50 z-20 max-w-sm lg:max-w-md"
+                  style={{ y }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                  {comic.bannerText}
+                </motion.div>
+              )}
             </CarouselItem>
           ))}
         </CarouselContent>

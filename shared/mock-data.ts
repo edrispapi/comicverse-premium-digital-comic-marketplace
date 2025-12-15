@@ -160,7 +160,7 @@ const generatePosts = (prefix: string, authorIds: string[]): Post[] => {
         up,
         down: votes - up,
         stars: parseFloat((3 + (i % 2) * 0.5).toFixed(1)), // 3.0 or 3.5
-        emojis: { '👍': i * 2, '❤️': i, '🔥': i % 3 },
+        emojis: { '��': i * 2, '❤️': i, '🔥': i % 3 },
         stickers: { '⭐': Math.floor(1 + Math.random() * 5), '😂': Math.floor(Math.random() * 4), '💯': Math.floor(Math.random() * 3), '🙌': Math.floor(Math.random() * 2), '🚀': 1 },
         heart: 10 + i * 3,
       },
@@ -206,6 +206,7 @@ export const COMICS: Comic[] = [
     awards: ['top-fan'],
     audioUrl: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3',
     duration: '3h 45m',
+    bannerText: 'Amazing Spider-Man #36 | 256 pages | $19.99',
   },
   {
     id: 'comic-2',
@@ -231,6 +232,7 @@ export const COMICS: Comic[] = [
     awards: ['super-reader'],
     audioUrl: 'https://www.soundjay.com/misc/sounds/dream-harp-01.mp3',
     duration: '5h 12m',
+    bannerText: 'The Watchmen | 416 pages | $24.99',
   },
   {
     id: 'comic-3',
@@ -254,6 +256,7 @@ export const COMICS: Comic[] = [
     comments: generateComments('comic-3'),
     posts: generatePosts('comic-3', ['author-5']),
     awards: [],
+    bannerText: 'Attack on Titan Vol. 1 | 192 pages | $12.99',
   },
   {
     id: 'comic-4',
@@ -279,6 +282,7 @@ export const COMICS: Comic[] = [
     awards: ['top-fan'],
     audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-1.mp3',
     duration: '2h 55m',
+    bannerText: 'The Dark Knight Returns | 224 pages | $21.50',
   },
   {
     id: 'comic-5',
@@ -304,6 +308,7 @@ export const COMICS: Comic[] = [
     awards: [],
     audioUrl: 'https://www.soundjay.com/misc/sounds/magic-chime-01.mp3',
     duration: '2h 10m',
+    bannerText: 'Saga #1 | 180 pages | $15.99',
   },
   {
     id: 'comic-6',
@@ -327,6 +332,7 @@ export const COMICS: Comic[] = [
     comments: generateComments('comic-6'),
     posts: generatePosts('comic-6', ['author-3', 'author-6']),
     awards: [],
+    bannerText: 'Monstress #1 | 350 pages | $29.99',
   },
   {
     id: 'comic-7',
@@ -352,6 +358,7 @@ export const COMICS: Comic[] = [
     awards: [],
     audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-2.mp3',
     duration: '1h 58m',
+    bannerText: 'Daredevil: Born Again | 210 pages | $18.00',
   },
   {
     id: 'comic-8',
@@ -375,6 +382,7 @@ export const COMICS: Comic[] = [
     comments: generateComments('comic-8'),
     posts: generatePosts('comic-8', ['author-5']),
     awards: [],
+    bannerText: 'Lone Wolf and Cub | 200 pages | $14.99',
   },
   {
     id: 'comic-9',
@@ -400,6 +408,7 @@ export const COMICS: Comic[] = [
     awards: [],
     audioUrl: 'https://www.soundjay.com/misc/sounds/wind-chime-3.mp3',
     duration: '4h 30m',
+    bannerText: 'The Sandman: Preludes | 240 pages | $22.99',
   },
   {
     id: 'comic-10',
@@ -425,6 +434,7 @@ export const COMICS: Comic[] = [
     awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-1.mp3',
     duration: '3h 15m',
+    bannerText: 'X-Men: God Loves, Man Kills | 220 pages | $17.99',
   },
   {
     id: 'comic-11',
@@ -450,6 +460,7 @@ export const COMICS: Comic[] = [
     awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-2.mp3',
     duration: '2h 40m',
+    bannerText: 'Sin City | 190 pages | $14.50',
   },
   {
     id: 'comic-12',
@@ -475,6 +486,7 @@ export const COMICS: Comic[] = [
     awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-3.mp3',
     duration: '4h 05m',
+    bannerText: 'Fables: Legends in Exile | 310 pages | $20.99',
   },
   {
     id: 'comic-13',
@@ -500,6 +512,7 @@ export const COMICS: Comic[] = [
     awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-4.mp3',
     duration: '2h 20m',
+    bannerText: 'Superman: Red Son | 200 pages | $16.99',
   },
   {
     id: 'comic-14',
@@ -525,6 +538,7 @@ export const COMICS: Comic[] = [
     awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-5.mp3',
     duration: '1h 55m',
+    bannerText: 'Hellboy: Seed of Destruction | 180 pages | $13.99',
   },
   {
     id: 'comic-15',
@@ -550,6 +564,7 @@ export const COMICS: Comic[] = [
     awards: [],
     audioUrl: 'https://www.soundjay.com/buttons/sounds/button-6.mp3',
     duration: '2h 00m',
+    bannerText: 'Akira Vol. 1 | 170 pages | $11.99',
   },
 ];
 /* -------------------------------------------------
