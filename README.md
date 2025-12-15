@@ -29,16 +29,7 @@ The application has undergone comprehensive validation and is ready for producti
 - **User Profile**: View recent orders (mocked) and manage wishlist.
 - **Personalized Recommendations**: "You Might Like" carousels based on user's reading history.
 - **Micro-Interactions**: Smooth animations powered by Framer Motion for a polished user experience.
-## Final Client Feedback Implementation
-All client feedback from prompt #1 has been fully implemented, including:
-- **Telegram-style community**: Features stickers, replies, awards, and advanced filtering.
-- **Advanced Search Wizard**: A multi-step guided search experience.
-- **AR Mockups**: The UI design incorporates elements ready for future AR integration.
-- **Personalized Carousels**: "You Might Like" sections are now data-driven.
-- **Full Checkout Flow**: A complete, multi-step checkout process is live.
-- **Global Audio Player**: A site-wide player for audiobooks is fully functional.
-- **Dashboard & Library**: User-specific pages for stats and collections are implemented.
-- **PWA/SEO**: The application is optimized for performance and discoverability.
+- **Future-Ready UI**: Includes UI mockups and design considerations for future AR (Augmented Reality) and VUI (Voice User Interface) features.
 ## Tech Stack
 - **Frontend**: React 18, TypeScript, React Router, Tailwind CSS v3, Shadcn/UI, Framer Motion, Zustand, TanStack Query
 - **Backend**: Hono, Cloudflare Workers, Durable Objects (via custom entity library)
@@ -81,7 +72,7 @@ The backend is powered by a Hono server running on Cloudflare Workers.
    bun run dev
    ```
    Open [http://localhost:3000](http://localhost:3000)
-## Deployment
+## Deployment & CI/CD
 Deploy to Cloudflare Workers with edge caching & Durable Objects:
 1. **Build the app**:
    ```bash
@@ -92,6 +83,25 @@ Deploy to Cloudflare Workers with edge caching & Durable Objects:
    bun run deploy
    ```
 Wrangler handles assets SPA-routing (`assets.not_found_handling: "single-page-application"`).
+For CI/CD, you can use GitHub Actions with a workflow like this:
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to Cloudflare Workers
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install
+      - run: bun run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+```
 ## Contributing
 1. Fork & clone.
 2. Install with Bun.

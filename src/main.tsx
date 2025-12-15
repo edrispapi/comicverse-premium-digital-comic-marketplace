@@ -29,10 +29,12 @@ const AudiobooksDetailPage = React.lazy(() => import('@/pages/AudiobooksDetailPa
 const DashboardPage = React.lazy(() => import('@/pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
 const SearchPage = React.lazy(() => import('@/pages/SearchPage').then(module => ({ default: module.SearchPage })));
 const LibraryPage = React.lazy(() => import('@/pages/LibraryPage').then(module => ({ default: module.LibraryPage })));
+const CardsPage = React.lazy(() => import('@/pages/CardsPage').then(module => ({ default: module.CardsPage })));
 const queryClient = new QueryClient();
 const rootLoader = async () => {
   await Promise.all([
     queryClient.prefetchQuery({ queryKey: ['comics'], queryFn: () => api('/api/comics') }),
+    queryClient.prefetchQuery({ queryKey: ['audiobooks'], queryFn: () => api('/api/audiobooks') }),
     queryClient.prefetchQuery({ queryKey: ['genres'], queryFn: () => api('/api/genres') }),
     queryClient.prefetchQuery({ queryKey: ['authors'], queryFn: () => api('/api/authors') }),
   ]);
@@ -79,6 +81,11 @@ const router = createBrowserRouter([
   {
     path: "/audiobooks/:id",
     element: <AudiobooksDetailPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/cards",
+    element: <CardsPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {

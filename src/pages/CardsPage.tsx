@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
+import { PageWrapper } from '@/components/layout/PageWrapper';
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
@@ -98,75 +99,71 @@ export function CardsPage() {
     return comics;
   }, [comicsData, searchTerm, filters]);
   return (
-    <div className="bg-comic-black min-h-screen text-white">
-      <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-glow">Card Gallery</h1>
-          <p className="mt-4 text-lg text-neutral-300 max-w-3xl mx-auto">An endless collection of comic book art and stories. Find your next adventure.</p>
-          <div className="mt-8 max-w-lg mx-auto relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-            <Input
-              placeholder="Search by title..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-6 text-lg glass-dark"
-            />
+    <PageWrapper navbar={<Navbar />} footer={<Footer />}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-12">
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-glow">Card Gallery</h1>
+        <p className="mt-4 text-lg text-neutral-300 max-w-3xl mx-auto">An endless collection of comic book art and stories. Find your next adventure.</p>
+        <div className="mt-8 max-w-lg mx-auto relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+          <Input
+            placeholder="Search by title..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-4 py-6 text-lg glass-dark"
+          />
+        </div>
+      </motion.div>
+      <div className="sticky top-16 z-40 bg-comic-black/80 backdrop-blur-lg py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline"><Filter className="mr-2 h-4 w-4" /> Filters</Button>
+              </SheetTrigger>
+              <SheetContent className="bg-comic-card border-l-white/10 text-white">
+                <SheetHeader><SheetTitle>Filter & Sort</SheetTitle></SheetHeader>
+                <Filters filters={filters} setFilters={setFilters} genres={genresData} authors={authorsData} />
+              </SheetContent>
+            </Sheet>
+            <div className="hidden sm:block">
+              <Select value={filters.sort} onValueChange={(value) => setFilters(prev => ({ ...prev, sort: value }))}>
+                <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sort by..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="popular">Most Popular</SelectItem>
+                  <SelectItem value="rating">Highest Rating</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </motion.div>
-        <div className="sticky top-16 z-40 bg-comic-black/80 backdrop-blur-lg py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mb-8">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline"><Filter className="mr-2 h-4 w-4" /> Filters</Button>
-                </SheetTrigger>
-                <SheetContent className="bg-comic-card border-l-white/10 text-white">
-                  <SheetHeader><SheetTitle>Filter & Sort</SheetTitle></SheetHeader>
-                  <Filters filters={filters} setFilters={setFilters} genres={genresData} authors={authorsData} />
-                </SheetContent>
-              </Sheet>
-              <div className="hidden sm:block">
-                <Select value={filters.sort} onValueChange={(value) => setFilters(prev => ({ ...prev, sort: value }))}>
-                  <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sort by..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest</SelectItem>
-                    <SelectItem value="popular">Most Popular</SelectItem>
-                    <SelectItem value="rating">Highest Rating</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 items-center">
-              {filters.genres.map(gid => {
-                const genre = genresData.find(g => g.id === gid);
-                return genre ? <Badge key={gid} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30">{genre.name} <Button variant="ghost" size="icon" className="h-4 w-4 ml-1" onClick={() => setFilters(prev => ({...prev, genres: prev.genres.filter(g => g !== gid)}))}><X className="h-3 w-3"/></Button></Badge> : null;
-              })}
-            </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            {filters.genres.map(gid => {
+              const genre = genresData.find(g => g.id === gid);
+              return genre ? <Badge key={gid} variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30">{genre.name} <Button variant="ghost" size="icon" className="h-4 w-4 ml-1" onClick={() => setFilters(prev => ({...prev, genres: prev.genres.filter(g => g !== gid)}))}><X className="h-3 w-3"/></Button></Badge> : null;
+            })}
           </div>
         </div>
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
-          </div>
-        ) : error ? (
-          <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load comics.</h2></div>
-        ) : filteredAndSortedComics.length > 0 ? (
-          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredAndSortedComics.map((comic) => (
-              <motion.div key={comic.id} variants={itemVariants}>
-                <ComicCard comic={comic} />
-              </motion.div>
-            ))}
-          </motion.div>
-        ) : (
-          <div className="text-center py-16">
-            <h2 className="text-2xl font-semibold">No Results Found</h2>
-            <p className="mt-2 text-neutral-400">Try adjusting your search or filters.</p>
-          </div>
-        )}
-      </main>
-      <Footer />
-    </div>
+      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
+        </div>
+      ) : error ? (
+        <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load comics.</h2></div>
+      ) : filteredAndSortedComics.length > 0 ? (
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredAndSortedComics.map((comic) => (
+            <motion.div key={comic.id} variants={itemVariants}>
+              <ComicCard comic={comic} />
+            </motion.div>
+          ))}
+        </motion.div>
+      ) : (
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-semibold">No Results Found</h2>
+          <p className="mt-2 text-neutral-400">Try adjusting your search or filters.</p>
+        </div>
+      )}
+    </PageWrapper>
   );
 }
