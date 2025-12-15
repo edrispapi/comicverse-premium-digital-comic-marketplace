@@ -49,8 +49,14 @@ function HeroSlider() {
       .sort((a, b) => (b.ratings?.avg || 0) - (a.ratings?.avg || 0))
       .slice(0, 5);
   }, [allComicsData]);
+  const stopAutoplay = useCallback(() => {
+    if (autoplayRef.current) {
+      clearInterval(autoplayRef.current);
+      autoplayRef.current = null;
+    }
+  }, []);
   const startAutoplay = useCallback(() => {
-    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    stopAutoplay(); // Clear any existing interval
     startTimeRef.current = Date.now();
     progressRef.current = 0;
     autoplayRef.current = setInterval(() => {
@@ -58,43 +64,36 @@ function HeroSlider() {
         api?.scrollNext();
       }
     }, 5000);
-  }, [api]);
-  const stopAutoplay = useCallback(() => {
-    if (autoplayRef.current) {
-      clearInterval(autoplayRef.current);
-      autoplayRef.current = null;
-    }
-  }, []);
+  }, [api, stopAutoplay]);
   useEffect(() => {
     if (!api) return;
-    startAutoplay();
     const onSelect = () => {
       setCurrent(api.selectedScrollSnap());
       startAutoplay();
     };
     api.on('select', onSelect);
     api.on('pointerDown', stopAutoplay);
-    const animationFrame = () => {
+    api.on('reInit', startAutoplay);
+    startAutoplay();
+    const animationFrameId = requestAnimationFrame(function animate() {
       if (autoplayRef.current && !isHovering.current) {
         const elapsedTime = Date.now() - startTimeRef.current;
         progressRef.current = (elapsedTime / 5000) * 100;
         setProgress(progressRef.current);
       }
-      requestAnimationFrame(animationFrame);
-    };
-    requestAnimationFrame(animationFrame);
+      requestAnimationFrame(animate);
+    });
     return () => {
       stopAutoplay();
       api.off('select', onSelect);
       api.off('pointerDown', stopAutoplay);
+      api.off('reInit', startAutoplay);
+      cancelAnimationFrame(animationFrameId);
     };
   }, [api, startAutoplay, stopAutoplay]);
   const onDotClick = useCallback((index: number) => {
-    stopAutoplay();
     api?.scrollTo(index);
-    setCurrent(index);
-    startAutoplay();
-  }, [api, startAutoplay, stopAutoplay]);
+  }, [api]);
   if (isLoading && featuredComics.length === 0) {
     return <Skeleton className="w-full h-[60vh] md:h-[80vh]" />;
   }
@@ -243,9 +242,8 @@ const testimonials = [
 export function HomePage() {
   const searchTerm = useAppStore((s) => s.searchTerm);
   const { data: allComicsData, isLoading } = useComics();
-  const allComics = useMemo(() => allComicsData || [], [allComicsData]);
+  const allComics = useMemo(() => allComicsData ?? [], [allComicsData]);
   const filteredComics = useMemo(() => {
-    if (!allComics) return [];
     if (!searchTerm) return allComics;
     return allComics.filter((comic) =>
       comic.title.toLowerCase().includes(searchTerm.toLowerCase()),

@@ -106,6 +106,7 @@ const router = createBrowserRouter([
     element: <LibraryPage />,
     errorElement: <RouteErrorBoundary />,
   },
+  // Redirects for footer/nav links
   {
     path: "/new-releases",
     element: <Navigate to="/catalog" replace />,
@@ -145,7 +146,6 @@ root.render(
     </QueryClientProvider>
   </StrictMode>,
 );
-
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     root?.unmount();
