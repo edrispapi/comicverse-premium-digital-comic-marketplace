@@ -231,4 +231,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // AUTH
   app.post('/api/auth/login', async (c) => { const { email, password } = (await c.req.json()) as { email?: string, password?: string }; if (!isStr(email) || !isStr(password)) return bad(c, 'Email and password required'); await UserEntity.ensureSeed(c.env); const { items: allUsers } = await UserEntity.list(c.env, null, 1000); const user = allUsers.find(u => u.email.toLowerCase() === email.toLowerCase()); if (!user || user.passwordHash !== mockHash(password)) { return c.json({ success: false, error: 'Invalid credentials' }, 401); } const token = mockGenerateToken(user); const { passwordHash, ...userResponse } = user; return ok(c, { user: userResponse, token }); });
   app.post('/api/auth/signup', async (c) => { const { name, email, password } = (await c.req.json()) as { name?: string, email?: string, password?: string }; if (!isStr(name) || !isStr(email) || !isStr(password)) return bad(c, 'Name, email, and password required'); await UserEntity.ensureSeed(c.env); const { items: allUsers } = await UserEntity.list(c.env, null, 1000); if (allUsers.find(u => u.email.toLowerCase() === email.toLowerCase())) { return c.json({ success: false, error: 'An account with this email already exists' }, 409); } const newUser: User = { id: crypto.randomUUID(), name: name.trim(), email: email.trim().toLowerCase(), passwordHash: mockHash(password), pts: 0, awards: [], libraryUnlocked: {} }; await UserEntity.create(c.env, newUser); const token = mockGenerateToken(newUser); const { passwordHash, ...userResponse } = newUser; return ok(c, { user: userResponse, token }); });
+  // ORDERS
+  app.post('/api/orders', async (c) => {
+    const { items, total } = (await c.req.json()) as { items: any[], total: number };
+    const orderId = crypto.randomUUID();
+    console.log(`[MOCK] Order received: ${orderId} for $${total.toFixed(2)} with ${items.length} items.`);
+    return ok(c, { id: orderId, total });
+  });
 }

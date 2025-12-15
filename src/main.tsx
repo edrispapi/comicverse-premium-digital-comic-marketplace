@@ -3,6 +3,7 @@ import { enableMapSet } from "immer";
 enableMapSet();
 import React, { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
+import type { Root } from 'react-dom/client'
 import {
   createBrowserRouter,
   RouterProvider,
@@ -37,6 +38,7 @@ const rootLoader = async () => {
   ]);
   return null;
 };
+let root: Root | null = null;
 const router = createBrowserRouter([
   {
     path: "/",
@@ -130,7 +132,9 @@ const router = createBrowserRouter([
     errorElement: <RouteErrorBoundary />,
   },
 ]);
-createRoot(document.getElementById('root')!).render(
+const container = document.getElementById('root')!;
+root ??= createRoot(container);
+root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
@@ -140,4 +144,10 @@ createRoot(document.getElementById('root')!).render(
       </ErrorBoundary>
     </QueryClientProvider>
   </StrictMode>,
-)
+);
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    root?.unmount();
+  });
+}

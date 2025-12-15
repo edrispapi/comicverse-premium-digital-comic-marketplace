@@ -9,7 +9,8 @@ import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { useAppStore, useCartTotals, useCheckoutState, useLibraryShelves, useToggleLibraryUnlock } from '@/store/use-store';
+import { useAppStore, useCartTotals, useCheckoutState, useToggleLibraryUnlock } from '@/store/use-store';
+import { usePlaceOrder } from '@/lib/queries';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -17,14 +18,13 @@ import { toast } from 'sonner';
 import { CheckoutStepper } from '@/components/checkout/CheckoutStepper';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const checkoutSchema = z.object({
-  // Shipping
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   address: z.string().min(5, 'Address is too short'),
   city: z.string().min(2, 'City is required'),
   zip: z.string().regex(/^\d{5}$/, 'Invalid ZIP code'),
-  // Payment
   cardName: z.string().min(2, 'Name on card is required'),
   cardNumber: z.string().regex(/^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/, 'Invalid card number'),
   expiryDate: z.string().regex(/^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$/, 'Invalid expiry date (MM/YY)'),
@@ -39,18 +39,15 @@ export function CheckoutPage() {
   const clearCart = useAppStore(s => s.clearCart);
   const { promoCode, setPromoCode, applyPromoCode, shippingOption, setShippingOption } = useCheckoutState();
   const { subtotal, discount, tax, total, shippingCost } = useCartTotals();
-  const { updateLibrary } = useLibraryShelves();
   const toggleLibraryUnlock = useToggleLibraryUnlock();
+  const { mutate: placeOrder, isPending } = usePlaceOrder();
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: { name: '', email: '', address: '', city: '', zip: '', cardName: '', cardNumber: '', expiryDate: '', cvc: '' },
   });
   const handleApplyPromo = () => {
-    if (applyPromoCode()) {
-      toast.success(`Promo code "${promoCode}" applied!`);
-    } else {
-      toast.error('Invalid promo code.');
-    }
+    if (applyPromoCode()) toast.success(`Promo code "${promoCode}" applied!`);
+    else toast.error('Invalid promo code.');
   };
   const handleNextStep = async () => {
     let fieldsToValidate: (keyof z.infer<typeof checkoutSchema>)[] = [];
@@ -60,24 +57,16 @@ export function CheckoutPage() {
     if (isValid) setCurrentStep(s => s + 1);
   };
   const onSubmit = (values: z.infer<typeof checkoutSchema>) => {
-    console.log('Order placed:', values);
-    cart.forEach(item => {
-        if (item.audioUrl) {
-            toggleLibraryUnlock(item.id);
-        }
+    placeOrder({ items: cart, total }, {
+      onSuccess: () => {
+        cart.forEach(item => { if (item.audioUrl) toggleLibraryUnlock(item.id); });
+        toast.success('Order placed successfully! Items added to your library.');
+        if (cart.some(item => item.audioUrl)) toast.info("Audiobooks are now unlocked for playback!");
+        setShowConfetti(true);
+        setTimeout(() => { clearCart(); navigate('/library'); }, 2000);
+      },
+      onError: () => toast.error("There was an issue placing your order. Please try again."),
     });
-    // This is a mock update; a real app would fetch the user's library
-    // and merge it with the new items.
-    // updateLibrary(cart.map(item => ({ ...item, chapters: item.chapters.map(c => ({...c, progress: 0})) })));
-    toast.success('Order placed successfully! Items added to your library.');
-    if (cart.some(item => item.audioUrl)) {
-        toast.info("Audiobooks are now unlocked for playback!");
-    }
-    setShowConfetti(true);
-    setTimeout(() => {
-        clearCart();
-        navigate('/library');
-    }, 2000);
   };
   const steps = [
     { title: 'Shipping', content: (
@@ -137,19 +126,10 @@ export function CheckoutPage() {
             {Array.from({ length: 30 }).map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-3 h-3 bg-comic-accent rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
+                className="absolute w-3 h-3 bg-red-500 rounded-full"
+                style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
                 initial={{ scale: 0, opacity: 1 }}
-                animate={{
-                  scale: [1, 2, 0],
-                  opacity: [1, 1, 0],
-                  x: Math.random() * 400 - 200,
-                  y: Math.random() * 400 - 200,
-                  rotate: Math.random() * 720 - 360,
-                }}
+                animate={{ scale: [1, 2, 0], opacity: [1, 1, 0], x: Math.random() * 400 - 200, y: Math.random() * 400 - 200, rotate: Math.random() * 720 - 360 }}
                 transition={{ duration: 2, delay: i * 0.05, ease: "easeOut" }}
               />
             ))}
@@ -157,7 +137,7 @@ export function CheckoutPage() {
         </div>
       )}
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 lg:py-24">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-bold tracking-tight text-center mb-12">Checkout</motion.h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <Card className="bg-comic-card border-white/10"><CardContent className="p-6 sm:p-8">
@@ -166,10 +146,7 @@ export function CheckoutPage() {
                 {isMobile ? (
                   <Accordion type="single" collapsible value={`${currentStep}`} onValueChange={(val) => setCurrentStep(Number(val))} className="w-full">
                     {steps.map((step, i) => (
-                      <AccordionItem key={i} value={`${i}`}>
-                        <AccordionTrigger>{i + 1}. {step.title}</AccordionTrigger>
-                        <AccordionContent>{step.content}</AccordionContent>
-                      </AccordionItem>
+                      <AccordionItem key={i} value={`${i}`}><AccordionTrigger>{i + 1}. {step.title}</AccordionTrigger><AccordionContent>{step.content}</AccordionContent></AccordionItem>
                     ))}
                   </Accordion>
                 ) : (
@@ -178,7 +155,7 @@ export function CheckoutPage() {
                 <div className="mt-8 flex justify-between">
                   {currentStep > 0 && <Button type="button" variant="outline" onClick={() => setCurrentStep(s => s - 1)}>Back</Button>}
                   {currentStep < steps.length - 1 && <Button type="button" className="btn-accent ml-auto" onClick={handleNextStep}>Next</Button>}
-                  {currentStep === steps.length - 1 && <Button type="submit" size="lg" className="btn-accent w-full">Place Order for ${total.toFixed(2)}</Button>}
+                  {currentStep === steps.length - 1 && <Button type="submit" size="lg" className="btn-accent w-full" disabled={isPending}>{isPending ? 'Placing Order...' : `Place Order for $${total.toFixed(2)}`}</Button>}
                 </div>
               </form>
             </Form>

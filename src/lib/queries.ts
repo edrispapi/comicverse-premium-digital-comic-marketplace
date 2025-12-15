@@ -234,3 +234,18 @@ export const useUserNotifications = () => {
         queryFn: () => api<Notification[]>('/api/notifications'),
     });
 };
+// Checkout
+export const usePlaceOrder = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ items, total }: { items: any[], total: number }) => api('/api/orders', {
+            method: 'POST',
+            body: JSON.stringify({ items, total }),
+        }),
+        onSuccess: () => {
+            // In a real app, this might invalidate user orders, etc.
+            // For now, client-side cart is cleared separately.
+            queryClient.invalidateQueries({ queryKey: ['cart'] });
+        },
+    });
+};
