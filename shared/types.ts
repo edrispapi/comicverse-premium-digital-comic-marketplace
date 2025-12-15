@@ -3,6 +3,10 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
+export interface PaginatedResponse<T> {
+  items: T[];
+  next: string | null;
+}
 export interface Comment {
   id: string;
   user: {

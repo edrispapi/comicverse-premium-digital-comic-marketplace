@@ -1,11 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { api } from "@/lib/api-client";
-import { Comic, Author, User, Genre, AuthResponse, UserStats, Notification, Comment, Post } from '@shared/types';
-// Fetch all comics
+import { Comic, Author, User, Genre, AuthResponse, UserStats, Notification, Comment, Post, PaginatedResponse } from '@shared/types';
+// Fetch all comics (paginated)
 export const useComics = () => {
-  return useQuery<Comic[]>({
+  return useQuery<PaginatedResponse<Comic>>({
     queryKey: ['comics'],
-    queryFn: () => api<Comic[]>('/api/comics'),
+    queryFn: () => api<PaginatedResponse<Comic>>('/api/comics?limit=500'),
+  });
+};
+// Infinite scroll for comics
+export const useInfiniteComics = (filters: object) => {
+  return useInfiniteQuery<PaginatedResponse<Comic>, Error>({
+    queryKey: ['comics-infinite', filters],
+    queryFn: async ({ pageParam = null }) => {
+      const params = new URLSearchParams();
+      if (pageParam) {
+        params.set('cursor', pageParam as string);
+      }
+      params.set('limit', '8');
+      return api<PaginatedResponse<Comic>>(`/api/comics?${params.toString()}`);
+    },
+    initialPageParam: null,
+    getNextPageParam: (lastPage) => lastPage.next ?? undefined,
   });
 };
 // Search comics

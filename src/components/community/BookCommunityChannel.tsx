@@ -35,14 +35,14 @@ const itemVariants = {
 };
 const replySchema = z.object({ message: z.string().min(1, 'Reply cannot be empty').max(500) });
 type ReplyFormData = z.infer<typeof replySchema>;
-const STICKERS = ['👍', '���️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
+const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
 const AWARDS = [
     { emoji: '🥉', name: 'Silver', type: '🥉-silver-medal' },
     { emoji: '🥈', name: 'Bronze', type: '🥈-bronze-medal' },
-    { emoji: '🥇', name: 'Gold', type: '🥇-gold-medal' },
+    { emoji: '��', name: 'Gold', type: '🥇-gold-medal' },
     { emoji: '📚', name: 'Bookworm', type: '📚-bookworm' },
     { emoji: '💎', name: 'Diamond', type: '💎-diamond' },
-    { emoji: '🎖️', name: 'Medal', type: '��️-medal' },
+    { emoji: '🎖️', name: 'Medal', type: '🎖️-medal' },
 ];
 const statusOptions: { id: PostStatusFilter; label: string }[] = [
   { id: 'highReactions', label: 'High Reactions' },

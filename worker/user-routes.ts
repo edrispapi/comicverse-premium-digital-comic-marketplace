@@ -49,8 +49,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // COMICS
   app.get('/api/comics', async (c) => {
     await ComicEntity.ensureSeed(c.env);
-    const { items: allComics } = await ComicEntity.list(c.env, null, 500);
-    return ok(c, allComics);
+    const cursor = c.req.query('cursor') || null;
+    const limitStr = c.req.query('limit') || '8';
+    const limit = parseInt(limitStr, 10);
+    const { items, next } = await ComicEntity.list(c.env, cursor, limit);
+    return ok(c, { items, next });
   });
   app.get('/api/search', async (c) => {
     const comics = await getFilteredComics(c);

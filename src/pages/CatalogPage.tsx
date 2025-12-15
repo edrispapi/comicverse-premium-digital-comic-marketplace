@@ -1,15 +1,15 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Filter, X } from 'lucide-react';
-import { useAuthors, useGenres, useComics } from '@/lib/queries';
+import { useAuthors, useGenres, useInfiniteComics } from '@/lib/queries';
 import { ComicCard } from '@/components/ui/comic-card';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Breadcrumb,
@@ -36,45 +36,37 @@ const statusOptions: { id: StatusFilter; label: string }[] = [
   { id: 'topRated', label: 'Top Rated' },
 ];
 export function CatalogPage() {
-  const { data: comicsData = [], isLoading, error } = useComics();
+  const [filters, setFilters] = useState<FiltersState>({ genres: [], authors: [], status: [], sort: 'newest' });
+  const { data, error, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isLoading } = useInfiniteComics(filters);
   const { data: authorsData = [] } = useAuthors();
   const { data: genresData = [] } = useGenres();
-  const [filters, setFilters] = useState<FiltersState>({ genres: [], authors: [], status: [], sort: 'newest' });
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [tempFilters, setTempFilters] = useState<FiltersState>(filters);
+  const observerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     setTempFilters(filters);
   }, [filters]);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 1.0 }
+    );
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
   const authorOptions: MultiSelectOption[] = useMemo(() => authorsData.map(a => ({ value: a.id, label: a.name })), [authorsData]);
   const genreOptions: MultiSelectOption[] = useMemo(() => genresData.map(g => ({ value: g.id, label: g.name })), [genresData]);
-  const filteredComics = useMemo(() => {
-    if (!comicsData) return [];
-    let comics = [...comicsData];
-    if (filters.genres.length > 0) {
-      comics = comics.filter(comic => comic.genreIds.some(id => filters.genres.includes(id)));
-    }
-    if (filters.authors.length > 0) {
-      comics = comics.filter(comic => comic.authorIds.some(id => filters.authors.includes(id)));
-    }
-    if (filters.status.length > 0) {
-      comics = comics.filter(comic => {
-        return filters.status.every(status => {
-          if (status === 'newHot') {
-            const releaseDate = new Date(comic.releaseDate);
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            return releaseDate > sevenDaysAgo;
-          }
-          if (status === 'bestseller') return (comic.ratings?.votes || 0) > 200;
-          if (status === 'topRated') return (comic.ratings?.avg || 0) >= 4.5;
-          return true;
-        });
-      });
-    }
-    if (filters.sort === 'newest') comics.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
-    else if (filters.sort === 'popular' || filters.sort === 'rating') comics.sort((a, b) => (b.ratings?.avg ?? 0) - (a.ratings?.avg ?? 0));
-    return comics;
-  }, [comicsData, filters]);
+  const flatComics = useMemo(() => data?.pages.flatMap(page => page.items) ?? [], [data]);
   const activeFilterCount = filters.genres.length + filters.authors.length + filters.status.length;
   const handleSaveFilters = () => {
     setFilters(tempFilters);
@@ -159,9 +151,9 @@ export function CatalogPage() {
             </SheetTrigger>
             <SheetContent className="bg-comic-card border-l-white/10 text-white flex flex-col">
               <SheetHeader>
-  <SheetTitle>Filters</SheetTitle>
-  <SheetDescription>Apply filters to narrow down comics by genre, author, and status.</SheetDescription>
-</SheetHeader>
+                <SheetTitle>Filters</SheetTitle>
+                <SheetDescription>Apply filters to narrow down comics by genre, author, and status.</SheetDescription>
+              </SheetHeader>
               <div className="flex-1 overflow-y-auto pr-4 -mr-6 pl-1">
                 <FilterControls inSheet />
               </div>
@@ -196,18 +188,26 @@ export function CatalogPage() {
       </div>
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
+          {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
         </div>
       ) : error ? (
         <div className="text-center py-16"><h2 className="text-2xl font-semibold text-red-500">Failed to load comics.</h2></div>
-      ) : filteredComics.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredComics.map((comic, index) => (
-            <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }}>
-              <ComicCard comic={comic} />
-            </motion.div>
-          ))}
-        </div>
+      ) : flatComics.length > 0 ? (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {flatComics.map((comic, index) => (
+              <motion.div key={comic.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }}>
+                <ComicCard comic={comic} />
+              </motion.div>
+            ))}
+          </div>
+          <div ref={observerRef} className="h-10" />
+          {isFetchingNextPage && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />)}
+            </div>
+          )}
+        </>
       ) : (
         <div className="text-center py-16">
           <h2 className="text-2xl font-semibold">No Results Found</h2>
