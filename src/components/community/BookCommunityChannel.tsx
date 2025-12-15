@@ -35,7 +35,7 @@ const itemVariants = {
 };
 const replySchema = z.object({ message: z.string().min(1, 'Reply cannot be empty').max(500) });
 type ReplyFormData = z.infer<typeof replySchema>;
-const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
+const STICKERS = ['👍', '���️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
 const AWARDS = [
     { emoji: '🥉', name: 'Silver', type: '🥉-silver-medal' },
     { emoji: '🥈', name: 'Bronze', type: '🥈-bronze-medal' },
@@ -95,10 +95,10 @@ const ReplyModal = ({ post, comicId }: { post: Post; comicId: string }) => {
   };
   return (
     <DialogContent
-  className="bg-comic-card border-white/10 text-white sm:max-w-[525px]"
-  aria-labelledby={`reply-title-${post.id}`}
-  aria-describedby={`reply-desc-${post.id}`}
->
+      className="bg-comic-card border-white/10 text-white sm:max-w-[525px]"
+      aria-labelledby={`reply-title-${post.id}`}
+      aria-describedby={`reply-desc-${post.id}`}
+    >
       <DialogHeader>
         <DialogTitle id={`reply-title-${post.id}`}>Replies to {post.user.name}</DialogTitle>
         <DialogDescription id={`reply-desc-${post.id}`}>View and post replies for this message.</DialogDescription>
@@ -187,10 +187,10 @@ const PostCard = ({ post, comicId }: { post: Post; comicId: string; }) => {
             </DropdownMenuContent>
           </DropdownMenu>
           <div className="flex items-center gap-0.5 border-l border-neutral-600/50 pl-2 ml-2">
-            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={handleCopy}><ClipboardCopy className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Copy Link</p></TooltipContent></Tooltip></TooltipProvider>
-            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock download started.")}><Download className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Download</p></TooltipContent></Tooltip></TooltipProvider>
-            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock edit action.")}><Edit2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Edit</p></TooltipContent></Tooltip></TooltipProvider>
-            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.warning("Mock delete action.")}><Trash2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Delete</p></TooltipContent></Tooltip></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={handleCopy}><ClipboardCopy className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Copy Link</p></TooltipContent></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock download started.")}><Download className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Download</p></TooltipContent></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.info("Mock edit action.")}><Edit2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Edit</p></TooltipContent></TooltipProvider>
+            <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-300 hover:scale-105 transition-transform" onClick={() => toast.warning("Mock delete action.")}><Trash2 className="w-4 h-4" /></Button></TooltipTrigger><TooltipContent><p>Delete</p></TooltipContent></TooltipProvider>
           </div>
         </div>
       </div>

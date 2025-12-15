@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle, Gift, MessageCircle, Sparkles } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -104,14 +104,14 @@ function TourContent() {
               <div className="mb-6 bg-red-500/20 p-3 rounded-full animate-pulse-glow">
                 <CurrentIcon className="w-8 h-8 text-red-400" />
               </div>
-<DialogHeader className='text-center mb-6'>
-  <DialogTitle id='onboarding-tour-title' className='text-2xl sm:text-3xl font-bold mb-2'>
-    {steps[step].title}
-  </DialogTitle>
-  <DialogDescription id='onboarding-tour-description' className='text-neutral-400 max-w-md mx-auto'>
-    {steps[step].description}
-  </DialogDescription>
-</DialogHeader>
+              <DialogHeader className='text-center mb-6'>
+                <DialogTitle id={`onboarding-tour-title-step-${step}`} className='text-2xl sm:text-3xl font-bold mb-2'>
+                  {steps[step].title}
+                </DialogTitle>
+                <DialogDescription id={`onboarding-tour-desc-step-${step}`} className='text-neutral-400 max-w-md mx-auto'>
+                  {steps[step].description}
+                </DialogDescription>
+              </DialogHeader>
               {steps[step].content}
             </motion.div>
           </AnimatePresence>
@@ -140,20 +140,14 @@ export function OnboardingTour() {
   const isMobile = useIsMobile();
   const isTourOpen = useAppStore(s => s.isTourOpen);
   const toggleTour = useAppStore(s => s.toggleTour);
-  useEffect(() => {
-    const tourCompleted = localStorage.getItem('tour-complete');
-    if (!tourCompleted) {
-      // Use a timeout to avoid showing the tour immediately on load
-      const timer = setTimeout(() => {
-        toggleTour(true);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [toggleTour]);
   if (isMobile) {
     return (
       <Sheet open={isTourOpen} onOpenChange={toggleTour}>
         <SheetContent side="bottom" className="h-[90vh] p-0 bg-comic-card border-none text-white">
+          <DialogHeader className="sr-only">
+            <DialogTitle id="onboarding-tour-title">Welcome to ComicVerse!</DialogTitle>
+            <DialogDescription id="onboarding-tour-desc">A quick tour of the main features.</DialogDescription>
+          </DialogHeader>
           <TourContent />
         </SheetContent>
       </Sheet>
@@ -162,10 +156,14 @@ export function OnboardingTour() {
   return (
     <Dialog open={isTourOpen} onOpenChange={toggleTour}>
       <DialogContent
-  className="sm:max-w-lg p-0 bg-comic-card border-white/10 glass-dark"
-  aria-labelledby="onboarding-tour-title"
-  aria-describedby="onboarding-tour-description"
->
+        className="sm:max-w-lg p-0 bg-comic-card border-white/10 glass-dark"
+        aria-labelledby="onboarding-tour-title"
+        aria-describedby="onboarding-tour-desc"
+      >
+        <DialogHeader className="sr-only">
+          <DialogTitle id="onboarding-tour-title">Welcome to ComicVerse!</DialogTitle>
+          <DialogDescription id="onboarding-tour-desc">A quick tour of the main features.</DialogDescription>
+        </DialogHeader>
         <TourContent />
       </DialogContent>
     </Dialog>
