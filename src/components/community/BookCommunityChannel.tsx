@@ -31,7 +31,7 @@ const itemVariants = {
 };
 const replySchema = z.object({ message: z.string().min(1, 'Reply cannot be empty').max(500) });
 type ReplyFormData = z.infer<typeof replySchema>;
-const STICKERS = ['👍', '���️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
+const STICKERS = ['👍', '❤️', '🔥', '😂', '😮', '😢', '🙏', '💯', '⭐', '🚀', '🎉', '🙌'];
 const AWARDS = [
     { emoji: '🥉', name: 'Silver', type: '🥉-silver-medal' },
     { emoji: '🥈', name: 'Bronze', type: '🥈-bronze-medal' },
@@ -60,8 +60,7 @@ const ConfettiBurst = () => (
     ))}
   </div>
 );
-const PostContent = ({ post, isJoined, hasAccess }: { post: Post; isJoined: boolean, hasAccess: boolean }) => {
-  const shouldBlur = !hasAccess && ['image', 'video', 'voice', 'file'].includes(post.type);
+const PostContent = ({ post }: { post: Post }) => {
   const contentMap = {
     image: <img src={post.content} className="rounded-md max-h-64 object-cover w-full" alt="Post content" />,
     video: <video src={post.content} controls className="rounded-md w-full max-h-64" />,
@@ -69,26 +68,7 @@ const PostContent = ({ post, isJoined, hasAccess }: { post: Post; isJoined: bool
     file: <div className="flex items-center gap-2 p-2 bg-neutral-700/50 rounded-md"><FileIcon className="w-5 h-5" /><span className="truncate">{post.content}</span></div>,
     text: <p className="whitespace-pre-wrap">{post.content}</p>,
   };
-  const content = contentMap[post.type];
-  if (shouldBlur) {
-    return (
-      <div className="relative">
-        <div className="relative blur-lg opacity-60 overflow-hidden rounded-md">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 backdrop-blur-sm flex items-center justify-center z-10">
-            <p className="text-white/90 text-center px-6 py-4 text-sm font-medium bg-black/20 rounded">
-              Join community to view content
-            </p>
-          </div>
-          {content}
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="relative">
-      {content}
-    </div>
-  );
+  return <div className="relative">{contentMap[post.type]}</div>;
 };
 const ReplyModal = ({ post, comicId }: { post: Post; comicId: string }) => {
   const { mutate: postReply, isPending } = usePostReply(comicId);
@@ -129,7 +109,7 @@ const ReplyModal = ({ post, comicId }: { post: Post; comicId: string }) => {
     </DialogContent>
   );
 };
-const PostCard = ({ post, comicId, isJoined, hasAccess }: { post: Post; comicId: string; isJoined: boolean, hasAccess: boolean }) => {
+const PostCard = ({ post, comicId }: { post: Post; comicId: string; }) => {
   const { mutate: heartPost } = useHeartPost(comicId);
   const { mutate: awardComic } = useAwardComic(comicId);
   const { mutate: reactToPost } = useReactToPost(comicId);
@@ -166,7 +146,7 @@ const PostCard = ({ post, comicId, isJoined, hasAccess }: { post: Post; comicId:
       <div className="flex-1 space-y-1">
         <div className="relative p-3 rounded-xl bg-neutral-800/50 shadow-md">
           <div className="flex items-center justify-between"><p className="font-semibold text-white flex items-center gap-2">{post.user.name} {post.user.isCreator && <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />}</p><p className="text-xs text-neutral-400">{formatDistanceToNow(new Date(post.time), { addSuffix: true })}</p></div>
-          <div className="mt-2 text-neutral-300 text-sm"><PostContent post={post} isJoined={isJoined} hasAccess={hasAccess} /></div>
+          <div className="mt-2 text-neutral-300 text-sm"><PostContent post={post} /></div>
         </div>
         <div className="flex flex-wrap items-center gap-1 text-xs text-neutral-400 pl-2 relative">
           <AnimatePresence>{showConfetti && <ConfettiBurst />}</AnimatePresence>
@@ -225,34 +205,33 @@ export function BookCommunityChannel({ comic }: { comic: Comic }) {
             </div>
           </div>
           <div className="flex items-center gap-4">
-<div className="flex-shrink-0 px-3 py-2 bg-gradient-to-r from-red-400/20 via-rose-500/10 to-orange-400/20 rounded-xl border border-red-500/30 shadow-red-glow mx-auto max-w-full">
-  <div className="flex overflow-x-auto flex-nowrap pb-2 gap-0 -ml-3 w-[calc(100%+1.5rem)] scrollbar-thin scrollbar-thumb-red-500/50 scrollbar-track-transparent snap-x snap-mandatory">
-    {Array.from({ length: 5 }).map((_, i) => (
-      <Avatar
-        key={i}
-        className="w-10 h-10 border-3 border-white/20 shadow-md hover:border-red-400 hover:shadow-red-glow transition-all hover:scale-110 hover:z-10"
-      >
-        <AvatarImage src={`https://i.pravatar.cc/150?u=community-${i}`} />
-        <AvatarFallback>{String.fromCharCode(65 + i)}</AvatarFallback>
-      </Avatar>
-    ))}
-  </div>
-</div>
+            <div className="hidden sm:flex -space-x-2 overflow-hidden p-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Avatar key={i} className="w-10 h-10 border-2 border-red-500/50 shadow-md hover:z-10 hover:scale-110 transition-transform duration-200">
+                  <AvatarImage src={`https://i.pravatar.cc/150?u=community-${i}`} />
+                  <AvatarFallback>{String.fromCharCode(65 + i)}</AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
             <Button className="btn-accent" onClick={handleJoinClick}>
               {isJoined ? 'Leave' : 'Join'}
             </Button>
           </div>
         </div>
-<div className="flex-1 min-h-[60vh] h-[90vh] md:h-[96vh] relative overflow-hidden">
-  <ScrollArea className="h-full w-full p-4 [&_.scroll-area]:scrollbar-thin [&_.scroll-area]:scrollbar-thumb-neutral-600/50 [&_.scroll-area]:scrollbar-track-transparent py-2 -mx-1">
-            <motion.div variants={containerVariants} initial="hidden" animate="visible" className={`transition-all duration-300 ${!hasAccess ? 'blur-md opacity-60 pointer-events-none select-none' : ''}`}>
+        <div className="flex-1 relative overflow-hidden">
+          <ScrollArea className="absolute inset-0 p-4">
+            <div className={`transition-all duration-300 ${!hasAccess ? 'blur-sm opacity-60' : ''}`}>
               {isLoading ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 w-full my-3" />)
-                : posts && posts.length > 0 ? posts.map(post => <PostCard key={post.id} post={post} comicId={comic.id} isJoined={!!isJoined} hasAccess={hasAccess} />)
+                : posts && posts.length > 0 ? (
+                  <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                    {posts.map(post => <PostCard key={post.id} post={post} comicId={comic.id} />)}
+                  </motion.div>
+                )
                 : <div className="text-center text-neutral-400 pt-16">Be the first to post!</div>}
-            </motion.div>
+            </div>
           </ScrollArea>
           {!hasAccess && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-10">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-10 p-4 text-center">
               <p className="text-lg font-semibold text-white">Join the community to view and post</p>
               <Button className="mt-4 btn-accent" onClick={handleJoinClick}>
                 {userId ? 'Join Community' : 'Log In to Join'}
